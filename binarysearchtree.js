@@ -1,5 +1,4 @@
 //document.addEventListener('DOMContentLoaded', main, false);
-alert("Hello World");
 let debconsole = document.getElementById("console");
 let cursor = document.getElementById("cursor");
 let command = document.getElementById("text");
@@ -11,6 +10,19 @@ let animationSpeed = 3;
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function pause() {
+    console.log("Pause called");
+    return new Promise(resolve => {
+        document.body.onkeyup = (e) => {
+            if (e.key === "Enter") {
+                resolve();
+                document.body.onkeyup = null;
+                console.log("Pause resolved");
+            }
+        };
+    });
 }
 
 function awaitInput(){
@@ -78,7 +90,7 @@ class binarySearchTree{
         return new Promise(async function(resolve){
             console.log(`addNew Promise Opened`);
             if(binarysearchT.arr.length == 0){
-                await e.translate(`${(e.radius/2+binarysearchT.width)/2}vw`, `1vh`, true);
+                await e.translate(`${(e.diameter/2+binarysearchT.width)/2}vw`, `1vh`, true);
                 await e.opac(1, true);
                 binarysearchT.arr.push(e);
                 e.dom.title = "Rank: 0";
@@ -87,7 +99,7 @@ class binarySearchTree{
             else{
                 //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
                 let rank = 0;
-                await e.translate((binarysearchT.width/2 + (binarysearchT.arr[0].radius)) + "vw", `1vh`, true);
+                await e.translate((binarysearchT.width/2 + (binarysearchT.arr[0].diameter)) + "vw", `1vh`, true);
                 e.borderCol("orange");
                 await e.opac(1, true);            
                 await binarysearchT.compareTransform(e, rank);
@@ -104,7 +116,6 @@ class binarySearchTree{
             let pointer = binarysearchT.arr[rank];
             pointer.borderColor = "orange";
             let aft = false;
-            //console.log(`Child x: ${e.xTransform} Parent x: ${binarysearchT.arr[rank].xTransform}`);
             if(e.xTransform < pointer.xTransform){
                 
                 e.comparator.addClass("aft");
@@ -113,8 +124,6 @@ class binarySearchTree{
             else{
                 e.comparator.addClass("bef");
             }
-            //let classes = e.comparat.classes.split(" ");
-            //let aft = classes.some(v => {if(v == "aft") return true});
 
             if(pointer.key < e.key){
                 if(aft){
@@ -163,12 +172,13 @@ class binarySearchTree{
             //let parentX = parseInt(parent.xTransform);
             let coordinates = {}
             if(parent.xTransform>50)
-                coordinates.x = parent.xTransform - parent.radius + "vw";
+                coordinates.x = parent.xTransform - parent.diameter*3/4 + "vw";
             else{
-                coordinates.x = parent.xTransform + parent.radius  + "vw";
+                coordinates.x = parent.xTransform + parent.diameter*3/4  + "vw";
             }
             coordinates.y = parent.yTransform + "vh";
             await e.translate(coordinates.x, coordinates.y, true);
+            //await pause(); //for debugging purposes 
             await binarysearchT.compareTransform(e, rank);
             console.log(`prepareNextCompare Promise Resolved`);
             resolve();
@@ -339,30 +349,17 @@ class binarySearchTree{
     //     });
     // }
 
-    // reset(){
-    //     let connections = document.getElementsByClassName("diag-left-to-right");
-    //     let connections2 = document.getElementsByClassName("diag-right-to-left");
-    //     for(let i = 0; i< connections.length; i++){
-    //         try{
-    //             connections[i].remove();
-    //         }
-    //         catch(e){}
-    //     }
-        
-    //     for(let i = 0; i< connections2.length; i++){
-    //         try{
-    //             connections2[i].remove();
-    //         }
-    //         catch(e){}
-    //     }
-
-    //     for(let i = 0; i<this.arr.length; i++)
-    //         try{
-    //             this.arr[i].dom.remove();
-    //         }   
-    //         catch(e){}
-    //     this.arr = [];
-    // }
+    reset(){
+        this.connections.forEach((connection) => {
+            connection.parent.dom.remove();
+            connection.child.dom.remove();
+            connection.dom.remove();
+            //delete (connection);
+        });
+        this.connections = [];
+        this.arr = [];
+        this.size = 0;
+    }
 
     rankOf(key){
         let rank = 0;
@@ -425,29 +422,33 @@ class binarySearchTree{
                 output.innerHTML = "In-order trasversal: []";
                 arrow.style.opacity = 1;
                 let inOrder = async function(root){
-                    arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
-                    arrow.style.left = nodes[root].x;
+                    let diameter = nodes[root].diameter;
+                    arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                    await waitArrow();
+                    //arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
+                    //arrow.style.left = nodes[root].x;
                     nodes[root].borderColor = "orange"; //visited but not marked
                     await waitArrow();
 
                     let returnArr = [];
                     
                     if(nodes[root*2+1]){
-                        await waitArrow();
-                        arrow.style.top = parseInt(nodes[root*2+1].y) + 5 + "vh";
-                        arrow.style.left = nodes[root*2+1].x;
-
+                        //await waitArrow();
+                        //arrow.style.top = parseInt(nodes[root*2+1].y) + 5 + "vh";
+                        //arrow.style.left = nodes[root*2+1].x;
+                        arrow.style.transform = `translate(${nodes[root*2+1].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+1].yTransform + diameter}vh)`;
                         await inOrder(root*2+1).then(function(result){
                             returnArr = result;
                         });
                     }
-                    await waitArrow();
-                    arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
-                    arrow.style.left = nodes[root].x;
+                    //await waitArrow();
+                    //arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
+                    //arrow.style.left = nodes[root].x;
+                    arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
                     
                     nodes[root].borderColor = "rgb(37, 201, 37)";
                     returnArr.push(nodes[root].key);
-                    
+                    await waitArrow();
                     if(output.innerHTML.length>23){
                         let text = output.innerHTML.substring(0, output.innerHTML.length-1);
                         output.innerHTML = text + ", " + nodes[root].key + "]";
@@ -459,24 +460,26 @@ class binarySearchTree{
                     
 
                     if(nodes[root*2+2]){
+                        //await waitArrow();
+                        //arrow.style.top = parseInt(nodes[root*2+2].y) + 5 + "vh";
+                        //arrow.style.left = nodes[root*2+2].x;
+                        arrow.style.transform = `translate(${nodes[root*2+2].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+2].yTransform + diameter}vh)`;
                         await waitArrow();
-                        arrow.style.top = parseInt(nodes[root*2+2].y) + 5 + "vh";
-                        arrow.style.left = nodes[root*2+2].x;
-                        
                         await inOrder(root*2+2).then(function(result){
                             returnArr = [...returnArr, ...result];
                         });
                     }
-                    await waitArrow();
-                    arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
-                    arrow.style.left = nodes[root].x;
-
+                    //await waitArrow();
+                    //arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
+                    //arrow.style.left = nodes[root].x;
+                    arrow.style.transform = `translate(${nodes[root].xTransform +diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
                     
 
                     if(root > original){
-                        await waitArrow();
-                        arrow.style.top = parseInt(nodes[Math.floor((root-1)/2)].y) + 5 + "vh";
-                        arrow.style.left = nodes[Math.floor((root-1)/2)].x;
+                        //await waitArrow();
+                        //arrow.style.top = parseInt(nodes[Math.floor((root-1)/2)].y) + 5 + "vh";
+                        //arrow.style.left = nodes[Math.floor((root-1)/2)].x;
+                        arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
                     }
                     
                     return returnArr;
@@ -484,12 +487,12 @@ class binarySearchTree{
 
                 inOrder(root).then(async function(result){
                     trasverse = result;
+                    
                     arrow.ontransitionend = async function(){
-                        arrow.style.opacity = 0;
-                        await sleep(1000);
                         this.ontransitionend = null;
                         this.remove();
                     };
+                    arrow.style.opacity = 0;
                 });
 
                 
@@ -574,8 +577,8 @@ class Connection{
         let angle = Math.atan2(dy, dx);
         let lengthInPx = Math.sqrt(dx ** 2 + dy ** 2);
         this.l = lengthInPx + "px";
-        let offsetXpx = (parent.radius * (window.innerHeight / 100))/2;
-        let offsetYpx = (parent.radius * (window.innerHeight / 100))/2;
+        let offsetXpx = (parent.diameter * (window.innerHeight / 100))/2;
+        let offsetYpx = (parent.diameter * (window.innerHeight / 100))/2;
         let x = 100*(parentXpx + offsetXpx)/window.innerWidth;
         let y = 100*(parentYpx + offsetYpx)/window.innerHeight;
         const baseLengthPx = 100; // Matches your CSS .line width
@@ -691,11 +694,11 @@ class Element{
     //     this.dom.style.left = xCoord;
     // }
 
-    // set radius(r){
+    // set diameter(r){
 
     // }
 
-    get radius(){ //the radius is based on the height of the screen
+    get diameter(){ //the diameter is based on the height of the screen
         const vh = parseFloat(window.innerHeight / 100);
         const computed = parseFloat(window.getComputedStyle(this.dom).width);
         return (computed/vh);
