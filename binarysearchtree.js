@@ -350,12 +350,18 @@ class binarySearchTree{
     // }
 
     reset(){
-        this.connections.forEach((connection) => {
-            connection.parent.dom.remove();
-            connection.child.dom.remove();
-            connection.dom.remove();
-            //delete (connection);
-        });
+        if(this.connections.length > 0)
+            this.connections.forEach((connection) => {
+                connection.parent.dom.remove();
+                connection.child.dom.remove();
+                connection.dom.remove();
+                //delete (connection);
+            });
+        else{
+            if(this.size == 1){
+                this.arr[0].dom.remove();
+            }
+        }
         this.connections = [];
         this.arr = [];
         this.size = 0;
@@ -480,6 +486,7 @@ class binarySearchTree{
                         //arrow.style.top = parseInt(nodes[Math.floor((root-1)/2)].y) + 5 + "vh";
                         //arrow.style.left = nodes[Math.floor((root-1)/2)].x;
                         arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                        await waitArrow();
                     }
                     
                     return returnArr;

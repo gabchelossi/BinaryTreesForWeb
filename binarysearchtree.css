@@ -121,7 +121,7 @@ html, body{
 #outputSection{
     position: fixed;
     width: 100vw;
-    height: 10vh;
+    height: 10vh; 
     bottom:20vh;
     padding: 0 5vw;
     background-color: white;
