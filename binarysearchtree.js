@@ -1,4 +1,5 @@
 //document.addEventListener('DOMContentLoaded', main, false);
+alert("Hello World");
 let debconsole = document.getElementById("console");
 let cursor = document.getElementById("cursor");
 let command = document.getElementById("text");
