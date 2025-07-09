@@ -6,7 +6,7 @@ let displayed = true;
 let focused = true;
 let previousCommands = [];
 let point = 0;
-let animationSpeed = 3;
+let animationSpeed = 1;
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -87,26 +87,31 @@ class binarySearchTree{
     async addNewTransform(e){
         e.dom.classList.add("transform");
         e.dom.offsetHeight; //important for reflow
-        return new Promise(async function(resolve){
-            console.log(`addNew Promise Opened`);
-            if(binarysearchT.arr.length == 0){
-                await e.translate(`${(e.diameter/2+binarysearchT.width)/2}vw`, `1vh`, true);
-                await e.opac(1, true);
-                binarysearchT.arr.push(e);
-                e.dom.title = "Rank: 0";
-                e.removeClass("transform");
+        return new Promise(async function(resolve, reject){
+            if(binarysearchT.rankOf(e.key) > -1){
+                reject(`'${e.key}' is already in the tree. No duplicates allowed`);
             }
             else{
-                //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
-                let rank = 0;
-                await e.translate((binarysearchT.width/2 + (binarysearchT.arr[0].diameter)) + "vw", `1vh`, true);
-                e.borderCol("orange");
-                await e.opac(1, true);            
-                await binarysearchT.compareTransform(e, rank);
+                console.log(`addNew Promise Opened`);
+                if(binarysearchT.arr.length == 0){
+                    await e.translate(`${(e.diameter/2+binarysearchT.width)/2}vw`, `1vh`, true);
+                    await e.opac(1, true);
+                    binarysearchT.arr.push(e);
+                    e.dom.title = "Rank: 0";
+                    e.removeClass("transform");
+                }
+                else{
+                    //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
+                    let rank = 0;
+                    await e.translate((binarysearchT.width/2 + (binarysearchT.arr[0].diameter)) + "vw", `1vh`, true);
+                    e.borderCol("orange");
+                    await e.opac(1, true);            
+                    await binarysearchT.compareTransform(e, rank);
+                }
+                console.log(`addNew Promise Resolved`);
+                console.clear();
+                resolve(++binarysearchT.size);
             }
-            console.log(`addNew Promise Resolved`);
-            console.clear();
-            resolve(++binarysearchT.size);
         });
     }
 
@@ -419,7 +424,7 @@ class binarySearchTree{
                         arrow.ontransitionend = null;
                         resolve(e);
                     }
-                    setTimeout(() => resolve("timeout"), 1200); //im trying to understand why sometimes the event does not fire. perhaps the animation is too fast?
+                    setTimeout(() => resolve("timeout"), 1200/animationSpeed); //im trying to understand why sometimes the event does not fire. perhaps the animation is too fast?
                 });
         };
         
@@ -675,9 +680,6 @@ class Element{
         document.body.append(this.dom);
     }
 
-    get x(){
-        return this.dom.style.left;
-    }
 
     get xTransform(){
         let transform = this.transform;
@@ -689,31 +691,11 @@ class Element{
         return parseFloat(transform.match(/\d+(\.\d+)?/g)[1]);
     }
 
-    // get y(){
-    //     return this.dom.style.top;
-    // }
-
-    // set y(yCoord){
-    //     this.dom.style.top = yCoord;
-    // }
-
-    // set x(xCoord){
-    //     this.dom.style.left = xCoord;
-    // }
-
-    // set diameter(r){
-
-    // }
-
     get diameter(){ //the diameter is based on the height of the screen
         const vh = parseFloat(window.innerHeight / 100);
         const computed = parseFloat(window.getComputedStyle(this.dom).width);
         return (computed/vh);
     }
-
-    // set comparat(variable){
-
-    // }
 
     get comparat(){
         return this.comparator;
@@ -884,13 +866,25 @@ let exec = function(...parameters){
                     (async function(){
                         returnval = `Inserting ${vals} into the binary search tree`;
                         for(let i=0; i<vals.length; i++){
-                            await binarysearchT.addNewTransform(new Element(vals[i]));
-                            await(sleep(1000));
+                            try{
+                                await binarysearchT.addNewTransform(new Element(vals[i]));  
+                            }
+                            catch(e){
+                                alert(e);
+                            }                  
                         }
                     })();
                 }
                 else{
-                    binarysearchT.addNewTransform(new Element(parseInt(params[1])));
+                    (async function(){
+                        try{
+                            await binarysearchT.addNewTransform(new Element(parseInt(params[1])));
+                        }
+                        catch(e){
+                            alert(e);
+                            returnval = e;
+                        }
+                    })();
                     returnval = `Inserting ${params[1]} into the binary search tree`;
                 }
             }
@@ -959,6 +953,67 @@ let exec = function(...parameters){
                         returnval = "The animation speed must be an integer between 1 and 5";
                     }
                     else{
+                        const style = document.createElement('style');
+                        let seconds = 1/speed;
+                        style.innerHTML = `
+                            .element{
+                                position: absolute;
+                                display: block;
+                                opacity: 0;
+                                height: 5vh;
+                                width: 5vh;
+                                border-radius: 50%;
+                                background-color: white!important;
+                                padding-top: 0.9vh;
+                                text-align: center;
+                                font-weight: bolder;
+                                font-size: 2.5vh;
+                                border: 2px solid rgb(37, 201, 37);
+                                transition: border ${seconds}s, opacity ${seconds}s;
+                            }
+
+                            .element.transform{
+                                transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out;
+                            }
+
+
+                            .trasverser{
+                                position: absolute;
+                                font-size: 3vw;
+                                top:0;
+                                left: 0;
+                                opacity: 0;
+                                transition: opacity ${seconds/2}s, transform ${seconds}s;
+                                z-index: 3;
+                            }
+
+                            .comparator{
+                                position: absolute;
+                                display: block;
+                                opacity: 0;
+                                height: 2vh;
+                                width: 2vh;
+                                font-size: 2vh;
+                                transition: opacity ${seconds}s;
+                                margin:0;
+                            }
+
+                            .line {
+                                position: absolute;
+                                height: 2px;
+                                width: 100px; /* fixed base width */
+                                background-color: black;
+                                transform-origin: 0 0;
+                                transition: transform ${seconds}s ease-out;
+                                will-change: transform;
+                            }
+
+                            .comparatorTransform{
+                                position: absolute;
+                                opacity: 0;
+                                transition: opacity ${seconds}s;
+                            } `;
+                        document.head.appendChild(style);
                         animationSpeed = speed;
                         returnval = `The animation speed has been now set to ${speed}x`;
                     }
@@ -1014,10 +1069,11 @@ let exec = function(...parameters){
         break;
         case "fill-random":
             (async function(){
-                animationSpeed = 5;
                 await binarysearchT.addNewTransform(new Element(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
             for(let i =0; i<20; i++){
-                await binarysearchT.addNewTransform(new Element(Math.floor(Math.random()*100)));
+                    let random = Math.floor(Math.random()*100);
+                    if(binarysearchT.rankOf(random) == -1)
+                        await binarysearchT.addNewTransform(new Element(random));
                 }
             })();
             
