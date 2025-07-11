@@ -406,7 +406,7 @@ class binarySearchTree{
         let output = document.getElementById("output");
         let original = root;
         
-        let setupTrasversal = function(root){
+        let setupTrasversal = function(root){ //sets all the children to red (unvisited)
             if(nodes[root*2+1])
                 setupTrasversal(root*2+1);
             nodes[root].borderColor = 'red';
@@ -415,51 +415,44 @@ class binarySearchTree{
                 setupTrasversal(root*2+2);
             return;
         }
-        await setupTrasversal(root);
+        setupTrasversal(root);
         
 
-        let waitArrow = async function(){
+        let waitArrow = async function(fn){
             return new Promise((resolve) => {
                     arrow.ontransitionend = function(e){
                         arrow.ontransitionend = null;
                         resolve(e);
                     }
-                    setTimeout(() => resolve("timeout"), 1200/animationSpeed); //im trying to understand why sometimes the event does not fire. perhaps the animation is too fast?
+                    fn(); //the instruction that needs to be run
                 });
         };
         
         switch(mode){
             case "in-order":
                 output.innerHTML = "In-order trasversal: []";
-                arrow.style.opacity = 1;
+                await waitArrow(() => {
+                    arrow.style.opacity = 1;
+                });
                 let inOrder = async function(root){
                     let diameter = nodes[root].diameter;
-                    arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
-                    await waitArrow();
-                    //arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
-                    //arrow.style.left = nodes[root].x;
-                    nodes[root].borderColor = "orange"; //visited but not marked
-                    await waitArrow();
+                    await waitArrow(() => {
+                        arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                    });
+                    nodes[root].borderColor = "orange"; //visited but not added into the return value
 
                     let returnArr = [];
                     
                     if(nodes[root*2+1]){
-                        //await waitArrow();
-                        //arrow.style.top = parseInt(nodes[root*2+1].y) + 5 + "vh";
-                        //arrow.style.left = nodes[root*2+1].x;
                         arrow.style.transform = `translate(${nodes[root*2+1].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+1].yTransform + diameter}vh)`;
                         await inOrder(root*2+1).then(function(result){
                             returnArr = result;
                         });
                     }
-                    //await waitArrow();
-                    //arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
-                    //arrow.style.left = nodes[root].x;
                     arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
                     
                     nodes[root].borderColor = "rgb(37, 201, 37)";
                     returnArr.push(nodes[root].key);
-                    await waitArrow();
                     if(output.innerHTML.length>23){
                         let text = output.innerHTML.substring(0, output.innerHTML.length-1);
                         output.innerHTML = text + ", " + nodes[root].key + "]";
@@ -471,27 +464,20 @@ class binarySearchTree{
                     
 
                     if(nodes[root*2+2]){
-                        //await waitArrow();
-                        //arrow.style.top = parseInt(nodes[root*2+2].y) + 5 + "vh";
-                        //arrow.style.left = nodes[root*2+2].x;
                         arrow.style.transform = `translate(${nodes[root*2+2].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+2].yTransform + diameter}vh)`;
-                        await waitArrow();
                         await inOrder(root*2+2).then(function(result){
                             returnArr = [...returnArr, ...result];
                         });
                     }
-                    //await waitArrow();
-                    //arrow.style.top = parseInt(nodes[root].y) + 5 + "vh";
-                    //arrow.style.left = nodes[root].x;
+
                     arrow.style.transform = `translate(${nodes[root].xTransform +diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
                     
 
                     if(root > original){
-                        //await waitArrow();
-                        //arrow.style.top = parseInt(nodes[Math.floor((root-1)/2)].y) + 5 + "vh";
-                        //arrow.style.left = nodes[Math.floor((root-1)/2)].x;
-                        arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
-                        await waitArrow();
+                        
+                        await waitArrow(() => {
+                            arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                        });
                     }
                     
                     return returnArr;
@@ -634,9 +620,7 @@ class Comparator{
     }
 
     removeClass(...Class) {
-        //console.log(`Trying to remove ${Class}`);
         this.dom.classList.remove(...Class.flat());
-        //console.log(`${this.classes}`);
     }
 
     get classes(){
@@ -784,7 +768,7 @@ window.addEventListener('resize', () => {
     }, 200); // only trigger after 200ms of no further resize events
 });
 
-let type = function(e){
+let type = async function(e){
     if(focused){
         switch(e.key){
             case "Backspace":
@@ -827,7 +811,7 @@ let type = function(e){
                 previousCommands.push(command.innerHTML);
                 point = previousCommands.length;
                 command.id="";
-                command.innerHTML += "<br><br>" + exec(command.innerHTML.replaceAll(" ", ",").split(","));
+                command.innerHTML += "<br><br>" + await exec(command.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => {return returnVal});
                 let newLine = document.createElement("p");
                 newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
                 debconsole.append(newLine);
@@ -839,273 +823,286 @@ let type = function(e){
     }
 }
 
-let exec = function(...parameters){
-    let returnval = "Command succesfully executed";
-    let params = parameters[0];
-    //console.log(parameters);
-    switch(params[0]){
-        case 'insert':
-            if(params[1] == "full"){
-                let arr = [25,10,40,5,15,30,50,3,7,13,20,27,35,45,55,1,4,6,8,11,14,17,24,26,29,33,37,43,47,53,60];
-                (async function(){
-                    returnval = `Inserting ${arr} into the binary search tree`;
-                    for(let i=0; i<arr.length; i++){
-                        await binarysearchT.addNewTransform(new Element(arr[i]));
-                    }
-                })();
-            }
-            else{
-                if(params.length>2){
-                    let vals = params.map(function(e){ 
-                        return parseInt(e);
-                    }).filter(v => {
-                        if(!isNaN(v)){
-                            return v;
-                        }
-                    });
-                    (async function(){
-                        returnval = `Inserting ${vals} into the binary search tree`;
-                        for(let i=0; i<vals.length; i++){
-                            try{
-                                await binarysearchT.addNewTransform(new Element(vals[i]));  
+let exec = async function(...parameters){
+    return new Promise(async function(resolve, reject){
+        let returnval = "Command succesfully executed";
+        let params = parameters[0];
+        //console.log(parameters);
+        switch(params[0]){
+            case 'insert':
+                if(params[1] == "full"){
+                    let arr = [25,10,40,5,15,30,50,3,7,13,20,27,35,45,55,1,4,6,8,11,14,17,24,26,29,33,37,43,47,53,60];
+                    let insertFull = function(){
+                        return new Promise(async function(res){
+                            returnval = `Succesfully inserted ${arr} into the binary search tree`;
+                            for(let i=0; i<arr.length; i++){
+                                await binarysearchT.addNewTransform(new Element(arr[i]));
                             }
-                            catch(e){
-                                alert(e);
-                            }                  
-                        }
-                    })();
+                            resolve();
+                        });
+                    };
+                    await insertFull();
                 }
                 else{
-                    (async function(){
-                        try{
-                            await binarysearchT.addNewTransform(new Element(parseInt(params[1])));
-                        }
-                        catch(e){
-                            alert(e);
-                            returnval = e;
-                        }
-                    })();
-                    returnval = `Inserting ${params[1]} into the binary search tree`;
-                }
-            }
-            
-            
-        break;
-
-        case 'equivalent':
-            if(binarysearchT.size > 0)
-                returnval = "insert " + binarysearchT.arr.map(v => {
-                    if(v != undefined){
-                        return v.key;
-                    }
-                        
-                }).filter(v => {if(v) return v}).toString();
-            else
-                returnval = "The tree is empty";
-        break;
-        
-        case 'help':
-            returnval = "'insert [value]' inserts a key into the binary tree <br> \
-            'delete [value]' deletes (if exists) a key from the binary tree<br> \
-            'rank [value] returns the rank of a given value.'<br> \
-            'show' will show the array representing the data structure: \t-array (?boolean:show empty slots)<br> \
-            'clear' clears the console (it gets too messy sometimes)<br> \
-            'credits' to show the credits of the developer who made this site";
-        break;
-
-        case 'credits':
-            returnval = "Thank you for visiting my website! I hope this visual representation of these data structures are to your liking<br>\
-            if you have any questions do not hesitate to e-mail me at <a href='mailto:gc.consulting22@gmail.com'>gc.consulting22@gmail.com</a>";
-        break;
-
-        case 'clear':
-            debconsole.innerHTML = "";
-        break;
-
-        case 'ls':
-        case 'pwd':
-        case 'chmod':
-        case 'su':
-        case 'cd':
-        case 'echo':
-            returnval = "You know, this is not really a linux terminal although I made it look like one :)";
-        break;
-
-        case "reset":
-            binarysearchT.reset();
-        break;
-
-        case "rank":
-            let rank = binarysearchT.rankOf(params[1]);
-            if(rank == -1){
-                returnval = `The value '${params[1]}' is not in the tree`;
-            }
-            else{
-                returnval = `The value '${params[1]}' is at rank ${rank}`;
-            }
-        break;
-
-        case "set":
-            switch(params[1]){
-                case "speed":
-                    let speed = parseInt(params[2]);
-                    if(isNaN(speed) || (speed < 1 || speed > 5)){
-                        returnval = "The animation speed must be an integer between 1 and 5";
+                    if(params.length>2){
+                        let vals = params.map(function(e){ 
+                            return parseInt(e);
+                        }).filter(v => {
+                            if(!isNaN(v)){
+                                return v;
+                            }
+                        });
+                        await (async function(){
+                            returnval = `Succesfully inserted ${vals} into the binary search tree`;
+                            for(let i=0; i<vals.length; i++){
+                                try{
+                                    await binarysearchT.addNewTransform(new Element(vals[i]));  
+                                }
+                                catch(e){
+                                    let index = vals.indexOf(parseInt(e.substring(1)));
+                                    vals.splice(index,1);
+                                    //console.log(vals);
+                                    alert(e);
+                                    i--;
+                                    if(vals.length>0)
+                                        returnval = `Succesfully inserted ${vals} into the binary search tree`;
+                                    else
+                                        returnval = `None of the values have been inserted`;
+                                }                  
+                            }
+                        })();
                     }
                     else{
-                        const style = document.createElement('style');
-                        let seconds = 1/speed;
-                        style.innerHTML = `
-                            .element{
-                                position: absolute;
-                                display: block;
-                                opacity: 0;
-                                height: 5vh;
-                                width: 5vh;
-                                border-radius: 50%;
-                                background-color: white!important;
-                                padding-top: 0.9vh;
-                                text-align: center;
-                                font-weight: bolder;
-                                font-size: 2.5vh;
-                                border: 2px solid rgb(37, 201, 37);
-                                transition: border ${seconds}s, opacity ${seconds}s;
+                        await (async function(){
+                            try{
+                                await binarysearchT.addNewTransform(new Element(parseInt(params[1])));
+                                returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
                             }
-
-                            .element.transform{
-                                transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out;
+                            catch(e){
+                                returnval = e;
                             }
-
-
-                            .trasverser{
-                                position: absolute;
-                                font-size: 3vw;
-                                top:0;
-                                left: 0;
-                                opacity: 0;
-                                transition: opacity ${seconds/2}s, transform ${seconds}s;
-                                z-index: 3;
-                            }
-
-                            .comparator{
-                                position: absolute;
-                                display: block;
-                                opacity: 0;
-                                height: 2vh;
-                                width: 2vh;
-                                font-size: 2vh;
-                                transition: opacity ${seconds}s;
-                                margin:0;
-                            }
-
-                            .line {
-                                position: absolute;
-                                height: 2px;
-                                width: 100px; /* fixed base width */
-                                background-color: black;
-                                transform-origin: 0 0;
-                                transition: transform ${seconds}s ease-out;
-                                will-change: transform;
-                            }
-
-                            .comparatorTransform{
-                                position: absolute;
-                                opacity: 0;
-                                transition: opacity ${seconds}s;
-                            } `;
-                        document.head.appendChild(style);
-                        animationSpeed = speed;
-                        returnval = `The animation speed has been now set to ${speed}x`;
+                        })();
                     }
-                break;
+                }
                 
-                case "help":
-                    returnval = `'set speed ([1-5])' sets the animation speed`;
-                break;
+                
+            break;
 
-                default:
-                    returnval = `The passed parameter is not valid`;
-                break;
+            case 'equivalent':
+                if(binarysearchT.size > 0)
+                    returnval = "insert " + binarysearchT.arr.map(v => {
+                        if(v != undefined){
+                            return v.key;
+                        }
+                            
+                    }).filter(v => {if(v) return v}).toString();
+                else
+                    returnval = "The tree is empty";
+            break;
+            
+            case 'help':
+                returnval = "'insert [value]' inserts a key into the binary tree <br> \
+                'delete [value]' deletes (if exists) a key from the binary tree<br> \
+                'rank [value] returns the rank of a given value.'<br> \
+                'show' will show the array representing the data structure: \t-array (?boolean:show empty slots)<br> \
+                'clear' clears the console (it gets too messy sometimes)<br> \
+                'credits' to show the credits of the developer who made this site";
+            break;
 
-            }
-        break;
+            case 'credits':
+                returnval = "Thank you for visiting my website! I hope this visual representation of these data structures are to your liking<br>\
+                if you have any questions do not hesitate to e-mail me at <a href='mailto:gc.consulting22@gmail.com'>gc.consulting22@gmail.com</a>";
+            break;
 
-        case "show":
-            switch(params[1]){
-                case "array":
-                    if(binarysearchT.arr.length){
-                        if(params[2] == 'true'){
-                            let s = "[";
-                            for(i =0; i<binarysearchT.arr.length; i++){
-                                let val = binarysearchT.arr[i] == undefined?'<span style="color: grey">[empty]</span>': binarysearchT.arr[i].key;
-                                s += `<span style='color: orange'>${i}</span>: ${val}${(i < binarysearchT.arr.length-1)?", ":"]"}`;
-                            };
-                            s+="<br>Where the <span style='color: orange'>rank</span> is orange";
-                            returnval = s;                  
+            case 'clear':
+                debconsole.innerHTML = "";
+            break;
+
+            case 'ls':
+            case 'pwd':
+            case 'chmod':
+            case 'su':
+            case 'cd':
+            case 'echo':
+                returnval = "You know, this is not really a linux terminal although I made it look like one :)";
+            break;
+
+            case "reset":
+                binarysearchT.reset();
+            break;
+
+            case "rank":
+                let rank = binarysearchT.rankOf(params[1]);
+                if(rank == -1){
+                    returnval = `The value '${params[1]}' is not in the tree`;
+                }
+                else{
+                    returnval = `The value '${params[1]}' is at rank ${rank}`;
+                }
+            break;
+
+            case "set":
+                switch(params[1]){
+                    case "speed":
+                        let speed = parseInt(params[2]);
+                        if(isNaN(speed) || (speed < 1 || speed > 10)){
+                            returnval = "The animation speed must be an integer between 1 and 5";
                         }
                         else{
-                            let s = "[";
-                            binarysearchT.arr.forEach((val, index, arr) => {
-                                s += `<span style='color: orange'>${index}</span>: ${val.key}${(index < arr.length-1)?", ":"]"}`;
-                            });
-                            s+="<br>Where the <span style='color: orange'>rank</span> is orange";
-                            returnval = s;
+                            const style = document.createElement('style');
+                            let seconds = 1/speed;
+                            style.innerHTML = `
+                                .element{
+                                    position: absolute;
+                                    display: block;
+                                    opacity: 0;
+                                    height: 5vh;
+                                    width: 5vh;
+                                    border-radius: 50%;
+                                    background-color: white!important;
+                                    padding-top: 0.9vh;
+                                    text-align: center;
+                                    font-weight: bolder;
+                                    font-size: 2.5vh;
+                                    border: 2px solid rgb(37, 201, 37);
+                                    transition: border ${seconds}s, opacity ${seconds}s;
+                                }
+
+                                .element.transform{
+                                    transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out;
+                                }
+
+
+                                .trasverser{
+                                    position: absolute;
+                                    font-size: 3vw;
+                                    top:0;
+                                    left: 0;
+                                    opacity: 0;
+                                    transition: opacity ${seconds/2}s, transform ${seconds}s;
+                                    z-index: 3;
+                                }
+
+                                .comparator{
+                                    position: absolute;
+                                    display: block;
+                                    opacity: 0;
+                                    height: 2vh;
+                                    width: 2vh;
+                                    font-size: 2vh;
+                                    transition: opacity ${seconds}s;
+                                    margin:0;
+                                }
+
+                                .line {
+                                    position: absolute;
+                                    height: 2px;
+                                    width: 100px; /* fixed base width */
+                                    background-color: black;
+                                    transform-origin: 0 0;
+                                    transition: transform ${seconds}s ease-out;
+                                    will-change: transform;
+                                }
+
+                                .comparatorTransform{
+                                    position: absolute;
+                                    opacity: 0;
+                                    transition: opacity ${seconds}s;
+                                } `;
+                            document.head.appendChild(style);
+                            animationSpeed = speed;
+                            returnval = `The animation speed has been now set to ${speed}x`;
                         }
-                    }
-                    else{
-                        returnval="The array is empty.";
-                    }
+                    break;
                     
-                break;
-                
-                case "help":
-                    returnval = "'show' has the following options:<br>\t-array (?boolean:show empty slots): shows the array representation of the binary search tree";
-                break;
+                    case "help":
+                        returnval = `'set speed ([1-5])' sets the animation speed`;
+                    break;
 
-                default:
-                    returnval = `'show' command has an invalid parameter. try 'show help' for help`;
-                break;
-            }
-        break;
-        case "fill-random":
-            (async function(){
-                await binarysearchT.addNewTransform(new Element(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
-            for(let i =0; i<20; i++){
-                    let random = Math.floor(Math.random()*100);
-                    if(binarysearchT.rankOf(random) == -1)
-                        await binarysearchT.addNewTransform(new Element(random));
+                    default:
+                        returnval = `The passed parameter is not valid`;
+                    break;
+
                 }
-            })();
-            
-        break;
+            break;
 
-        case "trasverse":
-            switch(params[1]){
-                case "in-order":
-                    if(binarysearchT.size > 0){
-                        if(params[2]){
-                            binarysearchT.trasversal(parseInt(params[2]), "in-order");
-
+            case "show":
+                switch(params[1]){
+                    case "array":
+                        if(binarysearchT.arr.length){
+                            if(params[2] == 'true'){
+                                let s = "[";
+                                for(i =0; i<binarysearchT.arr.length; i++){
+                                    let val = binarysearchT.arr[i] == undefined?'<span style="color: grey">[empty]</span>': binarysearchT.arr[i].key;
+                                    s += `<span style='color: orange'>${i}</span>: ${val}${(i < binarysearchT.arr.length-1)?", ":"]"}`;
+                                };
+                                s+="<br>Where the <span style='color: orange'>rank</span> is orange";
+                                returnval = s;                  
+                            }
+                            else{
+                                let s = "[";
+                                binarysearchT.arr.forEach((val, index, arr) => {
+                                    s += `<span style='color: orange'>${index}</span>: ${val.key}${(index < arr.length-1)?", ":"]"}`;
+                                });
+                                s+="<br>Where the <span style='color: orange'>rank</span> is orange";
+                                returnval = s;
+                            }
                         }
                         else{
-                            binarysearchT.trasversal(0, "in-order");
-                            //await binarysearchT.trasversal(0, "in-order").then((result) => {returnval = result});
+                            returnval="The array is empty.";
                         }
-                    }
-                    else{
-                        console.log(`Empty shit`);
-                        returnval = `The binary search tree is empty. Cannot trasverse it`;
-                    }
-                break;
-            }
-        break;
+                        
+                    break;
+                    
+                    case "help":
+                        returnval = "'show' has the following options:<br>\t-array (?boolean:show empty slots): shows the array representation of the binary search tree";
+                    break;
 
-        default:
-            returnval = `Command '${params[0]}' is not a recognized command. Type 'help' for all the available commands`;
-        break;
-    }
+                    default:
+                        returnval = `'show' command has an invalid parameter. try 'show help' for help`;
+                    break;
+                }
+            break;
+            case "fill-random":
+                (async function(){
+                    await binarysearchT.addNewTransform(new Element(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
+                for(let i =0; i<20; i++){
+                        let random = Math.floor(Math.random()*100);
+                        if(binarysearchT.rankOf(random) == -1)
+                            await binarysearchT.addNewTransform(new Element(random));
+                    }
+                })();
+                
+            break;
 
-    return returnval;
+            case "trasverse":
+                switch(params[1]){
+                    case "in-order":
+                        if(binarysearchT.size > 0){
+                            if(params[2]){
+                                binarysearchT.trasversal(parseInt(params[2]), "in-order");
+
+                            }
+                            else{
+                                binarysearchT.trasversal(0, "in-order");
+                                //await binarysearchT.trasversal(0, "in-order").then((result) => {returnval = result});
+                            }
+                        }
+                        else{
+                            console.log(`Empty shit`);
+                            returnval = `The binary search tree is empty. Cannot trasverse it`;
+                        }
+                    break;
+                }
+            break;
+
+            default:
+                returnval = `Command '${params[0]}' is not a recognized command. Type 'help' for all the available commands`;
+            break;
+        }
+
+        resolve(returnval);
+    });
 }
 
 let focus = function(){
