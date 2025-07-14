@@ -403,7 +403,7 @@ class binarySearchTree{
         arrow.innerHTML = "↑";
         document.body.append(arrow);
         arrow.offsetHeight; //reflow stuff
-        let output = document.getElementById("output");
+        //let output = document.getElementById("output");
         let original = root;
         
         let setupTrasversal = function(root){ //sets all the children to red (unvisited)
@@ -418,123 +418,124 @@ class binarySearchTree{
         setupTrasversal(root);
         
 
-        let waitArrow = async function(fn){
+        let waitArrow = async function(fn){ //first class function
             return new Promise((resolve) => {
                     arrow.ontransitionend = function(e){
                         arrow.ontransitionend = null;
                         resolve(e);
                     }
-                    fn(); //the instruction that needs to be run
+                    fn(); //the style/transition that needs to be run
                 });
         };
         
-        switch(mode){
-            case "in-order":
-                output.innerHTML = "In-order trasversal: []";
-                await waitArrow(() => {
-                    arrow.style.opacity = 1;
-                });
-                let inOrder = async function(root){
-                    let diameter = nodes[root].diameter;
+        return new Promise(async function(resolve, reject){
+            switch(mode){
+                case "in-order":
+                    //output.innerHTML = "In-order trasversal: []";
                     await waitArrow(() => {
-                        arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                        arrow.style.opacity = 1;
                     });
-                    nodes[root].borderColor = "orange"; //visited but not added into the return value
-
-                    let returnArr = [];
-                    
-                    if(nodes[root*2+1]){
-                        arrow.style.transform = `translate(${nodes[root*2+1].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+1].yTransform + diameter}vh)`;
-                        await inOrder(root*2+1).then(function(result){
-                            returnArr = result;
-                        });
-                    }
-                    arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
-                    
-                    nodes[root].borderColor = "rgb(37, 201, 37)";
-                    returnArr.push(nodes[root].key);
-                    if(output.innerHTML.length>23){
-                        let text = output.innerHTML.substring(0, output.innerHTML.length-1);
-                        output.innerHTML = text + ", " + nodes[root].key + "]";
-                    }
-                    else{
-                        output.innerHTML ="In-order trasversal: [" + nodes[root].key + "]";
-                    }
-                    
-                    
-
-                    if(nodes[root*2+2]){
-                        arrow.style.transform = `translate(${nodes[root*2+2].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+2].yTransform + diameter}vh)`;
-                        await inOrder(root*2+2).then(function(result){
-                            returnArr = [...returnArr, ...result];
-                        });
-                    }
-
-                    arrow.style.transform = `translate(${nodes[root].xTransform +diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
-                    
-
-                    if(root > original){
-                        
+                    let inOrder = async function(root){
+                        let diameter = nodes[root].diameter;
                         await waitArrow(() => {
-                            arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
                         });
+                        nodes[root].borderColor = "orange"; //visited but not added into the return value
+
+                        let returnArr = [];
+                        
+                        if(nodes[root*2+1]){
+                            arrow.style.transform = `translate(${nodes[root*2+1].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+1].yTransform + diameter}vh)`;
+                            await inOrder(root*2+1).then(function(result){
+                                returnArr = result;
+                            });
+                        }
+                        arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                        
+                        nodes[root].borderColor = "rgb(37, 201, 37)";
+                        returnArr.push(nodes[root].key);
+                        /*if(output.innerHTML.length>23){
+                            let text = output.innerHTML.substring(0, output.innerHTML.length-1);
+                            output.innerHTML = text + ", " + nodes[root].key + "]";
+                        }
+                        else{
+                            output.innerHTML ="In-order trasversal: [" + nodes[root].key + "]";
+                        }*/
+                        
+                        
+
+                        if(nodes[root*2+2]){
+                            arrow.style.transform = `translate(${nodes[root*2+2].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+2].yTransform + diameter}vh)`;
+                            await inOrder(root*2+2).then(function(result){
+                                returnArr = [...returnArr, ...result];
+                            });
+                        }
+
+                        arrow.style.transform = `translate(${nodes[root].xTransform +diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                        
+
+                        if(root > original){
+                            
+                            await waitArrow(() => {
+                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                            });
+                        }
+                        
+                        return returnArr;
                     }
+
+                    inOrder(root).then(async function(result){
+                        trasverse = result;
+                        
+                        arrow.ontransitionend = async function(){
+                            this.ontransitionend = null;
+                            this.remove();
+                        };
+                        arrow.style.opacity = 0;
+                        resolve(result);
+                    });
+
                     
-                    return returnArr;
-                }
+                break;
 
-                inOrder(root).then(async function(result){
-                    trasverse = result;
-                    
-                    arrow.ontransitionend = async function(){
-                        this.ontransitionend = null;
-                        this.remove();
-                    };
-                    arrow.style.opacity = 0;
-                });
+                case "in-order-test":
+                    /*let inOrderSimple = function(root){
+                        let returnArr = [];
+                        if(nodes[root*2+1]){
+                            returnArr = inOrderSimple(root*2+1);
+                        }
 
-                
-            break;
+                        returnArr.push(nodes[root].key);
 
-            case "in-order-test":
-                /*let inOrderSimple = function(root){
-                    let returnArr = [];
-                    if(nodes[root*2+1]){
-                        returnArr = inOrderSimple(root*2+1);
+                        if(nodes[root*2+2])
+                            returnArr = [...returnArr, ...inOrderSimple(root*2+2)];
+                        
+                        return returnArr;
                     }
 
-                    returnArr.push(nodes[root].key);
+                    trasverse = inOrderSimple(root);*/
+                break;
 
-                    if(nodes[root*2+2])
-                        returnArr = [...returnArr, ...inOrderSimple(root*2+2)];
-                    
-                    return returnArr;
-                }
+                case "pre-order-test":
+                    let preOrderSimple = function(root){
+                        let returnArr = [];
+                        returnArr.push(nodes[root].key);
 
-                trasverse = inOrderSimple(root);*/
-            break;
+                        if(nodes[root*2+1]){
+                            returnArr = [...returnArr, ...preOrderSimple(root*2+1)];
+                        }                  
 
-            case "pre-order-test":
-                let preOrderSimple = function(root){
-                    let returnArr = [];
-                    returnArr.push(nodes[root].key);
+                        if(nodes[root*2+2])
+                            returnArr = [...returnArr, ...preOrderSimple(root*2+2)];
+                        
+                        return returnArr;
+                    }
 
-                    if(nodes[root*2+1]){
-                        returnArr = [...returnArr, ...preOrderSimple(root*2+1)];
-                    }                  
-
-                    if(nodes[root*2+2])
-                        returnArr = [...returnArr, ...preOrderSimple(root*2+2)];
-                    
-                    return returnArr;
-                }
-
-                trasverse = preOrderSimple(root);
-            break;
-
-        }
-
-        return trasverse;
+                    trasverse = preOrderSimple(root);
+                break;
+            }
+        });
+        
     }
 
     onResize(){
@@ -807,6 +808,7 @@ let type = async function(e){
             
 
             case "Enter":
+                let consoleOutput = document.getElementById("console-content");
                 cursor.remove();
                 previousCommands.push(command.innerHTML);
                 point = previousCommands.length;
@@ -814,10 +816,10 @@ let type = async function(e){
                 command.innerHTML += "<br><br>" + await exec(command.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => {return returnVal});
                 let newLine = document.createElement("p");
                 newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
-                debconsole.append(newLine);
+                consoleOutput.append(newLine);
                 command = document.getElementById("text");  
-                debconsole.lastChild.append(cursor);
-                debconsole.scrollTo(0, debconsole.scrollHeight);
+                consoleOutput.lastChild.append(cursor);
+                consoleOutput.scrollTo(0, consoleOutput.scrollHeight);
             break;
         }
     }
@@ -915,7 +917,7 @@ let exec = async function(...parameters){
             break;
 
             case 'clear':
-                debconsole.innerHTML = "";
+                document.getElementById("console-content").innerHTML = "";
             break;
 
             case 'ls':
@@ -1084,16 +1086,15 @@ let exec = async function(...parameters){
                     case "in-order":
                         if(binarysearchT.size > 0){
                             if(params[2]){
-                                binarysearchT.trasversal(parseInt(params[2]), "in-order");
-
+                                returnval = await binarysearchT.trasversal(parseInt(params[2]), "in-order");
                             }
                             else{
-                                binarysearchT.trasversal(0, "in-order");
+                                returnval = await binarysearchT.trasversal(0, "in-order");
                                 //await binarysearchT.trasversal(0, "in-order").then((result) => {returnval = result});
                             }
+                            returnval = "In-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
                         }
                         else{
-                            console.log(`Empty shit`);
                             returnval = `The binary search tree is empty. Cannot trasverse it`;
                         }
                     break;
@@ -1153,6 +1154,40 @@ cursorAnimation = function(){
     }
     
 }
+let consoleHeight = debconsole.offsetHeight;
+
+let toggleMinimize = function(){
+    let output = document.getElementById("console-content");
+    let style = output.style.display;
+    let bar  = document.getElementById("console-bar");
+    
+    if(style == "block" || !style){
+        output.style.display = "none";
+        bar.style.bottom = "0";
+
+    }
+    else{
+        output.style.display = "block";
+        bar.style.bottom = consoleHeight;
+    }
+}
+
+function resizeConsole() {
+    let resizing = true;
+    let output = document.getElementById("console-content");
+    document.body.style.cursor = "ns-resize";
+
+    document.addEventListener("mousemove", function (e) {
+        if (!resizing) return;
+        consoleHeight = window.innerHeight - e.clientY;
+        output.style.height = consoleHeight - 29 + "px";
+    });
+
+    document.addEventListener("mouseup", function () {
+        document.body.style.cursor = "default";
+        resizing = false;
+    });
+};
 
 
 //All event listeners
@@ -1163,3 +1198,5 @@ debconsole.addEventListener("click", focus);
 debconsole.addEventListener("focus", focus);
 debconsole.addEventListener("contextmenu", paste);
 document.addEventListener("keydown", type);
+document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", toggleMinimize);
+document.getElementById("resizer").addEventListener("mousedown", resizeConsole);

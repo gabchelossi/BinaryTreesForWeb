@@ -11,18 +11,35 @@
 
 </head>
 <body>
-    <!-- <span class="trasverser">↑</span> -->
+    <!-- <span class="trasverser">↑</span> 
     <div id = "outputSection">
         <h1 id = "output"></h1>
-    </div>
-    <div id = "console">
+    </div>-->
+    <!-- <div id = "console">
         <div></div>
         <p>
             <b>guest@gchelossi:</b>
             <span id="text"></span>
             <span id="cursor"> █</span>
         </p>
-</div>
+    </div> --> <!-- Old console, restore if needed -->
+    
+    
+    <div id="console">
+        <div id="resizer"></div> <!-- This is the draggable resizer -->
+        <div id="console-bar">
+            <!-- <span class="console-dot red"></span>
+            <span class="console-dot yellow"></span> -->
+            <span class="console-dot yellow" id="toggle-console">-</span>
+        </div>
+        <div id="console-content">
+            <p>
+                <b>guest@gchelossi:</b>
+                <span id="text"></span>
+                <span id="cursor"> █</span>
+            </p>
+        </div>
+    </div>
     <script src="binarysearchtree.js" type="text/javascript"></script>
 </body>
 </html>
