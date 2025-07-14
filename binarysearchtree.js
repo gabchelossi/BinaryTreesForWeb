@@ -838,7 +838,7 @@ let exec = async function(...parameters){
                             for(let i=0; i<arr.length; i++){
                                 await binarysearchT.addNewTransform(new Element(arr[i]));
                             }
-                            resolve();
+                            res();
                         });
                     };
                     await insertFull();
@@ -950,6 +950,10 @@ let exec = async function(...parameters){
                         }
                         else{
                             const style = document.createElement('style');
+                            let oldStyle = document.head.getElementsByTagName('style')[0];
+                            if (oldStyle) {
+                                oldStyle.remove();
+}
                             let seconds = 1/speed;
                             style.innerHTML = `
                                 .element{
@@ -1066,11 +1070,11 @@ let exec = async function(...parameters){
             case "fill-random":
                 (async function(){
                     await binarysearchT.addNewTransform(new Element(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
-                for(let i =0; i<20; i++){
-                        let random = Math.floor(Math.random()*100);
-                        if(binarysearchT.rankOf(random) == -1)
-                            await binarysearchT.addNewTransform(new Element(random));
-                    }
+                    for(let i =0; i<20; i++){
+                            let random = Math.floor(Math.random()*100);
+                            if(binarysearchT.rankOf(random) == -1)
+                                await binarysearchT.addNewTransform(new Element(random));
+                        }
                 })();
                 
             break;
