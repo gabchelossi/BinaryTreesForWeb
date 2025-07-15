@@ -39,6 +39,18 @@ html, body{
     background-color: red;
 }
 
+.ruler{
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 1px;
+    background-color: black;
+}
+
+.middle{
+    left: calc(50vw - 0.5px);
+}
+
 .right-color{
     right: 0!important;
 }
@@ -90,11 +102,11 @@ html, body{
 }
 
 .comparatorTransform.aft{
-    left: 2.5vw;
+    left: 2.6vw;
 }
 
 .comparatorTransform.bef{
-    right: 2.5vw;
+    right: 2.6vw;
 }
 
 
@@ -135,11 +147,14 @@ html, body{
         width: 4vw;
         font-size: 2vw;
     }
-    .comparator{
-        height: 2vw;
-        width: 2vw;
-        flex-grow: 2vw;
+    .comparatorTransform.aft{
+        left: 4vw;
     }
+
+    .comparatorTransform.bef{
+        right: 4vw;
+    }
+    
 }
 
 

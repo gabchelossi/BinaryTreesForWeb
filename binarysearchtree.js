@@ -135,8 +135,8 @@ class binarySearchTree{
                 console.log(`addNew Promise Opened`);
                 if(binarysearchT.arr.length == 0){
                     const radius = e.diameter / 2;
-                    const radiusInVw = (radius * window.innerHeight) / window.innerWidth;
-                    const xCenter = 47.5 - radiusInVw;
+                    const radiusInVW = (radius * window.innerHeight) / window.innerWidth;
+                    const xCenter = 50 - radiusInVW;
                     await e.translate(`${xCenter}vw`, `1vh`, true);
                     //await e.translate(`${(e.diameter/2 + binarysearchT.width)/2}vw`, `1vh`, true);
                     await e.opac(1, true);
@@ -147,7 +147,7 @@ class binarySearchTree{
                 else{
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
                     let rank = 0;
-                    await e.translate((binarysearchT.width/2 + (binarysearchT.arr[0].diameter)) + "vw", `1vh`, true);
+                    await e.translate((50 + (binarysearchT.arr[0].diameter/2)) + "vw", `1vh`, true);
                     await e.borderCol("orange", true);
                     await e.opac(1, true);            
                     await binarysearchT.compareTransform(e, rank);
@@ -219,11 +219,12 @@ class binarySearchTree{
             console.log(`prepareNextCompare Promise opened`);
             let parent= binarysearchT.arr[rank];
             //let parentX = parseInt(parent.xTransform);
+            const diameterInVW = (e.diameter * window.innerHeight) / window.innerWidth;
             let coordinates = {}
             if(parent.xTransform>50)
-                coordinates.x = parent.xTransform - parent.diameter*3/4 + "vw";
+                coordinates.x = parent.xTransform - 2* diameterInVW + "vw";
             else{
-                coordinates.x = parent.xTransform + parent.diameter*3/4  + "vw";
+                coordinates.x = parent.xTransform + 2* diameterInVW  + "vw";
             }
             coordinates.y = parent.yTransform + "vh";
             await e.translate(coordinates.x, coordinates.y, true);
@@ -244,14 +245,12 @@ class binarySearchTree{
             let parentRank = Math.floor((rank-1)/2);
             let parent = nodes[parentRank];
             let translateInfo = {};
+            let offset = (95)/2**(depth+1);
             if(parent.key > e.key){
-                let offset = (binarysearchT.width+5)/2**(depth+1);
                 translateInfo.x = parent.xTransform - offset + "vw";
             }
             else{
-                let offset = (binarysearchT.width+12.5)/2**(depth+1);
                 translateInfo.x = parent.xTransform + offset + "vw";
-
             }
             translateInfo.y = parent.yTransform + Math.sin(Math.PI/4)*10+"vh";
             await e.translate(translateInfo.x, translateInfo.y, true);
