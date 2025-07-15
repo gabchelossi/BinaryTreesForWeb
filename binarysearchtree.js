@@ -84,6 +84,20 @@ class binarySearchTree{
         return returnArr;
     }
 
+    postOrder(root){
+        let nodes = this.arr;
+        let returnArr = [];
+        if(nodes[root*2+1])
+            returnArr = [...this.postOrder(root*2+1)];
+        
+        if(nodes[root*2+2])
+            returnArr = [...returnArr, ...this.postOrder(root*2+2)];
+
+        returnArr.push(nodes[root].key);        
+
+        return returnArr;
+    }
+
     async addNewTransform(e){
         e.dom.classList.add("transform");
         e.dom.offsetHeight; //important for reflow
@@ -418,65 +432,53 @@ class binarySearchTree{
         setupTrasversal(root);
         
 
-        let waitArrow = async function(fn){ //first class function
+        let waitTransition = async function(dom, fn){ //first class function
             return new Promise((resolve) => {
-                    arrow.ontransitionend = function(e){
-                        arrow.ontransitionend = null;
-                        resolve(e);
-                    }
-                    fn(); //the style/transition that needs to be run
-                });
+                dom.ontransitionend = function(e){
+                    dom.ontransitionend = null;
+                    resolve(e);
+                }
+                fn(); //the style/transition that needs to be run
+            });
         };
+
+        await waitTransition(arrow, () => {
+            arrow.style.opacity = 1;
+        });
         
         return new Promise(async function(resolve, reject){
             switch(mode){
                 case "in-order":
                     //output.innerHTML = "In-order trasversal: []";
-                    await waitArrow(() => {
-                        arrow.style.opacity = 1;
-                    });
                     let inOrder = async function(root){
                         let diameter = nodes[root].diameter;
-                        await waitArrow(() => {
+                        await waitTransition(arrow, () => {
                             arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
                         });
-                        nodes[root].borderColor = "orange"; //visited but not added into the return value
+
+                        await nodes[root].borderCol("orange", true); //visited but not added into the return value
 
                         let returnArr = [];
                         
                         if(nodes[root*2+1]){
-                            arrow.style.transform = `translate(${nodes[root*2+1].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+1].yTransform + diameter}vh)`;
                             await inOrder(root*2+1).then(function(result){
                                 returnArr = result;
                             });
                         }
-                        arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
-                        
-                        nodes[root].borderColor = "rgb(37, 201, 37)";
+                        await nodes[root].borderCol("rgb(37, 201, 37)", true);
+
                         returnArr.push(nodes[root].key);
-                        /*if(output.innerHTML.length>23){
-                            let text = output.innerHTML.substring(0, output.innerHTML.length-1);
-                            output.innerHTML = text + ", " + nodes[root].key + "]";
-                        }
-                        else{
-                            output.innerHTML ="In-order trasversal: [" + nodes[root].key + "]";
-                        }*/
-                        
-                        
 
                         if(nodes[root*2+2]){
-                            arrow.style.transform = `translate(${nodes[root*2+2].xTransform + diameter/2 - 1.5}vw, ${nodes[root*2+2].yTransform + diameter}vh)`;
                             await inOrder(root*2+2).then(function(result){
                                 returnArr = [...returnArr, ...result];
                             });
                         }
 
-                        arrow.style.transform = `translate(${nodes[root].xTransform +diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
-                        
-
-                        if(root > original){
+                        if(root > original){ //this is needed for the arrow to go back to the parent that called this instance of the stack
+                            //this is to emphasize that the parent will call another instance in case there is a right child to visit
                             
-                            await waitArrow(() => {
+                            await waitTransition(arrow, () => {
                                 arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
                             });
                         }
@@ -484,7 +486,7 @@ class binarySearchTree{
                         return returnArr;
                     }
 
-                    inOrder(root).then(async function(result){
+                    inOrder(root).then(function(result){ //call the function and handle the result
                         trasverse = result;
                         
                         arrow.ontransitionend = async function(){
@@ -498,41 +500,102 @@ class binarySearchTree{
                     
                 break;
 
-                case "in-order-test":
-                    /*let inOrderSimple = function(root){
-                        let returnArr = [];
+                case "pre-order":
+                    let preOrder = async function(root){
+                        let diameter = nodes[root].diameter;
+                        await waitTransition(arrow, () => {
+                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                        });
+                        await nodes[root].borderCol("orange", true); //visited but not added into the return value
+                        await nodes[root].borderCol("rgb(37, 201, 37)", true);
+                        let returnArr = [nodes[root].key];
                         if(nodes[root*2+1]){
-                            returnArr = inOrderSimple(root*2+1);
+                            await preOrder(root*2+1).then(function(result){
+                                returnArr = [...returnArr, ...result];
+                            });
+                        }
+                        if(nodes[root*2+2]){
+                            await preOrder(root*2+2).then(function(result){
+                                returnArr = [...returnArr, ...result];
+                            });
+                        }
+                        if(root > original){ //this is needed for the arrow to go back to the parent that called this instance of the stack
+                            //this is to emphasize that the parent will call another instance in case there is a right child to visit
+                            
+                            await waitTransition(arrow, () => {
+                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                            });
+                        }
+                        
+                        return returnArr;
+                    }
+                    preOrder(root).then(function(result){ //call the function and handle the result
+                        trasverse = result;
+                        
+                        arrow.ontransitionend = async function(){
+                            this.ontransitionend = null;
+                            this.remove();
+                        };
+                        arrow.style.opacity = 0;
+                        resolve(result);
+                    });
+                break;
+
+                case "post-order":
+                    let postOrder = async function(root){
+                        let diameter = nodes[root].diameter;
+                        let returnArr = [];
+                        await waitTransition(arrow, () => {
+                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                        });
+                        await nodes[root].borderCol("orange", true); //visited but not added into the return value
+                        if(nodes[root*2+1]){
+                            await postOrder(root*2+1).then(function(result){
+                                returnArr = [...result];
+                            });
+                        }
+                        if(nodes[root*2+2]){
+                            await postOrder(root*2+2).then(function(result){
+                                returnArr = [...returnArr, ...result];
+                            });
+                        }
+                        await nodes[root].borderCol("rgb(37, 201, 37)", true);
+                        returnArr.push(nodes[root].key);
+
+                        if(root > original){ //this is needed for the arrow to go back to the parent that called this instance of the stack
+                            //this is to emphasize that the parent will call another instance in case there is a right child to visit
+                            await waitTransition(arrow, () => {
+                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                            });
                         }
 
-                        returnArr.push(nodes[root].key);
-
-                        if(nodes[root*2+2])
-                            returnArr = [...returnArr, ...inOrderSimple(root*2+2)];
-                        
                         return returnArr;
                     }
 
-                    trasverse = inOrderSimple(root);*/
-                break;
-
-                case "pre-order-test":
-                    let preOrderSimple = function(root){
-                        let returnArr = [];
-                        returnArr.push(nodes[root].key);
-
-                        if(nodes[root*2+1]){
-                            returnArr = [...returnArr, ...preOrderSimple(root*2+1)];
-                        }                  
-
-                        if(nodes[root*2+2])
-                            returnArr = [...returnArr, ...preOrderSimple(root*2+2)];
+                    postOrder(root).then(function(result){ //call the function and handle the result
+                        trasverse = result;
                         
-                        return returnArr;
-                    }
-
-                    trasverse = preOrderSimple(root);
+                        arrow.ontransitionend = async function(){
+                            this.ontransitionend = null;
+                            this.remove();
+                        };
+                        arrow.style.opacity = 0;
+                        resolve(result);
+                    });
                 break;
+                /*postOrder(root){
+                    let nodes = this.arr;
+                    let returnArr = [];
+                    if(nodes[root*2+1])
+                        returnArr = [...this.postOrder(root*2+1)];
+                    
+                    if(nodes[root*2+2])
+                        returnArr = [...returnArr, ...this.postOrder(root*2+2)];
+
+                    returnArr.push(nodes[root].key);        
+
+                    return returnArr;
+                }*/
             }
         });
         
@@ -948,7 +1011,7 @@ let exec = async function(...parameters){
                     case "speed":
                         let speed = parseInt(params[2]);
                         if(isNaN(speed) || (speed < 1 || speed > 10)){
-                            returnval = "The animation speed must be an integer between 1 and 5";
+                            returnval = "The animation speed must be an integer between 1 and 10";
                         }
                         else{
                             const style = document.createElement('style');
@@ -1022,7 +1085,7 @@ let exec = async function(...parameters){
                     break;
                     
                     case "help":
-                        returnval = `'set speed ([1-5])' sets the animation speed`;
+                        returnval = `'set speed ([1-10])' sets the animation speed`;
                     break;
 
                     default:
@@ -1082,22 +1145,49 @@ let exec = async function(...parameters){
             break;
 
             case "trasverse":
-                switch(params[1]){
-                    case "in-order":
-                        if(binarysearchT.size > 0){
-                            if(params[2]){
+                let trasverseType = params[1].toLowerCase();
+                if(binarysearchT.size > 0){
+                    switch(trasverseType){
+                        case "in-order":
+                        case "inorder":
+                            if(params[2]){ //if the trasversal starts from a certain key
                                 returnval = await binarysearchT.trasversal(parseInt(params[2]), "in-order");
                             }
                             else{
                                 returnval = await binarysearchT.trasversal(0, "in-order");
-                                //await binarysearchT.trasversal(0, "in-order").then((result) => {returnval = result});
                             }
                             returnval = "In-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
-                        }
-                        else{
-                            returnval = `The binary search tree is empty. Cannot trasverse it`;
-                        }
-                    break;
+                        break;
+                        case "pre-order":
+                        case "preorder":
+                            if(params[2]){ //if the trasversal starts from a certain key
+                                returnval = await binarysearchT.trasversal(parseInt(params[2]), "pre-order");
+                            }
+                            else{
+                                returnval = await binarysearchT.trasversal(0, "pre-order");
+                            }
+                            returnval = "Pre-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
+                        break;
+                        
+                        case "post-order":
+                        case "postorder":
+                            if(params[2]){ //if the trasversal starts from a certain key
+                                returnval = await binarysearchT.trasversal(parseInt(params[2]), "post-order");
+                            }
+                            else{
+                                returnval = await binarysearchT.trasversal(0, "post-order");
+                            }
+                            returnval = "Post-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
+                        break;
+
+                        default:
+                            returnval = `The parameter given '${params[1]}' is not a valid trasversal mode.`;
+                        break;
+
+                    }
+                }
+                else{
+                    returnval = `The binary search tree is empty. Cannot trasverse it`;
                 }
             break;
 
@@ -1156,37 +1246,44 @@ cursorAnimation = function(){
 }
 let consoleHeight = debconsole.offsetHeight;
 
-let toggleMinimize = function(){
+let minimize = function(){
     let output = document.getElementById("console-content");
-    let style = output.style.display;
     let bar  = document.getElementById("console-bar");
     
-    if(style == "block" || !style){
-        output.style.display = "none";
-        bar.style.bottom = "0";
+    output.style.display = "none";
+    bar.style.bottom = "0";
+}
 
-    }
-    else{
-        output.style.display = "block";
-        bar.style.bottom = consoleHeight;
-    }
+let maximize = function(){
+    let output = document.getElementById("console-content");
+    let bar  = document.getElementById("console-bar");
+
+    output.style.display = "block";
+    bar.style.bottom = consoleHeight;
+
 }
 
 function resizeConsole() {
-    let resizing = true;
     let output = document.getElementById("console-content");
     document.body.style.cursor = "ns-resize";
+    if(output.style.display == "none"){ //resize even when minimized
+        output.style.display = "block";
+        output.style.height = 0;
+    }
+    
+    document.onmousemove = function(e){
+        if(e.clientY > 30){
+            consoleHeight = window.innerHeight - e.clientY;
+            output.style.height = consoleHeight - 29 + "px";
+        }
+        
+    }
 
-    document.addEventListener("mousemove", function (e) {
-        if (!resizing) return;
-        consoleHeight = window.innerHeight - e.clientY;
-        output.style.height = consoleHeight - 29 + "px";
-    });
-
-    document.addEventListener("mouseup", function () {
+    document.onmouseup = function(){
         document.body.style.cursor = "default";
-        resizing = false;
-    });
+        document.onmousemove = null; //so it does not call these functions unless the user clicks again on the resizer
+        document.onmouseup = null;
+    }
 };
 
 
@@ -1198,5 +1295,6 @@ debconsole.addEventListener("click", focus);
 debconsole.addEventListener("focus", focus);
 debconsole.addEventListener("contextmenu", paste);
 document.addEventListener("keydown", type);
-document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", toggleMinimize);
+document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", minimize);
+document.getElementsByClassName("console-dot green")[0].addEventListener("click", maximize);
 document.getElementById("resizer").addEventListener("mousedown", resizeConsole);

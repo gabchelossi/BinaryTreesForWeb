@@ -15,8 +15,9 @@ html, body{
     width: 5vh;
     border-radius: 50%;
     background-color: white!important;
-    padding-top: 0.9vh;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: bolder;
     font-size: 2.5vh;
     border: 2px solid rgb(37, 201, 37);
@@ -131,6 +132,7 @@ html, body{
     font-weight: 500;
     font-style: normal;
     color: white;
+    z-index: 4;
 }
 
 #console-content{
