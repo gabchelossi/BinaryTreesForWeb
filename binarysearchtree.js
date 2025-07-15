@@ -98,6 +98,32 @@ class binarySearchTree{
         return returnArr;
     }
 
+    addNew(e){
+        e.dom.classList.add('no-animation');
+        if(binarysearchT.rankOf(e.key) > -1){
+            return false;
+        }
+        else{
+            if(binarysearchT.arr.length == 0){
+                e.translate(`${(e.diameter/2+binarysearchT.width)/2}vw`, `1vh`);
+                e.opac(1);
+                binarysearchT.arr.push(e);
+                e.dom.title = "Rank: 0";
+            }
+            else{
+                //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
+                let rank = 0;
+                if(e.key < binarysearchT.arr[rank]){
+                    rank = rank*2+1;
+                }
+                else{
+                    rank = rank*2+2;
+                }
+            }
+            return true;
+        }
+    }
+
     async addNewTransform(e){
         e.dom.classList.add("transform");
         e.dom.offsetHeight; //important for reflow
@@ -108,7 +134,11 @@ class binarySearchTree{
             else{
                 console.log(`addNew Promise Opened`);
                 if(binarysearchT.arr.length == 0){
-                    await e.translate(`${(e.diameter/2+binarysearchT.width)/2}vw`, `1vh`, true);
+                    const radius = e.diameter / 2;
+                    const radiusInVw = (radius * window.innerHeight) / window.innerWidth;
+                    const xCenter = 47.5 - radiusInVw;
+                    await e.translate(`${xCenter}vw`, `1vh`, true);
+                    //await e.translate(`${(e.diameter/2 + binarysearchT.width)/2}vw`, `1vh`, true);
                     await e.opac(1, true);
                     binarysearchT.arr.push(e);
                     e.dom.title = "Rank: 0";
@@ -118,7 +148,7 @@ class binarySearchTree{
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
                     let rank = 0;
                     await e.translate((binarysearchT.width/2 + (binarysearchT.arr[0].diameter)) + "vw", `1vh`, true);
-                    e.borderCol("orange");
+                    await e.borderCol("orange", true);
                     await e.opac(1, true);            
                     await binarysearchT.compareTransform(e, rank);
                 }

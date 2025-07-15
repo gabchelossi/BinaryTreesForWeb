@@ -24,6 +24,29 @@ html, body{
     transition: border 1s, opacity 1s;
 }
 
+.no-animation{
+    transition: none!important; 
+}
+
+.five{
+    width: 5vw;
+    height: 100%;
+}
+
+.left-color, .right-color{
+    position: absolute;
+    top: 0;
+    background-color: red;
+}
+
+.right-color{
+    right: 0!important;
+}
+.left-color{
+    left: 0!important;
+}
+
+
 .element.transform{
     transition: border 1s, opacity 1s, transform 1s ease-in-out;
 }
