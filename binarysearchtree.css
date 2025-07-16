@@ -5,14 +5,17 @@
 html, body{
     background-color: #DEDEDE;
     height: 99%;
+    overflow: hidden;
 }
 
 .element{
+    cursor: help;
     position: absolute;
-    display: block;
+    top:0;
+    left:0;
     opacity: 0;
-    height: 5vh;
-    width: 5vh;
+    height: 2.5vw;
+    width: 2.5vw;
     border-radius: 50%;
     background-color: white!important;
     display: flex;

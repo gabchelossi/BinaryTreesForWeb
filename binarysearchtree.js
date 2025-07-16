@@ -106,20 +106,44 @@ class binarySearchTree{
         else{
             if(binarysearchT.arr.length == 0){
                 e.translate(`${(e.diameter/2+binarysearchT.width)/2}vw`, `1vh`);
-                e.opac(1);
                 binarysearchT.arr.push(e);
                 e.dom.title = "Rank: 0";
             }
             else{
                 //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
                 let rank = 0;
-                if(e.key < binarysearchT.arr[rank]){
-                    rank = rank*2+1;
+                let nodes = this.arr;
+                while(binarysearchT.arr[rank]){
+                    if(e.key < binarysearchT.arr[rank]){
+                        rank = rank*2+1;
+                    }
+                    else{
+                        rank = rank*2+2;
+                    }
+                }
+                let parentRank = Math.floor((rank-1)/2);
+                let parent = nodes[parentRank];
+                let translateInfo = {};
+                let depth = Math.floor(Math.log2(rank+1));
+                let offset = (98)/2**(depth+1);
+                if(parent.key > e.key){
+                    translateInfo.x = parent.xTransform - offset + "vw";
                 }
                 else{
-                    rank = rank*2+2;
+                    translateInfo.x = parent.xTransform + offset + "vw";
                 }
+                translateInfo.y = parent.yTransform + Math.sin(Math.PI/4)*10+"vh";
+                e.translate(translateInfo.x, translateInfo.y);
+                e.borderCol("rgb(37, 201, 37)");
+                e.dom.title = `Rank: ${rank}`;
+                binarysearchT.arr[rank] = e; 
+                //console.log(`${e} and ${parent}`)
+                //console.log(`${rank} and ${parentRank}`)
+                binarysearchT.connectTransform(rank, parentRank);
+                e.removeClass("transform");
+                
             }
+            e.opac(1);
             return true;
         }
     }
@@ -134,9 +158,7 @@ class binarySearchTree{
             else{
                 console.log(`addNew Promise Opened`);
                 if(binarysearchT.arr.length == 0){
-                    const radius = e.diameter / 2;
-                    const radiusInVW = (radius * window.innerHeight) / window.innerWidth;
-                    const xCenter = 50 - radiusInVW;
+                    const xCenter = 50 - e.diameter/2;
                     await e.translate(`${xCenter}vw`, `1vh`, true);
                     //await e.translate(`${(e.diameter/2 + binarysearchT.width)/2}vw`, `1vh`, true);
                     await e.opac(1, true);
@@ -147,9 +169,9 @@ class binarySearchTree{
                 else{
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
                     let rank = 0;
-                    await e.translate((50 + (binarysearchT.arr[0].diameter/2)) + "vw", `1vh`, true);
-                    await e.borderCol("orange", true);
-                    await e.opac(1, true);            
+                    await e.translate((50 + (binarysearchT.arr[0].diameter)) + "vw", `1vh`, true);
+                    await e.opac(1, true);    
+                    await e.borderCol("orange", true);        
                     await binarysearchT.compareTransform(e, rank);
                 }
                 console.log(`addNew Promise Resolved`);
@@ -219,12 +241,11 @@ class binarySearchTree{
             console.log(`prepareNextCompare Promise opened`);
             let parent= binarysearchT.arr[rank];
             //let parentX = parseInt(parent.xTransform);
-            const diameterInVW = (e.diameter * window.innerHeight) / window.innerWidth;
             let coordinates = {}
             if(parent.xTransform>50)
-                coordinates.x = parent.xTransform - 2* diameterInVW + "vw";
+                coordinates.x = parent.xTransform - 2* e.diameter + "vw";
             else{
-                coordinates.x = parent.xTransform + 2* diameterInVW  + "vw";
+                coordinates.x = parent.xTransform + 2* e.diameter  + "vw";
             }
             coordinates.y = parent.yTransform + "vh";
             await e.translate(coordinates.x, coordinates.y, true);
@@ -245,7 +266,7 @@ class binarySearchTree{
             let parentRank = Math.floor((rank-1)/2);
             let parent = nodes[parentRank];
             let translateInfo = {};
-            let offset = (95)/2**(depth+1);
+            let offset = (98)/2**(depth+1);
             if(parent.key > e.key){
                 translateInfo.x = parent.xTransform - offset + "vw";
             }
@@ -612,19 +633,6 @@ class binarySearchTree{
                         resolve(result);
                     });
                 break;
-                /*postOrder(root){
-                    let nodes = this.arr;
-                    let returnArr = [];
-                    if(nodes[root*2+1])
-                        returnArr = [...this.postOrder(root*2+1)];
-                    
-                    if(nodes[root*2+2])
-                        returnArr = [...returnArr, ...this.postOrder(root*2+2)];
-
-                    returnArr.push(nodes[root].key);        
-
-                    return returnArr;
-                }*/
             }
         });
         
@@ -644,6 +652,7 @@ class Connection{
     constructor(child, parent){
         this.dom = document.createElement("div");
         this.dom.classList.add("line");
+        console.log(`${child} and ${parent}`)
         this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
         this.child = child;
         this.parent = parent;
@@ -668,7 +677,7 @@ class Connection{
         let angle = Math.atan2(dy, dx);
         let lengthInPx = Math.sqrt(dx ** 2 + dy ** 2);
         this.l = lengthInPx + "px";
-        let offsetXpx = (parent.diameter * (window.innerHeight / 100))/2;
+        let offsetXpx = (parent.diameter * (window.innerWidth / 100))/2;
         let offsetYpx = (parent.diameter * (window.innerHeight / 100))/2;
         let x = 100*(parentXpx + offsetXpx)/window.innerWidth;
         let y = 100*(parentYpx + offsetYpx)/window.innerHeight;
@@ -768,10 +777,10 @@ class Element{
         return parseFloat(transform.match(/\d+(\.\d+)?/g)[1]);
     }
 
-    get diameter(){ //the diameter is based on the height of the screen
-        const vh = parseFloat(window.innerHeight / 100);
+    get diameter(){ //the diameter is based on the width of the screen
+        const vw = parseFloat(window.innerWidth / 100);
         const computed = parseFloat(window.getComputedStyle(this.dom).width);
-        return (computed/vh);
+        return (computed/vw);
     }
 
     get comparat(){
@@ -1049,17 +1058,21 @@ let exec = async function(...parameters){
                                 oldStyle.remove();
 }
                             let seconds = 1/speed;
+                            let diameter = new Element(0).diameter;
                             style.innerHTML = `
                                 .element{
+                                    cursor: help;
                                     position: absolute;
-                                    display: block;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    top:0;
+                                    left:0;
                                     opacity: 0;
-                                    height: 5vh;
-                                    width: 5vh;
+                                    height: ${diameter}vw;
+                                    width: ${diameter}vw;
                                     border-radius: 50%;
                                     background-color: white!important;
-                                    padding-top: 0.9vh;
-                                    text-align: center;
                                     font-weight: bolder;
                                     font-size: 2.5vh;
                                     border: 2px solid rgb(37, 201, 37);
