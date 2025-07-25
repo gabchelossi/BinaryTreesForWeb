@@ -7,6 +7,7 @@ let focused = true;
 let previousCommands = [];
 let point = 0;
 let animationSpeed = 1;
+let animation = true;
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -105,16 +106,18 @@ class binarySearchTree{
         }
         else{
             if(binarysearchT.arr.length == 0){
-                e.translate(`${(e.diameter/2+binarysearchT.width)/2}vw`, `1vh`);
+                const xCenter = 50 - e.diameter/2;
+                e.translate(`${xCenter}vw`, `1vh`, true);
                 binarysearchT.arr.push(e);
                 e.dom.title = "Rank: 0";
+                e.removeClass("transform");
             }
             else{
                 //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
                 let rank = 0;
                 let nodes = this.arr;
                 while(binarysearchT.arr[rank]){
-                    if(e.key < binarysearchT.arr[rank]){
+                    if(e.key < binarysearchT.arr[rank].key){
                         rank = rank*2+1;
                     }
                     else{
@@ -144,7 +147,7 @@ class binarySearchTree{
                 
             }
             e.opac(1);
-            return true;
+            return ++this.size;
         }
     }
 
@@ -554,7 +557,7 @@ class binarySearchTree{
                     let preOrder = async function(root){
                         let diameter = nodes[root].diameter;
                         await waitTransition(arrow, () => {
-                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
                         });
                         await nodes[root].borderCol("orange", true); //visited but not added into the return value
                         await nodes[root].borderCol("rgb(37, 201, 37)", true);
@@ -573,7 +576,7 @@ class binarySearchTree{
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
                             
                             await waitTransition(arrow, () => {
-                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
                             });
                         }
                         
@@ -656,7 +659,7 @@ class Connection{
         this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
         this.child = child;
         this.parent = parent;
-        this.draw(true);
+        this.draw(true, animation);
         this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
             this.dom.style.transition = "transform 0s";
             this.dom.ontransitionend = null;
@@ -664,7 +667,7 @@ class Connection{
         };
     }
 
-    draw(appendToBody){
+    draw(appendToBody, animation){
         this.transform = ``;
         let parent = this.parent;
         let child = this.child;
@@ -939,7 +942,10 @@ let exec = async function(...parameters){
                         return new Promise(async function(res){
                             returnval = `Succesfully inserted ${arr} into the binary search tree`;
                             for(let i=0; i<arr.length; i++){
-                                await binarysearchT.addNewTransform(new Element(arr[i]));
+                                if(animation)
+                                    await binarysearchT.addNewTransform(new Element(arr[i]));
+                                else
+                                    binarysearchT.addNew(new Element(arr[i]));
                             }
                             res();
                         });
@@ -959,7 +965,11 @@ let exec = async function(...parameters){
                             returnval = `Succesfully inserted ${vals} into the binary search tree`;
                             for(let i=0; i<vals.length; i++){
                                 try{
-                                    await binarysearchT.addNewTransform(new Element(vals[i]));  
+                                    if(animation)
+                                        await binarysearchT.addNewTransform(new Element(vals[i]));
+                                    else{
+                                        binarysearchT.addNew(new Element(vals[i]));
+                                    }
                                 }
                                 catch(e){
                                     let index = vals.indexOf(parseInt(e.substring(1)));
@@ -978,7 +988,10 @@ let exec = async function(...parameters){
                     else{
                         await (async function(){
                             try{
-                                await binarysearchT.addNewTransform(new Element(parseInt(params[1])));
+                                if(animation)
+                                    await binarysearchT.addNewTransform(new Element(parseInt(params[1])));
+                                else
+                                    binarysearchT.addNew(new Element(parseInt(params[1])));
                                 returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
                             }
                             catch(e){
@@ -1046,84 +1059,106 @@ let exec = async function(...parameters){
 
             case "set":
                 switch(params[1]){
-                    case "speed":
-                        let speed = parseInt(params[2]);
-                        if(isNaN(speed) || (speed < 1 || speed > 10)){
-                            returnval = "The animation speed must be an integer between 1 and 10";
+                    case "animation":
+                        if(params[2] == "speed"){
+                            let speed = parseInt(params[3]);
+                            if(isNaN(speed) || (speed < 1 || speed > 10)){
+                                returnval = "The animation speed must be an integer between 1 and 10";
+                            }
+                            else{
+                                const style = document.createElement('style');
+                                let oldStyle = document.head.getElementsByTagName('style')[0];
+                                if (oldStyle) {
+                                    oldStyle.remove();
+                                }
+                                let seconds = 1/speed;
+                                let diameter = new Element(0).diameter;
+                                style.innerHTML = `
+                                    .element{
+                                        cursor: help;
+                                        position: absolute;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        top:0;
+                                        left:0;
+                                        opacity: 0;
+                                        height: ${diameter}vw;
+                                        width: ${diameter}vw;
+                                        border-radius: 50%;
+                                        background-color: white!important;
+                                        font-weight: bolder;
+                                        font-size: 2.5vh;
+                                        border: 2px solid rgb(37, 201, 37);
+                                        transition: border ${seconds}s, opacity ${seconds}s;
+                                    }
+
+                                    .element.transform{
+                                        transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out;
+                                    }
+
+
+                                    .trasverser{
+                                        position: absolute;
+                                        font-size: 3vw;
+                                        top:0;
+                                        left: 0;
+                                        opacity: 0;
+                                        transition: opacity ${seconds/2}s, transform ${seconds}s;
+                                        z-index: 3;
+                                    }
+
+                                    .comparator{
+                                        position: absolute;
+                                        display: block;
+                                        opacity: 0;
+                                        height: 2vh;
+                                        width: 2vh;
+                                        font-size: 2vh;
+                                        transition: opacity ${seconds}s;
+                                        margin:0;
+                                    }
+
+                                    .line {
+                                        position: absolute;
+                                        height: 2px;
+                                        width: 100px; /* fixed base width */
+                                        background-color: black;
+                                        transform-origin: 0 0;
+                                        transition: transform ${seconds}s ease-out;
+                                        will-change: transform;
+                                    }
+
+                                    .comparatorTransform{
+                                        position: absolute;
+                                        opacity: 0;
+                                        transition: opacity ${seconds}s;
+                                    } `;
+                                document.head.appendChild(style);
+                                animationSpeed = speed;
+                                returnval = `The animation speed has been now set to ${speed}x`;
+                            }
                         }
                         else{
-                            const style = document.createElement('style');
-                            let oldStyle = document.head.getElementsByTagName('style')[0];
-                            if (oldStyle) {
-                                oldStyle.remove();
-}
-                            let seconds = 1/speed;
-                            let diameter = new Element(0).diameter;
-                            style.innerHTML = `
-                                .element{
-                                    cursor: help;
-                                    position: absolute;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    top:0;
-                                    left:0;
-                                    opacity: 0;
-                                    height: ${diameter}vw;
-                                    width: ${diameter}vw;
-                                    border-radius: 50%;
-                                    background-color: white!important;
-                                    font-weight: bolder;
-                                    font-size: 2.5vh;
-                                    border: 2px solid rgb(37, 201, 37);
-                                    transition: border ${seconds}s, opacity ${seconds}s;
+                            if(params[2] == "off"){
+                                animation = false;
+                                returnval = `Animations have been turned off.`;
+                            }
+                            else{
+                                if(params[2] == "on"){
+                                    animation = true;
+                                    let noAnimationElements = [...document.getElementsByClassName("no-animation")];
+                                    noAnimationElements.forEach((e) =>{
+                                        e.classList.remove("no-animation");
+                                    });
+                                    returnval = `Animations have been turned on.`;
                                 }
-
-                                .element.transform{
-                                    transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out;
+                                else{
+                                    returnval = `Invalid animation parameter ${params[2]}`;
                                 }
-
-
-                                .trasverser{
-                                    position: absolute;
-                                    font-size: 3vw;
-                                    top:0;
-                                    left: 0;
-                                    opacity: 0;
-                                    transition: opacity ${seconds/2}s, transform ${seconds}s;
-                                    z-index: 3;
-                                }
-
-                                .comparator{
-                                    position: absolute;
-                                    display: block;
-                                    opacity: 0;
-                                    height: 2vh;
-                                    width: 2vh;
-                                    font-size: 2vh;
-                                    transition: opacity ${seconds}s;
-                                    margin:0;
-                                }
-
-                                .line {
-                                    position: absolute;
-                                    height: 2px;
-                                    width: 100px; /* fixed base width */
-                                    background-color: black;
-                                    transform-origin: 0 0;
-                                    transition: transform ${seconds}s ease-out;
-                                    will-change: transform;
-                                }
-
-                                .comparatorTransform{
-                                    position: absolute;
-                                    opacity: 0;
-                                    transition: opacity ${seconds}s;
-                                } `;
-                            document.head.appendChild(style);
-                            animationSpeed = speed;
-                            returnval = `The animation speed has been now set to ${speed}x`;
+                            }
                         }
+                        
                     break;
                     
                     case "help":
