@@ -464,7 +464,7 @@ class binarySearchTree{
 
     async trasversal(root, mode){
         let nodes = binarysearchT.arr;
-        let trasverse = [];
+        //let trasverse = [];
         let arrow = document.createElement("span");
         arrow.classList.add("trasverser");
         arrow.innerHTML = "↑";
@@ -498,15 +498,25 @@ class binarySearchTree{
         await waitTransition(arrow, () => {
             arrow.style.opacity = 1;
         });
+
+        const vwToPx = window.innerWidth / 100;
+        const vhToPx = window.innerHeight / 100;
+        const diameterVw = nodes[0].diameter;
+        const diameterPx =  diameterVw * vwToPx;
+        const arrowWidthPx = arrow.getBoundingClientRect().width;
+        const arrowOffsetVw = (arrowWidthPx / window.innerWidth) * 50; 
+        //const arrowOffsetVw = 0.75;     
         
         return new Promise(async function(resolve, reject){
             switch(mode){
                 case "in-order":
-                    //output.innerHTML = "In-order trasversal: []";
                     let inOrder = async function(root){
-                        let diameter = nodes[root].diameter;
+                        let target = nodes[root];
+                        const centerXvw = target.xTransform + diameterVw / 2;
+                        const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
+                        
                         await waitTransition(arrow, () => {
-                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                            arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
 
                         await nodes[root].borderCol("orange", true); //visited but not added into the return value
@@ -532,7 +542,7 @@ class binarySearchTree{
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
                             
                             await waitTransition(arrow, () => {
-                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameterVw/2 - arrowOffsetVw}vw, ${nodes[Math.floor((root-1)/2)].yTransform + (diameterPx / vhToPx)}vh)`;
                             });
                         }
                         
@@ -555,10 +565,15 @@ class binarySearchTree{
 
                 case "pre-order":
                     let preOrder = async function(root){
-                        let diameter = nodes[root].diameter;
+                        let target = nodes[root];
+                        const centerXvw = target.xTransform + diameterVw / 2;
+                        const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
+                        
                         await waitTransition(arrow, () => {
-                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                            arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
+                            //arrow.style.transform = `translate(${target.xTransform + diameterVw/2 - 1.5}vw, ${target.yTransform + diameter}vh)`;
                         });
+
                         await nodes[root].borderCol("orange", true); //visited but not added into the return value
                         await nodes[root].borderCol("rgb(37, 201, 37)", true);
                         let returnArr = [nodes[root].key];
@@ -576,7 +591,7 @@ class binarySearchTree{
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
                             
                             await waitTransition(arrow, () => {
-                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameterVw/2 - arrowOffsetVw}vw, ${nodes[Math.floor((root-1)/2)].yTransform + (diameterPx / vhToPx)}vh)`;
                             });
                         }
                         
@@ -596,10 +611,12 @@ class binarySearchTree{
 
                 case "post-order":
                     let postOrder = async function(root){
-                        let diameter = nodes[root].diameter;
                         let returnArr = [];
+                        let target = nodes[root];
+                        const centerXvw = target.xTransform + diameterVw / 2;
+                        const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
                         await waitTransition(arrow, () => {
-                            arrow.style.transform = `translate(${nodes[root].xTransform + diameter/2 - 1.5}vw, ${nodes[root].yTransform + diameter}vh)`;
+                            arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
                         await nodes[root].borderCol("orange", true); //visited but not added into the return value
                         if(nodes[root*2+1]){
@@ -618,7 +635,7 @@ class binarySearchTree{
                         if(root > original){ //this is needed for the arrow to go back to the parent that called this instance of the stack
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
                             await waitTransition(arrow, () => {
-                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameter/2 - 1.5}vw, ${nodes[Math.floor((root-1)/2)].yTransform + diameter}vh)`;
+                                arrow.style.transform = `translate(${nodes[Math.floor((root-1)/2)].xTransform + diameterVw/2 - arrowOffsetVw}vw, ${nodes[Math.floor((root-1)/2)].yTransform + (diameterPx / vhToPx)}vh)`;
                             });
                         }
 
@@ -1228,20 +1245,33 @@ let exec = async function(...parameters){
                         case "in-order":
                         case "inorder":
                             if(params[2]){ //if the trasversal starts from a certain key
-                                returnval = await binarysearchT.trasversal(parseInt(params[2]), "in-order");
+                                if(animation)
+                                    returnval = await binarysearchT.trasversal(parseInt(params[2]), "in-order");
+                                else
+                                    returnval = binarysearchT.inOrder(parseInt(params[2]));
                             }
                             else{
-                                returnval = await binarysearchT.trasversal(0, "in-order");
+                                if(animation)
+                                    returnval = await binarysearchT.trasversal(0, "in-order");
+                                else
+                                    returnval = binarysearchT.inOrder(0);
+
                             }
                             returnval = "In-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
                         break;
                         case "pre-order":
                         case "preorder":
                             if(params[2]){ //if the trasversal starts from a certain key
-                                returnval = await binarysearchT.trasversal(parseInt(params[2]), "pre-order");
+                                if(animation)
+                                    returnval = await binarysearchT.trasversal(parseInt(params[2]), "pre-order");
+                                else
+                                    returnval = binarysearchT.preOrder(parseInt(params[2]));
                             }
                             else{
-                                returnval = await binarysearchT.trasversal(0, "pre-order");
+                                if(animation)
+                                    returnval = await binarysearchT.trasversal(0, "pre-order");
+                                else
+                                    returnval = binarysearchT.preOrder(0);
                             }
                             returnval = "Pre-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
                         break;
@@ -1249,10 +1279,16 @@ let exec = async function(...parameters){
                         case "post-order":
                         case "postorder":
                             if(params[2]){ //if the trasversal starts from a certain key
-                                returnval = await binarysearchT.trasversal(parseInt(params[2]), "post-order");
+                                if(animation)
+                                    returnval = await binarysearchT.trasversal(parseInt(params[2]), "post-order");
+                                else
+                                    returnval = binarysearchT.postOrder(parseInt(params[2]));
                             }
                             else{
-                                returnval = await binarysearchT.trasversal(0, "post-order");
+                                if(animation)
+                                    returnval = await binarysearchT.trasversal(0, "post-order");
+                                else
+                                    returnval = binarysearchT.postOrder(0);
                             }
                             returnval = "Post-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
                         break;
