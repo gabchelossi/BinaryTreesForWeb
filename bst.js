@@ -196,7 +196,7 @@ export class BinarySearchTree {
                 await this.prepareNextCompare(e, rank);
             }
             console.log(`compare Promise Resolved`);
-            resolve();
+            resolve(true);
         });
     };
 
@@ -216,7 +216,7 @@ export class BinarySearchTree {
             //await pause(); //for debugging purposes 
             await this.compareTransform(e, rank);
             console.log(`prepareNextCompare Promise Resolved`);
-            resolve();
+            resolve(true);
 
         });
     }
@@ -245,7 +245,7 @@ export class BinarySearchTree {
 
             e.removeClass("transform");
             console.log(`assign Promise Resolved`);
-            resolve();
+            resolve(true);
         });
     }
 
@@ -256,7 +256,7 @@ export class BinarySearchTree {
             let parent = this.arr[parentRank];
             this.connections.push(new BinarySearchTree.Connection(e, parent));
             console.log(`connectTransform Promise Resolved`);
-            resolve();
+            resolve(true);
         });
     }
 
@@ -730,7 +730,7 @@ export class BinarySearchTree {
                     }
                 }
                 else
-                    resolve();
+                    resolve(true);
             });
         }
 
@@ -746,7 +746,7 @@ export class BinarySearchTree {
                     }
                 }
                 else
-                    resolve();
+                    resolve(true);
             });
         }
 
@@ -762,7 +762,7 @@ export class BinarySearchTree {
                     }
                 }
                 else
-                    resolve();
+                    resolve(true);
             });
         }
 
@@ -822,7 +822,7 @@ export class BinarySearchTree {
                         }
                     }
                     else {
-                        resolve();
+                        resolve(true);
                     }
                     comparator.style.opacity = value;
                 });
