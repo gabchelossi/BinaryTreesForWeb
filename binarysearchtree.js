@@ -293,16 +293,11 @@ class binarySearchTree{
         return new Promise(function(resolve){
             let e = binarysearchT.arr[rank];
             let parent = binarysearchT.arr[parentRank];
-            binarysearchT.connections.push(new Connection(e, parent));
+            binarysearchT.connections.push(new binarySearchTree.Connection(e, parent));
             console.log(`connectTransform Promise Resolved`);
             resolve();
         });
     }
-
-
-
-
-
 
     // async remove(key){
     //     let rank = this.rankOf(key);
@@ -464,7 +459,7 @@ class binarySearchTree{
 
     async trasversal(root, mode){
         let nodes = binarysearchT.arr;
-        //let trasverse = [];
+        let trasverse = [];
         let arrow = document.createElement("span");
         arrow.classList.add("trasverser");
         arrow.innerHTML = "↑";
@@ -664,72 +659,72 @@ class binarySearchTree{
         });
     }
 
-}
-
-class Connection{
-    
-
-    constructor(child, parent){
-        this.dom = document.createElement("div");
-        this.dom.classList.add("line");
-        console.log(`${child} and ${parent}`)
-        this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
-        this.child = child;
-        this.parent = parent;
-        this.draw(true, animation);
-        this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
-            this.dom.style.transition = "transform 0s";
-            this.dom.ontransitionend = null;
-            //console.log(`removing animation triggered`);
-        };
-    }
-
-    draw(appendToBody, animation){
-        this.transform = ``;
-        let parent = this.parent;
-        let child = this.child;
-        let parentXpx = (parent.xTransform) * (window.innerWidth / 100);
-        let parentYpx = (parent.yTransform) * (window.innerHeight / 100);
-        let childXpx = (child.xTransform) * (window.innerWidth / 100);
-        let childYpx = (child.yTransform) * (window.innerHeight / 100);
-        let dx = childXpx - parentXpx;
-        let dy = childYpx - parentYpx;
-        let angle = Math.atan2(dy, dx);
-        let lengthInPx = Math.sqrt(dx ** 2 + dy ** 2);
-        this.l = lengthInPx + "px";
-        let offsetXpx = (parent.diameter * (window.innerWidth / 100))/2;
-        let offsetYpx = (parent.diameter * (window.innerHeight / 100))/2;
-        let x = 100*(parentXpx + offsetXpx)/window.innerWidth;
-        let y = 100*(parentYpx + offsetYpx)/window.innerHeight;
-        const baseLengthPx = 100; // Matches your CSS .line width
-        const scale = lengthInPx / baseLengthPx;
-        if(appendToBody){
-            this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${0})`;
-            document.body.append(this.dom);
+    static Connection = class{
+        constructor(child, parent){
+            this.dom = document.createElement("div");
+            this.dom.classList.add("line");
+            console.log(`${child} and ${parent}`)
+            this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
+            this.child = child;
+            this.parent = parent;
+            this.draw(true, animation);
+            this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
+                this.dom.style.transition = "transform 0s";
+                this.dom.ontransitionend = null;
+                //console.log(`removing animation triggered`);
+            };
         }
-        this.dom.offsetHeight; //force reflow
-        requestAnimationFrame(() => {
-            this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${scale})`;
-        });
-    }
 
-    set transform(value){
-        this.dom.style.transform = value;
-    }
+        draw(appendToBody){
+            this.transform = ``;
+            let parent = this.parent;
+            let child = this.child;
+            let parentXpx = (parent.xTransform) * (window.innerWidth / 100);
+            let parentYpx = (parent.yTransform) * (window.innerHeight / 100);
+            let childXpx = (child.xTransform) * (window.innerWidth / 100);
+            let childYpx = (child.yTransform) * (window.innerHeight / 100);
+            let dx = childXpx - parentXpx;
+            let dy = childYpx - parentYpx;
+            let angle = Math.atan2(dy, dx);
+            let lengthInPx = Math.sqrt(dx ** 2 + dy ** 2);
+            this.l = lengthInPx + "px";
+            let offsetXpx = (parent.diameter * (window.innerWidth / 100))/2;
+            let offsetYpx = (parent.diameter * (window.innerHeight / 100))/2;
+            let x = 100*(parentXpx + offsetXpx)/window.innerWidth;
+            let y = 100*(parentYpx + offsetYpx)/window.innerHeight;
+            const baseLengthPx = 100; // Matches your CSS .line width
+            const scale = lengthInPx / baseLengthPx;
+            if(appendToBody){
+                this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${0})`;
+                document.body.append(this.dom);
+            }
+            this.dom.offsetHeight; //force reflow
+            requestAnimationFrame(() => {
+                this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${scale})`;
+            });
+        }
 
-    get transform(){
-        return this.dom.style.transform;
-    }
+        set transform(value){
+            this.dom.style.transform = value;
+        }
 
-    set length(length){
-        this.l = length;
-    }
+        get transform(){
+            return this.dom.style.transform;
+        }
 
-    get length(){
-        return this.l;
+        set length(length){
+            this.l = length;
+        }
+
+        get length(){
+            return this.l;
+        }
+
     }
 
 }
+
+
 
 class Comparator{
     constructor(){
