@@ -8,7 +8,7 @@ html, body{
     overflow: hidden;
 }
 
-.element{
+.TreeElement{
     cursor: help;
     position: absolute;
     top:0!important;
@@ -62,7 +62,7 @@ html, body{
 }
 
 
-.element.transform{
+.TreeElement.transform{
     transition: border 1s, opacity 1s, transform 1s ease-in-out;
 }
 
@@ -114,21 +114,21 @@ html, body{
 }
 
 
-.element.lt.aft::after{
+.TreeElement.lt.aft::after{
     font-weight: bolder;
     position: absolute;
     left: 2.6vw;
     content: "<";
 }
 
-.element.lt.bef::before{
+.TreeElement.lt.bef::before{
     font-weight: bolder;
     position: absolute;
     right: 2.6vw;
     content: ">";
 }
 
-.element.gt.bef::before{
+.TreeElement.gt.bef::before{
     font-weight: bolder;
     position: absolute;
     right: 2.5vw;
@@ -136,7 +136,7 @@ html, body{
 }
 
 
-.element.gt.aft::after{
+.TreeElement.gt.aft::after{
     font-weight: bolder;
     position: absolute;
     left: 2.5vw;
@@ -146,7 +146,7 @@ html, body{
 
 
 @media screen and (max-width: 1000px) {
-    .element{
+    .TreeElement{
         height: 4vw;
         width: 4vw;
         font-size: 2vw;

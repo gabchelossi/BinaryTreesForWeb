@@ -55,12 +55,12 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
     if (focused) {
         switch (e.key) {
             case "Backspace":
-                command.innerHTML = command.innerHTML.substring(0, command.innerHTML.length - 1);
+                command!.innerHTML = command!.innerHTML.substring(0, command!.innerHTML.length - 1);
                 break;
 
             default:
                 if (!(e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta"))
-                    command.innerHTML = command.innerHTML + e.key;
+                    command!.innerHTML = command!.innerHTML + e.key;
                 else {
                     e.preventDefault();
                 }
@@ -72,7 +72,7 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
                 if (previousCommands.length > 0) {
                     if (point > 0)
                         point--;
-                    command.innerHTML = previousCommands[point];
+                    command!.innerHTML = previousCommands[point];
                 }
                 break;
 
@@ -83,7 +83,7 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
                 e.preventDefault(); //to avoid scrolling with the arrows in the console
                 if (previousCommands.length > point) {
                     point++;
-                    command.innerHTML = point < previousCommands.length ? previousCommands[point] : "";
+                    command!.innerHTML = point < previousCommands.length ? previousCommands[point] : "";
                 }
 
                 break;
@@ -91,17 +91,17 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
 
             case "Enter":
                 let consoleOutput = document.getElementById("console-content");
-                cursor.remove();
-                previousCommands.push(command.innerHTML);
+                cursor!.remove();
+                previousCommands.push(command!.innerHTML);
                 point = previousCommands.length;
-                command.id = "";
-                command.innerHTML += "<br><br>" + await exec(command.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
+                command!.id = "";
+                command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
                 let newLine = document.createElement("p");
                 newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
-                consoleOutput.append(newLine);
+                consoleOutput!.append(newLine);
                 command = document.getElementById("text");
-                consoleOutput.lastChild.append(cursor);
-                consoleOutput.scrollTo(0, consoleOutput.scrollHeight);
+                (consoleOutput!.lastChild as Element).append(cursor!);
+                consoleOutput!.scrollTo(0, consoleOutput!.scrollHeight);
                 break;
         }
     }
@@ -109,7 +109,7 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
 
 let exec = async function (...parameters: any[]) {
     return new Promise(async function (resolve, reject) {
-        let returnval = "Command succesfully executed";
+        let returnval: string | number[] = "Command succesfully executed";
         let params = parameters[0];
         //console.log(parameters);
         switch (params[0]) {
@@ -121,9 +121,9 @@ let exec = async function (...parameters: any[]) {
                             returnval = `Succesfully inserted ${arr} into the binary search tree`;
                             for (let i = 0; i < arr.length; i++) {
                                 if (animation)
-                                    await binarysearchT.addNewTransform(new BinarySearchTree.Element(arr[i]));
+                                    await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(arr[i]));
                                 else
-                                    binarysearchT.addNew(new BinarySearchTree.Element(arr[i]));
+                                    binarysearchT.addNew(new BinarySearchTree.TreeElement(arr[i]));
                             }
                             res(true);
                         });
@@ -144,13 +144,16 @@ let exec = async function (...parameters: any[]) {
                             for (let i = 0; i < vals.length; i++) {
                                 try {
                                     if (animation)
-                                        await binarysearchT.addNewTransform(new BinarySearchTree.Element(vals[i]));
+                                        await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(vals[i]));
                                     else {
-                                        binarysearchT.addNew(new BinarySearchTree.Element(vals[i]));
+                                        binarysearchT.addNew(new BinarySearchTree.TreeElement(vals[i]));
                                     }
                                 }
                                 catch (e) {
-                                    let index = vals.indexOf(parseInt(e.substring(1)));
+                                    let index = -1;
+                                    if (typeof e === "string") {
+                                        index = vals.indexOf(parseInt(e.substring(1)));
+                                    }
                                     vals.splice(index, 1);
                                     //console.log(vals);
                                     alert(e);
@@ -167,13 +170,13 @@ let exec = async function (...parameters: any[]) {
                         await (async function () {
                             try {
                                 if (animation)
-                                    await binarysearchT.addNewTransform(new BinarySearchTree.Element(parseInt(params[1])));
+                                    await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(parseInt(params[1])));
                                 else
-                                    binarysearchT.addNew(new BinarySearchTree.Element(parseInt(params[1])));
+                                    binarysearchT.addNew(new BinarySearchTree.TreeElement(parseInt(params[1])));
                                 returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
                             }
                             catch (e) {
-                                returnval = e;
+                                returnval = String(e);
                             }
                         })();
                     }
@@ -209,7 +212,7 @@ let exec = async function (...parameters: any[]) {
                 break;
 
             case 'clear':
-                document.getElementById("console-content").innerHTML = "";
+                document.getElementById("console-content")!.innerHTML = "";
                 break;
 
             case 'ls':
@@ -250,7 +253,7 @@ let exec = async function (...parameters: any[]) {
                                     oldStyle.remove();
                                 }
                                 let seconds = 1 / speed;
-                                let diameter = new BinarySearchTree.Element(0).diameter;
+                                let diameter = new BinarySearchTree.TreeElement(0).diameter;
                                 style.innerHTML = `
                                     .element{
                                         cursor: help;
@@ -389,11 +392,11 @@ let exec = async function (...parameters: any[]) {
                 break;
             case "fill-random":
                 (async function () {
-                    await binarysearchT.addNewTransform(new BinarySearchTree.Element(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
+                    await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
                     for (let i = 0; i < 20; i++) {
                         let random = Math.floor(Math.random() * 100);
                         if (binarysearchT.rankOf(random) == -1)
-                            await binarysearchT.addNewTransform(new BinarySearchTree.Element(random));
+                            await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(random));
                     }
                 })();
 
@@ -486,11 +489,11 @@ let leave = function () {
 let paste = async function (e: { preventDefault: () => void; }) {
     e.preventDefault();
     let clip = await navigator.clipboard.readText();
-    cursor.remove();
+    cursor!.remove();
     let text = document.getElementById("text");
-    text.innerHTML += clip;
-    text.parentElement.append(cursor);
-    debconsole.scrollTo(0, debconsole.scrollHeight);
+    text!.innerHTML += clip;
+    text!.parentElement!.append(cursor!);
+    debconsole!.scrollTo(0, debconsole!.scrollHeight);
     focused = true;
 }
 
@@ -503,52 +506,52 @@ let cursorAnimation = function () {
 
     if (focused) {
         if (displayed) {
-            cursor.style.color = "black";
+            cursor!.style.color = "black";
         }
         else {
-            cursor.style.color = "white";
+            cursor!.style.color = "white";
         }
         displayed = !displayed;
     }
     else {
         if (displayed) {
-            cursor.style.color = "black";
+            cursor!.style.color = "black";
             displayed = false;
         }
     }
 
 }
-let consoleHeight = debconsole.offsetHeight;
+let consoleHeight = debconsole!.offsetHeight;
 
 let minimize = function () {
     let output = document.getElementById("console-content");
     let bar = document.getElementById("console-bar");
 
-    output.style.display = "none";
-    bar.style.bottom = "0";
+    output!.style.display = "none";
+    bar!.style.bottom = "0";
 }
 
 let maximize = function () {
     let output = document.getElementById("console-content");
     let bar = document.getElementById("console-bar");
 
-    output.style.display = "block";
-    bar.style.bottom = consoleHeight;
+    output!.style.display = "block";
+    bar!.style.bottom = consoleHeight.toString();
 
 }
 
 function resizeConsole() {
     let output = document.getElementById("console-content");
     document.body.style.cursor = "ns-resize";
-    if (output.style.display == "none") { //resize even when minimized
-        output.style.display = "block";
-        output.style.height = 0;
+    if (output!.style.display == "none") { //resize even when minimized
+        output!.style.display = "block";
+        output!.style.height = (0).toString();
     }
 
     document.onmousemove = function (e) {
         if (e.clientY > 30) {
             consoleHeight = window.innerHeight - e.clientY;
-            output.style.height = consoleHeight - 29 + "px";
+            output!.style.height = consoleHeight - 29 + "px";
         }
 
     }
@@ -565,10 +568,10 @@ function resizeConsole() {
 //The document catches the event and sets to false, unless the terminal overrides it with its listeners (capture vs target)
 document.addEventListener("click", leave, true);
 document.addEventListener("focus", leave, true);
-debconsole.addEventListener("click", focus);
-debconsole.addEventListener("focus", focus);
-debconsole.addEventListener("contextmenu", paste);
+debconsole!.addEventListener("click", focus);
+debconsole!.addEventListener("focus", focus);
+debconsole!.addEventListener("contextmenu", paste);
 document.addEventListener("keydown", type);
 document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", minimize);
 document.getElementsByClassName("console-dot green")[0].addEventListener("click", maximize);
-document.getElementById("resizer").addEventListener("mousedown", resizeConsole);
+document.getElementById("resizer")!.addEventListener("mousedown", resizeConsole);

@@ -1,5 +1,12 @@
 //@ts-check
+
 export class BinarySearchTree {
+
+    arr: InstanceType<typeof BinarySearchTree.TreeElement>[];
+    connections: InstanceType<typeof BinarySearchTree.Connection>[];
+    s: number;
+    width: number;
+
     constructor() {
         this.arr = [];
         this.connections = [];
@@ -15,8 +22,8 @@ export class BinarySearchTree {
         this.s = s;
     }
 
-    inOrder(root) {
-        let returnArr = [];
+    inOrder(root: number): number[] {
+        let returnArr : number[] = [];
         let nodes = this.arr;
         if (nodes[root * 2 + 1]) {
             returnArr = this.inOrder(root * 2 + 1);
@@ -29,7 +36,7 @@ export class BinarySearchTree {
         return returnArr;
     }
 
-    preOrder(root) {
+    preOrder(root: number): number[] {
         let returnArr = [];
         let nodes = this.arr;
 
@@ -46,9 +53,9 @@ export class BinarySearchTree {
         return returnArr;
     }
 
-    postOrder(root) {
+    postOrder(root:number) : number[] {
         let nodes = this.arr;
-        let returnArr = [];
+        let returnArr: number[] = [];
         if (nodes[root * 2 + 1])
             returnArr = [...this.postOrder(root * 2 + 1)];
 
@@ -60,7 +67,7 @@ export class BinarySearchTree {
         return returnArr;
     }
 
-    addNew(e) {
+    addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add('no-animation');
         if (this.rankOf(e.key) > -1) {
             return false;
@@ -87,7 +94,10 @@ export class BinarySearchTree {
                 }
                 let parentRank = Math.floor((rank - 1) / 2);
                 let parent = nodes[parentRank];
-                let translateInfo = {};
+                let translateInfo: { x: string; y: string } = {
+                    x: "",
+                    y: ""
+                };
                 let depth = Math.floor(Math.log2(rank + 1));
                 let offset = (98) / 2 ** (depth + 1);
                 if (parent.key > e.key) {
@@ -97,8 +107,8 @@ export class BinarySearchTree {
                     translateInfo.x = parent.xTransform + offset + "vw";
                 }
                 translateInfo.y = parent.yTransform + Math.sin(Math.PI / 4) * 10 + "vh";
-                e.translate(translateInfo.x, translateInfo.y);
-                e.borderCol("rgb(37, 201, 37)");
+                e.translate(translateInfo.x, translateInfo.y, false);
+                e.borderCol("rgb(37, 201, 37)", false);
                 e.dom.title = `Rank: ${rank}`;
                 this.arr[rank] = e;
                 //console.log(`${e} and ${parent}`)
@@ -107,12 +117,12 @@ export class BinarySearchTree {
                 e.removeClass("transform");
 
             }
-            e.opac(1);
+            e.opac(1, false);
             return ++this.size;
         }
     }
 
-    async addNewTransform(e) {
+    async addNewTransform(e: InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add("transform");
         e.dom.offsetHeight; //important for reflow
         return new Promise(async (resolve, reject) => {
@@ -145,7 +155,7 @@ export class BinarySearchTree {
         });
     }
 
-    async compareTransform(e, rank) {
+    async compareTransform(e:InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
             console.log(`compare Promise Opened`);
             let pointer = this.arr[rank];
@@ -200,12 +210,15 @@ export class BinarySearchTree {
         });
     };
 
-    async prepareNextCompare(e, rank) {
+    async prepareNextCompare(e : InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
             console.log(`prepareNextCompare Promise opened`);
             let parent = this.arr[rank];
             //let parentX = parseInt(parent.xTransform);
-            let coordinates = {}
+            let coordinates : {x: string, y: string} = {
+                x: "",
+                y: ""
+            };
             if (parent.xTransform > 50)
                 coordinates.x = parent.xTransform - 2 * e.diameter + "vw";
             else {
@@ -221,7 +234,7 @@ export class BinarySearchTree {
         });
     }
 
-    async assign(e, rank) {
+    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
             console.log(`assign Promise Opened`);
             let nodes = this.arr;
@@ -229,7 +242,10 @@ export class BinarySearchTree {
             let depth = Math.floor(Math.log2(rank + 1));
             let parentRank = Math.floor((rank - 1) / 2);
             let parent = nodes[parentRank];
-            let translateInfo = {};
+            let translateInfo : {x: string, y: string} = {
+                x: "",
+                y: ""
+            };
             let offset = (98) / 2 ** (depth + 1);
             if (parent.key > e.key) {
                 translateInfo.x = parent.xTransform - offset + "vw";
@@ -249,7 +265,7 @@ export class BinarySearchTree {
         });
     }
 
-    async connectTransform(rank, parentRank) {
+    async connectTransform(rank: number, parentRank: number) {
         console.log(`connectTransform Promise Opened`);
         return new Promise((resolve) => {
             let e = this.arr[rank];
@@ -260,7 +276,7 @@ export class BinarySearchTree {
         });
     }
 
-    async removeKey(key){
+    async removeKey(key: number){
         return new Promise((resolve) =>{
             let rank = this.rankOf(key)!;
             if(rank > -1){
@@ -293,7 +309,7 @@ export class BinarySearchTree {
         this.size = 0;
     }
 
-    rankOf(key) {
+    rankOf(key:number) : number{
         let rank = 0;
         let max = (2 ** (2 + Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
         while (rank < max) {
@@ -314,9 +330,10 @@ export class BinarySearchTree {
                 return -1;
             };
         }
+        return -1;
     }
 
-    async trasversal(root, mode) {
+    async trasversal(root: number, mode: string) : Promise<number[]> {
         let nodes = this.arr;
         let trasverse = [];
         let arrow = document.createElement("span");
@@ -324,10 +341,10 @@ export class BinarySearchTree {
         arrow.innerHTML = "↑";
         document.body.append(arrow);
         arrow.offsetHeight; //reflow stuff
-        //let output = document.getElementById("output");
+        //let output = document.getTreeElementById("output");
         let original = root;
 
-        let setupTrasversal = function (root) { //sets all the children to red (unvisited)
+        let setupTrasversal = function (root: number) { //sets all the children to red (unvisited)
             if (nodes[root * 2 + 1])
                 setupTrasversal(root * 2 + 1);
             nodes[root].borderColor = 'red';
@@ -339,9 +356,9 @@ export class BinarySearchTree {
         setupTrasversal(root);
 
 
-        let waitTransition = async function (dom, fn) { //first class function
+        let waitTransition = async function (dom : any, fn: Function) { //first class function
             return new Promise((resolve) => {
-                dom.ontransitionend = function (e) {
+                dom.ontransitionend = function (e: Event) {
                     dom.ontransitionend = null;
                     resolve(e);
                 }
@@ -350,7 +367,7 @@ export class BinarySearchTree {
         };
 
         await waitTransition(arrow, () => {
-            arrow.style.opacity = 1;
+            arrow.style.opacity = (1).toString();
         });
 
         const vwToPx = window.innerWidth / 100;
@@ -364,7 +381,7 @@ export class BinarySearchTree {
         return new Promise(async (resolve, reject) => {
             switch (mode) {
                 case "in-order":
-                    let inOrder = async function (root) {
+                    let inOrder = async function (root: number) {
                         let target = nodes[root];
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
@@ -375,7 +392,7 @@ export class BinarySearchTree {
 
                         await nodes[root].borderCol("orange", true); //visited but not added into the return value
 
-                        let returnArr = [];
+                        let returnArr: number[] = [];
 
                         if (nodes[root * 2 + 1]) {
                             await inOrder(root * 2 + 1).then(function (result) {
@@ -404,13 +421,13 @@ export class BinarySearchTree {
                     }
 
                     inOrder(root).then(function (result) { //call the function and handle the result
-                        trasverse = result;
+                        //trasverse = result;
 
                         arrow.ontransitionend = async function () {
-                            this.ontransitionend = null;
-                            this.remove();
+                            arrow.ontransitionend = null;
+                            arrow.remove();
                         };
-                        arrow.style.opacity = 0;
+                        arrow.style.opacity = (0).toString();
                         resolve(result);
                     });
 
@@ -418,7 +435,7 @@ export class BinarySearchTree {
                     break;
 
                 case "pre-order":
-                    let preOrder = async function (root) {
+                    let preOrder = async function (root:number) {
                         let target = nodes[root];
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
@@ -452,20 +469,20 @@ export class BinarySearchTree {
                         return returnArr;
                     }
                     preOrder(root).then(function (result) { //call the function and handle the result
-                        trasverse = result;
+                        //trasverse = result;
 
                         arrow.ontransitionend = async function () {
-                            this.ontransitionend = null;
-                            this.remove();
+                            arrow.ontransitionend = null;
+                            arrow.remove();
                         };
-                        arrow.style.opacity = 0;
+                        arrow.style.opacity = (0).toString();
                         resolve(result);
                     });
                     break;
 
                 case "post-order":
-                    let postOrder = async function (root) {
-                        let returnArr = [];
+                    let postOrder = async function (root:number) {
+                        let returnArr: number[] = [];
                         let target = nodes[root];
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
@@ -497,13 +514,13 @@ export class BinarySearchTree {
                     }
 
                     postOrder(root).then(function (result) { //call the function and handle the result
-                        trasverse = result;
+                        //trasverse = result;
 
                         arrow.ontransitionend = async function () {
-                            this.ontransitionend = null;
-                            this.remove();
+                            arrow.ontransitionend = null;
+                            arrow.remove();
                         };
-                        arrow.style.opacity = 0;
+                        arrow.style.opacity = (0).toString();
                         resolve(result);
                     });
                     break;
@@ -514,12 +531,16 @@ export class BinarySearchTree {
 
     onResize() {
         this.connections.forEach((line) => {
-            line.draw();
+            line.draw(false);
         });
     }
 
     static Connection = class {
-        constructor(child, parent) {
+        dom: HTMLDivElement;
+        child: InstanceType<typeof BinarySearchTree.TreeElement>;
+        parent: InstanceType<typeof BinarySearchTree.TreeElement>;
+        l!: string;
+        constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>) {
             this.dom = document.createElement("div");
             this.dom.classList.add("line");
             console.log(`${child} and ${parent}`)
@@ -534,7 +555,7 @@ export class BinarySearchTree {
             };
         }
 
-        draw(appendToBody) {
+        draw(appendToBody: boolean) {
             this.transform = ``;
             let parent = this.parent;
             let child = this.child;
@@ -581,48 +602,53 @@ export class BinarySearchTree {
 
     }
 
-    static Element = class {
-
-        constructor(key) {
+    // Define the class first
+    static TreeElement = class {
+        key : number;
+        dom: HTMLDivElement;
+        comparator: TreeElementComparator;
+    
+        constructor(key: number) {
             this.key = key;
             this.dom = document.createElement("div");
-            this.dom.classList.add("element");
-            this.dom.innerHTML = key;
+            this.dom.classList.add("TreeElement");
+            this.dom.innerHTML = key.toString();
             this.dom.style.backgroundColor = "#FFFFFF";
-            this.dom.style.zIndex = 1;
+            this.dom.style.zIndex = (1).toString();
             this.opacity = 0;
-            this.comparator = new BinarySearchTree.Element.Comparator();
+            this.comparator = new BinarySearchTree.TreeElement.Comparator();
             this.dom.append(this.comparator.dom);
             document.body.append(this.dom);
         }
-
-
-        get xTransform() {
+    
+        get xTransform() : number {
             let transform = this.transform;
-            return parseFloat(transform.match(/\d+(\.\d+)?/g)[0]);
+            const matches = transform.match(/\d+(\.\d+)?/g);
+            return matches ? parseFloat(matches[0]) : 0;
         }
-
+    
         get yTransform() {
             let transform = this.transform;
-            return parseFloat(transform.match(/\d+(\.\d+)?/g)[1]);
+            const matches = transform.match(/\d+(\.\d+)?/g);
+            return matches ? parseFloat(matches[1]) : 0;
         }
-
+    
         get diameter() { //the diameter is based on the width of the screen
-            const vw = parseFloat(window.innerWidth / 100);
+            const vw = (window.innerWidth / 100);
             const computed = parseFloat(window.getComputedStyle(this.dom).width);
             return (computed / vw);
         }
-
+    
         get comparat() {
             return this.comparator;
         }
-
-        opac = function (value, synchronous) { //for some weird reason js does not like a function whose name is opacity... maybe dom.style.opacity conflict?
-            let e = this;
+    
+        opac =  (value: number, synchronous:boolean) => { //for some weird reason js does not like a function whose name is opacity... maybe dom.style.opacity conflict?
+            //let e = this ;
             return new Promise( (resolve) => {
-                e.opacity = value;
+                this.opacity = value;
                 if (synchronous) {
-                    e.dom.ontransitionend = function (e) {
+                    this.dom.ontransitionend = function (e) {
                         this.ontransitionend = null;
                         resolve(e);
                     }
@@ -631,14 +657,14 @@ export class BinarySearchTree {
                     resolve(true);
             });
         }
-
-        translate = function (x, y, synchronous) {
-            let e = this;
-            e.dom.offsetHeight; //important for reflow
+    
+        translate = (x:string, y:string, synchronous:boolean) => {
+            //let e = this;
+            this.dom.offsetHeight; //important for reflow
             return new Promise((resolve) => {
-                e.transform = `translate(${x}, ${y})`;
+                this.transform = `translate(${x}, ${y})`;
                 if (synchronous) {
-                    e.dom.ontransitionend = function (e) {
+                    this.dom.ontransitionend = function (e) {
                         this.ontransitionend = null;
                         resolve(e);
                     }
@@ -647,14 +673,13 @@ export class BinarySearchTree {
                     resolve(true);
             });
         }
-
-        borderCol = function (value, synchronous) {
-            let e = this;
-            e.dom.offsetHeight; //important for reflow
+    
+        borderCol =(value:string, synchronous:boolean) => {
+            this.dom.offsetHeight; //important for reflow
             return new Promise((resolve) => {
-                e.borderColor = `${value}`;
+                this.borderColor = `${value}`;
                 if (synchronous) {
-                    e.dom.ontransitionend = function (e) {
+                    this.dom.ontransitionend = function (e) {
                         this.ontransitionend = null;
                         resolve(e);
                     }
@@ -663,70 +688,74 @@ export class BinarySearchTree {
                     resolve(true);
             });
         }
-
-        addClass = function (...classes) {
-            this.dom.classList.add(classes);
+    
+        addClass = (...classes: string[]): void => {
+            this.dom.classList.add(...classes);
         }
-
-        removeClass = function (...classes) {
-            this.dom.classList.remove(classes);
+    
+        removeClass =  (...classes: string[]) : void => {
+            this.dom.classList.remove(...classes);
         }
-
-        set opacity(o) {                             //and yes I tried to rename this with something else, still same problem :/
-            this.dom.style.opacity = parseInt(o);
+    
+        set opacity(o: number) {                             //and yes I tried to rename this with something else, still same problem :/
+            this.dom.style.opacity = parseInt(o as any as string) as any;
         }
-
-        set borderColor(b) {
+    
+        set borderColor(b: string | number) {
             this.dom.style.borderColor = `${b}`;
         }
-
+    
         set transform(transform) {
             this.dom.style.transform = transform;
         }
-
+    
         get transform() {
             return this.dom.style.transform;
         }
-
-        static Comparator = class  {
+    
+        static Comparator = class TreeElementComparator  {
+            dom: HTMLSpanElement;
             constructor() {
                 this.dom = document.createElement("span");
                 this.dom.classList.add("comparatorTransform");
             }
-
-            addClass(Class) {
+    
+            addClass(Class: string): void {
                 this.dom.classList.add(Class);
             }
-
-            removeClass(...Class) {
-                this.dom.classList.remove(...Class.flat());
+    
+            removeClass(...Class: string[] | string[][]): void {
+                this.dom.classList.remove(...(Class.flat() as string[]));
             }
-
+    
             get classes() {
                 return this.dom.className;
             }
-
-            set inner(value) {
+    
+            set inner(value: string) {
                 this.dom.innerHTML = value;
             }
-
-            async opac(value, synchronous) {
+    
+            async opac(value: number, synchronous: boolean): Promise<Boolean> {
                 let comparator = this.dom;
                 return new Promise((resolve) => {
                     if (synchronous) {
                         comparator.ontransitionend = function (e) {
                             this.ontransitionend = null;
-                            resolve(e);
+                            resolve(true);
                         }
                     }
                     else {
                         resolve(true);
                     }
-                    comparator.style.opacity = value;
+                    comparator.style.opacity = value as any;
                 });
-
+    
             }
-        }
-    }
-
+        }        
+    };
+   
+    
+    // Assign the class to the static property
 }
+type TreeElementComparator = InstanceType<typeof BinarySearchTree.TreeElement.Comparator>;
