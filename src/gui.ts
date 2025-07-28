@@ -1,4 +1,3 @@
-
 import { BinarySearchTree } from "./bst.js";
 
 let debconsole = document.getElementById("console");
@@ -9,7 +8,8 @@ let focused = true;
 let previousCommands: string[] = [];
 let point = 0;
 let animationSpeed = 1;
-let animation = true;
+let animation = false;
+
 
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -41,6 +41,7 @@ function awaitInput() {
 }
 
 var binarysearchT = new BinarySearchTree();
+(window as any).binarysearchT = binarysearchT;
 
 let resizeTimeout: string | number | NodeJS.Timeout | undefined;
 
@@ -476,6 +477,12 @@ let exec = async function (...parameters: any[]) {
         resolve(returnval);
     });
 }
+
+
+
+document.addEventListener("DOMContentLoaded", function(event) { 
+    exec("insert,full");
+});
 
 let focus = function () {
     focused = true;

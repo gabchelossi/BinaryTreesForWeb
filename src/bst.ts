@@ -276,18 +276,21 @@ export class BinarySearchTree {
         });
     }
 
-    async removeKey(key: number){
+    async removeKey(key: number) : Promise<Boolean | String>{
         return new Promise((resolve) =>{
-            let rank = this.rankOf(key)!;
+            let rank = this.rankOf(key);
             if(rank > -1){
-                if(rank*2+1){
-
+                if(this.arr[rank*2+1]){
+                    //resolve("Hardest case scenario");
+                }
+                else{
+                    //resolve("Easiest case scenario");
                 }
             }
             else{
                 resolve(`The key '${key}' is not in the binary search Tree`);
             }
-        })
+        });
         
     }
 
@@ -606,7 +609,7 @@ export class BinarySearchTree {
     static TreeElement = class {
         key : number;
         dom: HTMLDivElement;
-        comparator: TreeElementComparator;
+        comparator: InstanceType<typeof BinarySearchTree.TreeElement.Comparator>;
     
         constructor(key: number) {
             this.key = key;
@@ -758,4 +761,3 @@ export class BinarySearchTree {
     
     // Assign the class to the static property
 }
-type TreeElementComparator = InstanceType<typeof BinarySearchTree.TreeElement.Comparator>;
