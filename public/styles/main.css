@@ -1,0 +1,257 @@
+*{
+    box-sizing: border-box;
+}
+
+html, body{
+    background-color: #DEDEDE;
+    height: 99%;
+    overflow: hidden;
+}
+
+.TreeElement{
+    cursor: help;
+    position: absolute;
+    top:0!important;
+    left:0!important;
+    opacity: 0;
+    height: 2.5vw;
+    width: 2.5vw;
+    border-radius: 50%;
+    background-color: white!important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bolder;
+    font-size: 2.5vh;
+    border: 2px solid rgb(37, 201, 37);
+    transition: border 1s, opacity 1s;
+}
+
+.no-animation{
+    transition: none!important; 
+}
+
+.five{
+    width: 5vw;
+    height: 100%;
+}
+
+.left-color, .right-color{
+    position: absolute;
+    top: 0;
+    background-color: red;
+}
+
+.ruler{
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 1px;
+    background-color: black;
+}
+
+.middle{
+    left: calc(50vw - 0.5px);
+}
+
+.right-color{
+    right: 0!important;
+}
+.left-color{
+    left: 0!important;
+}
+
+
+.TreeElement.transform{
+    transition: border 1s, opacity 1s, transform 1s ease-in-out;
+}
+
+
+.trasverser{
+    position: absolute;
+    font-size: 3vw;
+    top:0 !important;
+    left: 0 !important;
+    opacity: 0;
+    transition: opacity 0.5s, transform 1s;
+    z-index: 3;
+    /*background-color: rgba(255, 0, 0, 0.3); */
+}
+
+.comparator{
+    position: absolute;
+    display: block;
+    opacity: 0;
+    height: 2vh;
+    width: 2vh;
+    font-size: 2vh;
+    transition: opacity 1s;
+    margin:0;
+}
+
+.line {
+  position: absolute;
+  height: 2px;
+  width: 100px; /* fixed base width */
+  background-color: black;
+  transform-origin: 0 0;
+  transition: transform 1s ease-out;
+  will-change: transform;
+}
+
+.comparatorTransform{
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.comparatorTransform.aft{
+    left: 2.6vw;
+}
+
+.comparatorTransform.bef{
+    right: 2.6vw;
+}
+
+
+.TreeElement.lt.aft::after{
+    font-weight: bolder;
+    position: absolute;
+    left: 2.6vw;
+    content: "<";
+}
+
+.TreeElement.lt.bef::before{
+    font-weight: bolder;
+    position: absolute;
+    right: 2.6vw;
+    content: ">";
+}
+
+.TreeElement.gt.bef::before{
+    font-weight: bolder;
+    position: absolute;
+    right: 2.5vw;
+    content: "<";
+}
+
+
+.TreeElement.gt.aft::after{
+    font-weight: bolder;
+    position: absolute;
+    left: 2.5vw;
+    content: ">";
+}
+
+
+
+@media screen and (max-width: 1000px) {
+    .TreeElement{
+        height: 4vw;
+        width: 4vw;
+        font-size: 2vw;
+    }
+    .comparatorTransform.aft{
+        left: 4vw;
+    }
+
+    .comparatorTransform.bef{
+        right: 4vw;
+    }
+    
+}
+
+
+#console{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border: 1px solid black;
+    background-color: black;
+    color: black;
+    font-family: "Ubuntu Mono", monospace;
+    font-weight: 500;
+    font-style: normal;
+    color: white;
+    z-index: 4;
+}
+
+#console-content{
+    padding: 10px 30px;
+    overflow-y: scroll;
+    height:20vh;
+}
+
+#resizer {
+    height: 5px;
+    background: #444;
+    cursor: ns-resize;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    left: 0;
+}
+
+
+#console b{
+    color: rgb(58, 197, 58);
+    margin-right: 3px;
+}
+
+#cursor{
+    transition: color .1s;
+    margin-left: -6px;
+}
+
+#console-bar {
+    height: 24px;
+    background-color: #2c2c2c;
+    border-bottom: 1px solid #444;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+    position: sticky;
+    top: 5px;
+    left: 0;
+    font-family: sans-serif;
+    width: 100%;
+}
+
+.console-dot {
+    height: 15px;
+    width: 15px;
+    border-radius: 50%;
+    align-items: center;
+    text-align: center;
+    color: white;
+    display: flex;
+    font-size: 15px;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.console-dot.red {
+    background-color: #ff5f56;
+}
+
+.console-dot.yellow {
+    background-color: #ffbd2e;
+}
+
+.console-dot.green {
+    background-color: #27c93f;
+    
+}
+
+
+#text{
+    white-space: pre;
+}
+
+#console a{
+    color: cyan;
+}
+
