@@ -1,17 +1,17 @@
 
-import { BinarySearchTree } from './bst.js';
+import { BinarySearchTree } from "./bst.js";
 
 let debconsole = document.getElementById("console");
 let cursor = document.getElementById("cursor");
 let command = document.getElementById("text");
 let displayed = true;
 let focused = true;
-let previousCommands = [];
+let previousCommands: string[] = [];
 let point = 0;
 let animationSpeed = 1;
 let animation = true;
 
-function sleep(ms) {
+function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -30,7 +30,7 @@ function pause() {
 
 function awaitInput() {
     return new Promise(resolve => {
-        let onKeyHandler = function (e) {
+        let onKeyHandler = function (e: { key: string; }) {
             if (e.key == "ArrowRight") {
                 document.removeEventListener('keydown', onKeyHandler);
                 resolve(true);
@@ -42,7 +42,7 @@ function awaitInput() {
 
 var binarysearchT = new BinarySearchTree();
 
-let resizeTimeout;
+let resizeTimeout: string | number | NodeJS.Timeout | undefined;
 
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
@@ -51,7 +51,7 @@ window.addEventListener('resize', () => {
     }, 200); // only trigger after 200ms of no further resize events
 });
 
-let type = async function (e) {
+let type = async function (e: { key: string; preventDefault: () => void; }) {
     if (focused) {
         switch (e.key) {
             case "Backspace":
@@ -107,7 +107,7 @@ let type = async function (e) {
     }
 }
 
-let exec = async function (...parameters) {
+let exec = async function (...parameters: any[]) {
     return new Promise(async function (resolve, reject) {
         let returnval = "Command succesfully executed";
         let params = parameters[0];
@@ -132,9 +132,9 @@ let exec = async function (...parameters) {
                 }
                 else {
                     if (params.length > 2) {
-                        let vals = params.map(function (e) {
+                        let vals = params.map(function (e: string) {
                             return parseInt(e);
-                        }).filter(v => {
+                        }).filter((v: number) => {
                             if (!isNaN(v)) {
                                 return v;
                             }
@@ -184,12 +184,12 @@ let exec = async function (...parameters) {
 
             case 'equivalent':
                 if (binarysearchT.size > 0)
-                    returnval = "insert " + binarysearchT.arr.map(v => {
+                    returnval = "insert " + binarysearchT.arr.map((v: { key: any; } | undefined) => {
                         if (v != undefined) {
                             return v.key;
                         }
 
-                    }).filter(v => { if (v) return v }).toString();
+                    }).filter((v: any) => { if (v) return v }).toString();
                 else
                     returnval = "The tree is empty";
                 break;
@@ -365,7 +365,7 @@ let exec = async function (...parameters) {
                             }
                             else {
                                 let s = "[";
-                                binarysearchT.arr.forEach((val, index, arr) => {
+                                binarysearchT.arr.forEach((val: { key: any; }, index: number, arr: string | any[]) => {
                                     s += `<span style='color: orange'>${index}</span>: ${val.key}${(index < arr.length - 1) ? ", " : "]"}`;
                                 });
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
@@ -483,7 +483,7 @@ let leave = function () {
     focused = false;
 }
 
-let paste = async function (e) {
+let paste = async function (e: { preventDefault: () => void; }) {
     e.preventDefault();
     let clip = await navigator.clipboard.readText();
     cursor.remove();

@@ -260,122 +260,20 @@ export class BinarySearchTree {
         });
     }
 
-    // async remove(key){
-    //     let rank = this.rankOf(key);
-    //     let nodes = this.arr;
-    //     if(rank == -1){
-    //         console.log("The key is not in the binary search tree.")
-    //     }
-    //     else{
-    //         let removing = nodes[rank];
-    //         removing.dom.classList.add("transition");
-    //         await new Promise(function(resolve){
-    //             removing.dom.ontransitionend = function(e){
-    //                 this.ontransitionend = null;
-    //                 resolve(e);
-    //             }
-    //             removing.borderColor = 'red';
-    //         });
-    //         removing.dom.remove();
+    async removeKey(key){
+        return new Promise((resolve) =>{
+            let rank = this.rankOf(key)!;
+            if(rank > -1){
+                if(rank*2+1){
 
-    //         if(!(nodes[rank*2+1] && nodes[rank*2+2])){ //the case where the desired element to be deleted has one 'dead child'
-
-    //             /*let preOrderShiftDown = async function(root, relativeDepth){ //insert 15,10,11,9,7,8,6,5,4,3,2,1 it does not move 8 when removing 9
-    //                 console.log(`Function called on key ${nodes[root].key}`); //insert 20,10,8,9,5,6,7,3,4,2
-    //                 let parentRank = (relativeDepth>0?Math.floor(root/2):Math.floor((root-1)/2));//insert 50,37,88,17,47,85,89,13,26,46,48,72,18,45,54,74,61,82,57,62,71
-    //                 //await awaitInput();
-    //                 nodes[root].dom.classList.add("transition");
-    //                 nodes[root].dom.ontransitionend = function(){
-    //                     this.ontransitionend = null;
-    //                     this.classList.remove("transition");
-    //                 }
-    //                 let line = document.getElementById(`${Math.floor((root-1)/2)}-${root}`);
-    //                 line.classList.add("transition");
-    //                 line.ontransitionend = function(){
-    //                     line.ontransitionend = null;
-    //                     line.remove();
-    //                 }
-    //                 line.style.width = 0;
-    //                 line.style.height = 0;
-    //                 console.log(`Moving key ${nodes[root].key} from rank ${root} to ${parentRank}`);
-    //                 await awaitInput();
-    //                 this.move(nodes[root], parentRank);
-    //                 //console.log(`Parent's key :${nodes[parentRank].key} at rank ${parentRank}. Child's key ${nodes[root].key} at rank ${root}`);
-    //                 nodes[parentRank] = nodes[root];
-    //                 await(sleep(500));
-    //                 await awaitInput();
-
-    //                 delete(nodes[root]);
-    //                 //await awaitInput();
-    //                 if(nodes[(root*2+1)]){
-    //                     preOrderShiftDown(root*2+1,relativeDepth+1);
-    //                 }
-
-    //                 //await awaitInput();
-    //                 if(nodes[root*2+2]){
-    //                     preOrderShiftDown(root*2+2, relativeDepth+1);
-    //                 }
-    //                 return;
-    //             }
-    //             preOrderShiftDown(nodes[rank*2+1]?rank*2+1:rank*2+2, 0)*/
-
-    //             let simplePreOrderShiftDown = function(root){ //DONT TOUCH THIS, THIS IS FOR REFERENCE AND DEBUGGING OK?
-    //                 console.log(`Function called on key ${nodes[root].key}`);
-    //                 let parentRank = Math.floor(root/2);
-    //                 nodes[parentRank] = nodes[root];
-    //                 console.log(`Moving key ${nodes[root].key} from rank ${root} to ${parentRank}`);
-    //                 delete(nodes[root]);
-
-    //                 if(nodes[(root*2+1)]){
-    //                     simplePreOrderShiftDown(root*2+1);
-    //                 }
-
-
-    //                 if(nodes[root*2+2]){
-    //                     simplePreOrderShiftDown(root*2+2);
-    //                 }
-    //                 return;
-    //             }
-    //             let subtreeSize = this.inOrder(nodes[rank*2+1]?rank*2+1:rank*2+2).length;
-    //             console.log(`Size of the subtree is ${subtreeSize}`);
-    //             let i = nodes[rank*2+1]?rank*2+1:rank*2+2;
-    //             simplePreOrderShiftDown(nodes[rank*2+1]?rank*2+1:rank*2+2);
-
-
-    //         }
-    //         else{
-    //             let firstAfterKey = function(root){ //in order trasversal to find the first element just after the key we are deleting
-    //                 let returnVal = null;
-    //                 if(nodes[root*2+1]){ 
-    //                     returnVal = firstAfterKey(root*2+1);
-    //                 }
-
-    //                 if(!nodes[root*2+1]){
-    //                     return nodes[root];
-    //                 }
-
-    //                 if(nodes[root*2+2] && !nodes[root*2+1] && !returnVal)
-    //                     returnVal = firstAfterKey(root*2+2);                
-    //                 return returnVal;
-
-    //             }
-    //             let replacingKey = firstAfterKey(rank*2+2); //start checking right away from the right child
-    //             console.log(`The key that needs to replace '${nodes[rank].key}' is '${firstAfterKey(rank*2+2).key}'`);
-    //         }
-    //     }
-
-    //     for(let i = 0; i<this.arr.length; i++){
-    //         if(nodes[i] != null)
-    //             console.log("At index ", i, " there is key ", nodes[i].key);
-    //     }
-    //     this.size--;
-    // }
-
-    // show(){
-    //     this.arr.forEach((val, index) => {
-    //         console.log(`At index ${index}: ` + val.key);
-    //     });
-    // }
+                }
+            }
+            else{
+                resolve(`The key '${key}' is not in the binary search Tree`);
+            }
+        })
+        
+    }
 
     reset() {
         if (this.connections.length > 0)
