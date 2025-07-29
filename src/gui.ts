@@ -96,6 +96,7 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
                 previousCommands.push(command!.innerHTML);
                 point = previousCommands.length;
                 command!.id = "";
+                console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
                 command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
                 let newLine = document.createElement("p");
                 newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
@@ -256,7 +257,7 @@ let exec = async function (...parameters: any[]) {
                                 let seconds = 1 / speed;
                                 let diameter = new BinarySearchTree.TreeElement(0).diameter;
                                 style.innerHTML = `
-                                    .element{
+                                    .TreeElement{
                                         cursor: help;
                                         position: absolute;
                                         display: flex;
@@ -275,7 +276,7 @@ let exec = async function (...parameters: any[]) {
                                         transition: border ${seconds}s, opacity ${seconds}s;
                                     }
 
-                                    .element.transform{
+                                    .TreeElement.transform{
                                         transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out;
                                     }
 
@@ -480,8 +481,8 @@ let exec = async function (...parameters: any[]) {
 
 
 
-document.addEventListener("DOMContentLoaded", function(event) { 
-    exec("insert,full");
+document.addEventListener("DOMContentLoaded", function() { 
+    exec(["insert", "full"]); //run the command 'insert full' at the beginning
 });
 
 let focus = function () {

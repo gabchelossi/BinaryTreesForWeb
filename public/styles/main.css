@@ -78,17 +78,6 @@ html, body{
     /*background-color: rgba(255, 0, 0, 0.3); */
 }
 
-.comparator{
-    position: absolute;
-    display: block;
-    opacity: 0;
-    height: 2vh;
-    width: 2vh;
-    font-size: 2vh;
-    transition: opacity 1s;
-    margin:0;
-}
-
 .line {
   position: absolute;
   height: 2px;
@@ -102,45 +91,16 @@ html, body{
 .comparatorTransform{
     position: absolute;
     opacity: 0;
-    transition: opacity 1s;
+    transition: opacity 1s ease-out;
+    mix-blend-mode: difference;
 }
 
 .comparatorTransform.aft{
-    left: 2.6vw;
+    left: 2.5vw;
 }
 
 .comparatorTransform.bef{
-    right: 2.6vw;
-}
-
-
-.TreeElement.lt.aft::after{
-    font-weight: bolder;
-    position: absolute;
-    left: 2.6vw;
-    content: "<";
-}
-
-.TreeElement.lt.bef::before{
-    font-weight: bolder;
-    position: absolute;
-    right: 2.6vw;
-    content: ">";
-}
-
-.TreeElement.gt.bef::before{
-    font-weight: bolder;
-    position: absolute;
     right: 2.5vw;
-    content: "<";
-}
-
-
-.TreeElement.gt.aft::after{
-    font-weight: bolder;
-    position: absolute;
-    left: 2.5vw;
-    content: ">";
 }
 
 

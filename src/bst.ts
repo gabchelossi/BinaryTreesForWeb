@@ -130,7 +130,7 @@ export class BinarySearchTree {
                 reject(`'${e.key}' is already in the tree. No duplicates allowed`);
             }
             else {
-                console.log(`addNew Promise Opened`);
+                // console.log(`addNew Promise Opened`);
                 if (this.arr.length == 0) {
                     const xCenter = 50 - e.diameter / 2;
                     await e.translate(`${xCenter}vw`, `1vh`, true);
@@ -148,8 +148,8 @@ export class BinarySearchTree {
                     await e.borderCol("orange", true);
                     await this.compareTransform(e, rank);
                 }
-                console.log(`addNew Promise Resolved`);
-                console.clear();
+                // console.log(`addNew Promise Resolved`);
+                // //console.clear();
                 resolve(++this.size);
             }
         });
@@ -157,12 +157,11 @@ export class BinarySearchTree {
 
     async compareTransform(e:InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
-            console.log(`compare Promise Opened`);
+            // console.log(`compare Promise Opened`);
             let pointer = this.arr[rank];
-            pointer.borderColor = "orange";
+            await pointer.borderCol("orange", true);
             let aft = false;
             if (e.xTransform < pointer.xTransform) {
-
                 e.comparator.addClass("aft");
                 aft = true;
             }
@@ -186,15 +185,14 @@ export class BinarySearchTree {
                     e.comparat.inner = ">";
                 rank = (rank * 2) + 1; //left child
             }
-            await e.comparat.opac(1, true).then(
-                async function () {
-                    await e.comparat.opac(0, true).then(() => {
-                        e.comparat.inner = "";
-                        e.comparator.removeClass(["bef", "aft"]);
-                    });
-                }
-
-            );
+            await e.comparat.opac(1, true).then(async () => {
+                const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+                await sleep(1000);
+            }).then(async () => {
+                await e.comparat.opac(0, true);
+                e.comparat.inner = "";
+                e.comparat.removeClass(["bef", "aft"]);
+            });
 
             await pointer.borderCol("rgb(37, 201, 37)", true);
             if (this.arr[rank] == undefined) {
@@ -205,30 +203,27 @@ export class BinarySearchTree {
                 //console.log(`Going to prepareNextCompare(${rank})`);
                 await this.prepareNextCompare(e, rank);
             }
-            console.log(`compare Promise Resolved`);
+            // console.log(`compare Promise Resolved`);
             resolve(true);
         });
     };
 
     async prepareNextCompare(e : InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
-            console.log(`prepareNextCompare Promise opened`);
+            // console.log(`prepareNextCompare Promise opened`);
             let parent = this.arr[rank];
             //let parentX = parseInt(parent.xTransform);
             let coordinates : {x: string, y: string} = {
                 x: "",
                 y: ""
             };
-            if (parent.xTransform > 50)
-                coordinates.x = parent.xTransform - 2 * e.diameter + "vw";
-            else {
-                coordinates.x = parent.xTransform + 2 * e.diameter + "vw";
-            }
+            //await e.translate((50 + (this.arr[0].diameter)) + "vw", `1vh`, true);
+            coordinates.x = (parent.xTransform+e.diameter/2) + e.diameter + "vw";
             coordinates.y = parent.yTransform + "vh";
             await e.translate(coordinates.x, coordinates.y, true);
             //await pause(); //for debugging purposes 
             await this.compareTransform(e, rank);
-            console.log(`prepareNextCompare Promise Resolved`);
+            //console.log(`prepareNextCompare Promise Resolved`);
             resolve(true);
 
         });
@@ -236,7 +231,7 @@ export class BinarySearchTree {
 
     async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
-            console.log(`assign Promise Opened`);
+            // console.log(`assign Promise Opened`);
             let nodes = this.arr;
             //console.log(`Inside Move function. Trying to move ${e.key} to rank ${rank}`)
             let depth = Math.floor(Math.log2(rank + 1));
@@ -260,18 +255,18 @@ export class BinarySearchTree {
             await this.connectTransform(rank, parentRank);
 
             e.removeClass("transform");
-            console.log(`assign Promise Resolved`);
+            // console.log(`assign Promise Resolved`);
             resolve(true);
         });
     }
 
     async connectTransform(rank: number, parentRank: number) {
-        console.log(`connectTransform Promise Opened`);
+        // console.log(`connectTransform Promise Opened`);
         return new Promise((resolve) => {
             let e = this.arr[rank];
             let parent = this.arr[parentRank];
             this.connections.push(new BinarySearchTree.Connection(e, parent));
-            console.log(`connectTransform Promise Resolved`);
+            // console.log(`connectTransform Promise Resolved`);
             resolve(true);
         });
     }
@@ -282,6 +277,7 @@ export class BinarySearchTree {
             if(rank > -1){
                 if(this.arr[rank*2+1]){
                     //resolve("Hardest case scenario");
+                    
                 }
                 else{
                     //resolve("Easiest case scenario");
@@ -546,7 +542,7 @@ export class BinarySearchTree {
         constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>) {
             this.dom = document.createElement("div");
             this.dom.classList.add("line");
-            console.log(`${child} and ${parent}`)
+            //console.log(`${child} and ${parent}`)
             this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
             this.child = child;
             this.parent = parent;
@@ -737,6 +733,10 @@ export class BinarySearchTree {
     
             set inner(value: string) {
                 this.dom.innerHTML = value;
+            }
+
+            set style(value: string){
+                this.dom.style = value;
             }
     
             async opac(value: number, synchronous: boolean): Promise<Boolean> {
