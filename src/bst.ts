@@ -2,7 +2,7 @@
 
 export class BinarySearchTree {
 
-    arr: InstanceType<typeof BinarySearchTree.TreeElement>[];
+    arr: (InstanceType<typeof BinarySearchTree.TreeElement>)[];
     connections: InstanceType<typeof BinarySearchTree.Connection>[];
     s: number;
     width: number;
@@ -271,16 +271,37 @@ export class BinarySearchTree {
         });
     }
 
-    async removeKey(key: number) : Promise<Boolean | String>{
-        return new Promise((resolve) =>{
+    async removeKey(key: number) : Promise<number | String>{
+        return new Promise(async (resolve) =>{
             let rank = this.rankOf(key);
             if(rank > -1){
-                if(this.arr[rank*2+1]){
-                    //resolve("Hardest case scenario");
+                await this.arr[rank].borderCol("red", true);
+                if(this.arr[rank*2+1] && this.arr[rank*2+2]){
                     
+                    resolve("Hardest case scenario");
                 }
                 else{
-                    //resolve("Easiest case scenario");
+                    //all the elements must be shifted down using the formula floor((currentRank-1)/2)
+                    await this.arr[rank].opac(0, true);
+                    this.arr[rank].dom.remove();
+                    let shiftPreOrder = (root:number) : void => {
+                        let nodes = this.arr;
+                        this.arr[Math.floor((rank-1)/2)] = this.arr[rank];
+                        if (nodes[root * 2 + 1])
+                            shiftPreOrder(root * 2 + 1);
+
+                        if (nodes[root * 2 + 2])
+                            shiftPreOrder(root * 2 + 2);
+
+                        if(!(nodes[root*2+1] && nodes[root*2+2])) // leaf child
+                            delete(this.arr[rank]);
+                        //return returnArr;
+                    }
+                    let startingRank = this.arr[rank*2+1]? rank*2+1:rank*2+2;
+                    console.log(`Calling removal function on rank ${startingRank}`);
+                    shiftPreOrder(startingRank);
+
+                    resolve("Easiest case scenario");
                 }
             }
             else{
