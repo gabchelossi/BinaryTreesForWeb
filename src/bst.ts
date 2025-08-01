@@ -2,7 +2,7 @@
 
 export class BinarySearchTree {
 
-    arr: (InstanceType<typeof BinarySearchTree.TreeElement>)[];
+    arr: (InstanceType<typeof BinarySearchTree.TreeElement>)[] | undefined;
     connections: InstanceType<typeof BinarySearchTree.Connection>[];
     s: number;
     width: number;
@@ -25,12 +25,12 @@ export class BinarySearchTree {
     inOrder(root: number): number[] {
         let returnArr : number[] = [];
         let nodes = this.arr;
-        if (nodes[root * 2 + 1]) {
+        if (nodes!![root * 2 + 1]) {
             returnArr = this.inOrder(root * 2 + 1);
         }
-        returnArr.push(nodes[root].key);
+        returnArr.push(nodes!![root].key);
 
-        if (nodes[root * 2 + 2])
+        if (nodes![root * 2 + 2])
             returnArr = [...returnArr, ...this.inOrder(root * 2 + 2)];
 
         return returnArr;
@@ -40,14 +40,14 @@ export class BinarySearchTree {
         let returnArr = [];
         let nodes = this.arr;
 
-        returnArr.push(nodes[root].key);
+        returnArr.push(nodes![root].key);
 
-        if (nodes[root * 2 + 1]) {
+        if (nodes![root * 2 + 1]) {
             returnArr = [...returnArr, ...this.preOrder(root * 2 + 1)];
         }
 
 
-        if (nodes[root * 2 + 2])
+        if (nodes![root * 2 + 2])
             returnArr = [...returnArr, ...this.preOrder(root * 2 + 2)];
 
         return returnArr;
@@ -56,13 +56,13 @@ export class BinarySearchTree {
     postOrder(root:number) : number[] {
         let nodes = this.arr;
         let returnArr: number[] = [];
-        if (nodes[root * 2 + 1])
+        if (nodes![root * 2 + 1])
             returnArr = [...this.postOrder(root * 2 + 1)];
 
-        if (nodes[root * 2 + 2])
+        if (nodes![root * 2 + 2])
             returnArr = [...returnArr, ...this.postOrder(root * 2 + 2)];
 
-        returnArr.push(nodes[root].key);
+        returnArr.push(nodes![root].key);
 
         return returnArr;
     }
@@ -73,19 +73,19 @@ export class BinarySearchTree {
             return false;
         }
         else {
-            if (this.arr.length == 0) {
+            if (this.arr!.length == 0) {
                 const xCenter = 50 - e.diameter / 2;
                 e.translate(`${xCenter}vw`, `1vh`, true);
-                this.arr.push(e);
+                this.arr!.push(e);
                 e.dom.title = "Rank: 0";
                 e.removeClass("transform");
             }
             else {
-                //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
+                //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
                 let rank = 0;
                 let nodes = this.arr;
-                while (this.arr[rank]) {
-                    if (e.key < this.arr[rank].key) {
+                while (this.arr![rank]) {
+                    if (e.key < this.arr![rank].key) {
                         rank = rank * 2 + 1;
                     }
                     else {
@@ -93,7 +93,7 @@ export class BinarySearchTree {
                     }
                 }
                 let parentRank = Math.floor((rank - 1) / 2);
-                let parent = nodes[parentRank];
+                let parent = nodes![parentRank];
                 let translateInfo: { x: string; y: string } = {
                     x: "",
                     y: ""
@@ -110,7 +110,7 @@ export class BinarySearchTree {
                 e.translate(translateInfo.x, translateInfo.y, false);
                 e.borderCol("rgb(37, 201, 37)", false);
                 e.dom.title = `Rank: ${rank}`;
-                this.arr[rank] = e;
+                this.arr![rank] = e;
                 //console.log(`${e} and ${parent}`)
                 //console.log(`${rank} and ${parentRank}`)
                 this.connectTransform(rank, parentRank);
@@ -131,19 +131,20 @@ export class BinarySearchTree {
             }
             else {
                 // console.log(`addNew Promise Opened`);
-                if (this.arr.length == 0) {
-                    const xCenter = 50 - e.diameter / 2;
-                    await e.translate(`${xCenter}vw`, `1vh`, true);
+                if (this.arr!.length == 0) {
+                    //const xCenter = 50 - e.diameter / 2;
+                    //await e.translate(`${xCenter}vw`, `1vh`, true)
+                    this.assign(e, 0);
                     //await e.translate(`${(e.diameter/2 + this.width)/2}vw`, `1vh`, true);
                     await e.opac(1, true);
-                    this.arr.push(e);
+                    this.arr!.push(e);
                     e.dom.title = "Rank: 0";
                     e.removeClass("transform");
                 }
                 else {
-                    //let max= (2 ** (2+Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
+                    //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
                     let rank = 0;
-                    await e.translate((50 + (this.arr[0].diameter)) + "vw", `1vh`, true);
+                    await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
                     await e.opac(1, true);
                     await e.borderCol("orange", true);
                     await this.compareTransform(e, rank);
@@ -158,7 +159,7 @@ export class BinarySearchTree {
     async compareTransform(e:InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
             // console.log(`compare Promise Opened`);
-            let pointer = this.arr[rank];
+            let pointer = this.arr![rank];
             await pointer.borderCol("orange", true);
             let aft = false;
             if (e.xTransform < pointer.xTransform) {
@@ -195,8 +196,8 @@ export class BinarySearchTree {
             });
 
             await pointer.borderCol("rgb(37, 201, 37)", true);
-            if (this.arr[rank] == undefined) {
-                this.arr[rank] = e;
+            if (this.arr![rank] == undefined) {
+                this.arr![rank] = e;
                 await this.assign(e, rank);
             }
             else {
@@ -211,13 +212,13 @@ export class BinarySearchTree {
     async prepareNextCompare(e : InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
             // console.log(`prepareNextCompare Promise opened`);
-            let parent = this.arr[rank];
+            let parent = this.arr![rank];
             //let parentX = parseInt(parent.xTransform);
             let coordinates : {x: string, y: string} = {
                 x: "",
                 y: ""
             };
-            //await e.translate((50 + (this.arr[0].diameter)) + "vw", `1vh`, true);
+            //await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
             coordinates.x = (parent.xTransform+e.diameter/2) + e.diameter + "vw";
             coordinates.y = parent.yTransform + "vh";
             await e.translate(coordinates.x, coordinates.y, true);
@@ -233,22 +234,30 @@ export class BinarySearchTree {
         return new Promise(async (resolve) => {
             // console.log(`assign Promise Opened`);
             let nodes = this.arr;
-            //console.log(`Inside Move function. Trying to move ${e.key} to rank ${rank}`)
+            console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             let depth = Math.floor(Math.log2(rank + 1));
             let parentRank = Math.floor((rank - 1) / 2);
-            let parent = nodes[parentRank];
+            let parent = nodes![parentRank];
             let translateInfo : {x: string, y: string} = {
                 x: "",
                 y: ""
             };
             let offset = (98) / 2 ** (depth + 1);
-            if (parent.key > e.key) {
-                translateInfo.x = parent.xTransform - offset + "vw";
+            if(parentRank > 0){
+                if (parent.key > e.key) {
+                    translateInfo.x = parent.xTransform - offset + "vw";
+                }
+                else {
+                    translateInfo.x = parent.xTransform + offset + "vw";
+                }
+                translateInfo.y = parent.yTransform + Math.sin(Math.PI / 4) * 10 + "vh";
             }
-            else {
-                translateInfo.x = parent.xTransform + offset + "vw";
+            else{
+                translateInfo.x = 50 - e.diameter / 2 + "vw";
+                translateInfo.y = "1vh";
             }
-            translateInfo.y = parent.yTransform + Math.sin(Math.PI / 4) * 10 + "vh";
+            
+            
             await e.translate(translateInfo.x, translateInfo.y, true);
             await e.borderCol("rgb(37, 201, 37)", true);
             e.dom.title = `Rank: ${rank}`;
@@ -263,52 +272,60 @@ export class BinarySearchTree {
     async connectTransform(rank: number, parentRank: number) {
         // console.log(`connectTransform Promise Opened`);
         return new Promise((resolve) => {
-            let e = this.arr[rank];
-            let parent = this.arr[parentRank];
+            let e = this.arr![rank];
+            let parent = this.arr![parentRank];
             this.connections.push(new BinarySearchTree.Connection(e, parent));
             // console.log(`connectTransform Promise Resolved`);
             resolve(true);
         });
     }
 
-    async removeKey(key: number) : Promise<number | String>{
-        return new Promise(async (resolve) =>{
-            let rank = this.rankOf(key);
-            if(rank > -1){
-                await this.arr[rank].borderCol("red", true);
-                if(this.arr[rank*2+1] && this.arr[rank*2+2]){
-                    
-                    resolve("Hardest case scenario");
-                }
-                else{
-                    //all the elements must be shifted down using the formula floor((currentRank-1)/2)
-                    await this.arr[rank].opac(0, true);
-                    this.arr[rank].dom.remove();
-                    let shiftPreOrder = (root:number) : void => {
-                        let nodes = this.arr;
-                        this.arr[Math.floor((rank-1)/2)] = this.arr[rank];
-                        if (nodes[root * 2 + 1])
-                            shiftPreOrder(root * 2 + 1);
+    async removeKey(key: number): Promise<number | string> {
+    return new Promise(async (resolve) => {
+        let rank = this.rankOf(key);
+        if (rank > -1) {
+            this.arr![rank].addClass("transform");
+            await this.arr![rank].borderCol("red", true);
 
-                        if (nodes[root * 2 + 2])
-                            shiftPreOrder(root * 2 + 2);
+            if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
+                console.log("Hardest case scenario");
+                // (Insert logic for hardest case here)
+                resolve("Hardest case not yet implemented");
+            } else {
+                console.log("Easiest case scenario");
 
-                        if(!(nodes[root*2+1] && nodes[root*2+2])) // leaf child
-                            delete(this.arr[rank]);
-                        //return returnArr;
-                    }
-                    let startingRank = this.arr[rank*2+1]? rank*2+1:rank*2+2;
-                    console.log(`Calling removal function on rank ${startingRank}`);
-                    shiftPreOrder(startingRank);
+                await this.arr![rank].opac(0, true);
+                this.arr![rank].dom.remove();
 
-                    resolve("Easiest case scenario");
-                }
+                const shiftPreOrder = (from: number, to: number): void => {
+                    let nodes = [...this.arr!];
+
+                    console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
+                    this.arr![to] = nodes[from];
+                    this.arr![to].dom.title = `Rank: ${to}`;
+                    this.assign(this.arr![from], to);
+                    delete this.arr![from];
+
+                    const leftChild = from * 2 + 1;
+                    const rightChild = from * 2 + 2;
+
+                    if (nodes[leftChild])
+                        shiftPreOrder(leftChild, to * 2 + 1);
+                    if (nodes[rightChild])
+                        shiftPreOrder(rightChild, to * 2 + 2);
+                };
+
+                let startingRank = this.arr![rank * 2 + 1] ? rank * 2 + 1 : rank * 2 + 2;
+                console.log(`Calling removal function on rank ${startingRank}`);
+                shiftPreOrder(startingRank, rank);
+
+                resolve(--this.size);
             }
-            else{
-                resolve(`The key '${key}' is not in the binary search Tree`);
-            }
-        });
-        
+        } 
+        else {
+            resolve(`The key '${key}' is not in the binary search Tree`);
+        }
+        }); // <- this closes the Promise
     }
 
     reset() {
@@ -321,7 +338,7 @@ export class BinarySearchTree {
             });
         else {
             if (this.size == 1) {
-                this.arr[0].dom.remove();
+                this.arr![0].dom.remove();
             }
         }
         this.connections = [];
@@ -331,14 +348,14 @@ export class BinarySearchTree {
 
     rankOf(key:number) : number{
         let rank = 0;
-        let max = (2 ** (2 + Math.floor(Math.log2(this.arr.length)))); //where the exponent corresponds to the depth
+        let max = (2 ** (2 + Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
         while (rank < max) {
             try {
-                if (key == this.arr[rank].key) {
+                if (key == this.arr![rank].key) {
                     return rank;
                 }
                 else {
-                    if (key < this.arr[rank].key) {
+                    if (key < this.arr![rank].key) {
                         rank = rank * 2 + 1;
                     }
                     else {
@@ -365,11 +382,11 @@ export class BinarySearchTree {
         let original = root;
 
         let setupTrasversal = function (root: number) { //sets all the children to red (unvisited)
-            if (nodes[root * 2 + 1])
+            if (nodes![root * 2 + 1])
                 setupTrasversal(root * 2 + 1);
-            nodes[root].borderColor = 'red';
+            nodes![root].borderColor = 'red';
 
-            if (nodes[root * 2 + 2])
+            if (nodes![root * 2 + 2])
                 setupTrasversal(root * 2 + 2);
             return;
         }
@@ -392,7 +409,7 @@ export class BinarySearchTree {
 
         const vwToPx = window.innerWidth / 100;
         const vhToPx = window.innerHeight / 100;
-        const diameterVw = nodes[0].diameter;
+        const diameterVw = nodes![0].diameter;
         const diameterPx = diameterVw * vwToPx;
         const arrowWidthPx = arrow.getBoundingClientRect().width;
         const arrowOffsetVw = (arrowWidthPx / window.innerWidth) * 50;
@@ -402,7 +419,7 @@ export class BinarySearchTree {
             switch (mode) {
                 case "in-order":
                     let inOrder = async function (root: number) {
-                        let target = nodes[root];
+                        let target = nodes![root];
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
 
@@ -410,20 +427,20 @@ export class BinarySearchTree {
                             arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
 
-                        await nodes[root].borderCol("orange", true); //visited but not added into the return value
+                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
 
                         let returnArr: number[] = [];
 
-                        if (nodes[root * 2 + 1]) {
+                        if (nodes![root * 2 + 1]) {
                             await inOrder(root * 2 + 1).then(function (result) {
                                 returnArr = result;
                             });
                         }
-                        await nodes[root].borderCol("rgb(37, 201, 37)", true);
+                        await nodes![root].borderCol("rgb(37, 201, 37)", true);
 
-                        returnArr.push(nodes[root].key);
+                        returnArr.push(nodes![root].key);
 
-                        if (nodes[root * 2 + 2]) {
+                        if (nodes![root * 2 + 2]) {
                             await inOrder(root * 2 + 2).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
@@ -433,7 +450,7 @@ export class BinarySearchTree {
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
 
                             await waitTransition(arrow, () => {
-                                arrow.style.transform = `translate(${nodes[Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes[Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
+                                arrow.style.transform = `translate(${nodes![Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes![Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
                             });
                         }
 
@@ -456,7 +473,7 @@ export class BinarySearchTree {
 
                 case "pre-order":
                     let preOrder = async function (root:number) {
-                        let target = nodes[root];
+                        let target = nodes![root];
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
 
@@ -465,15 +482,15 @@ export class BinarySearchTree {
                             //arrow.style.transform = `translate(${target.xTransform + diameterVw/2 - 1.5}vw, ${target.yTransform + diameter}vh)`;
                         });
 
-                        await nodes[root].borderCol("orange", true); //visited but not added into the return value
-                        await nodes[root].borderCol("rgb(37, 201, 37)", true);
-                        let returnArr = [nodes[root].key];
-                        if (nodes[root * 2 + 1]) {
+                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
+                        await nodes![root].borderCol("rgb(37, 201, 37)", true);
+                        let returnArr = [nodes![root].key];
+                        if (nodes![root * 2 + 1]) {
                             await preOrder(root * 2 + 1).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
                         }
-                        if (nodes[root * 2 + 2]) {
+                        if (nodes![root * 2 + 2]) {
                             await preOrder(root * 2 + 2).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
@@ -482,7 +499,7 @@ export class BinarySearchTree {
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
 
                             await waitTransition(arrow, () => {
-                                arrow.style.transform = `translate(${nodes[Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes[Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
+                                arrow.style.transform = `translate(${nodes![Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes![Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
                             });
                         }
 
@@ -503,30 +520,30 @@ export class BinarySearchTree {
                 case "post-order":
                     let postOrder = async function (root:number) {
                         let returnArr: number[] = [];
-                        let target = nodes[root];
+                        let target = nodes![root];
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
                         await waitTransition(arrow, () => {
                             arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
-                        await nodes[root].borderCol("orange", true); //visited but not added into the return value
-                        if (nodes[root * 2 + 1]) {
+                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
+                        if (nodes![root * 2 + 1]) {
                             await postOrder(root * 2 + 1).then(function (result) {
                                 returnArr = [...result];
                             });
                         }
-                        if (nodes[root * 2 + 2]) {
+                        if (nodes![root * 2 + 2]) {
                             await postOrder(root * 2 + 2).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
                         }
-                        await nodes[root].borderCol("rgb(37, 201, 37)", true);
-                        returnArr.push(nodes[root].key);
+                        await nodes![root].borderCol("rgb(37, 201, 37)", true);
+                        returnArr.push(nodes![root].key);
 
                         if (root > original) { //this is needed for the arrow to go back to the parent that called this instance of the stack
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
                             await waitTransition(arrow, () => {
-                                arrow.style.transform = `translate(${nodes[Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes[Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
+                                arrow.style.transform = `translate(${nodes![Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes![Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
                             });
                         }
 

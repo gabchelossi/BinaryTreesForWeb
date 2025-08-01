@@ -189,7 +189,7 @@ let exec = async function (...parameters: any[]) {
 
             case 'equivalent':
                 if (binarysearchT.size > 0)
-                    returnval = "insert " + binarysearchT.arr.map((v: { key: any; } | undefined) => {
+                    returnval = "insert " + binarysearchT.arr!.map((v: { key: any; } | undefined) => {
                         if (v != undefined) {
                             return v.key;
                         }
@@ -358,19 +358,19 @@ let exec = async function (...parameters: any[]) {
             case "show":
                 switch (params[1]) {
                     case "array":
-                        if (binarysearchT.arr.length) {
+                        if (binarysearchT.arr!.length) {
                             if (params[2] == 'true') {
                                 let s = "[";
-                                for (let i = 0; i < binarysearchT.arr.length; i++) {
-                                    let val = binarysearchT.arr[i] == undefined ? '<span style="color: grey">[empty]</span>' : binarysearchT.arr[i].key;
-                                    s += `<span style='color: orange'>${i}</span>: ${val}${(i < binarysearchT.arr.length - 1) ? ", " : "]"}`;
+                                for (let i = 0; i < binarysearchT.arr!.length; i++) {
+                                    let val = binarysearchT.arr![i] == undefined ? '<span style="color: grey">[empty]</span>' : binarysearchT.arr![i].key;
+                                    s += `<span style='color: orange'>${i}</span>: ${val}${(i < binarysearchT.arr!.length - 1) ? ", " : "]"}`;
                                 };
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
                                 returnval = s;
                             }
                             else {
                                 let s = "[";
-                                binarysearchT.arr.forEach((val: { key: any; }, index: number, arr: string | any[]) => {
+                                binarysearchT.arr!.forEach((val: { key: any; }, index: number, arr: string | any[]) => {
                                     s += `<span style='color: orange'>${index}</span>: ${val.key}${(index < arr.length - 1) ? ", " : "]"}`;
                                 });
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
@@ -482,7 +482,9 @@ let exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded", function() { 
-    exec(["insert", "full"]); //run the command 'insert full' at the beginning
+    //exec(["insert", "full"]); //run the command 'insert full' at the beginning
+    exec(["insert",15,10,14,13,12]);
+    exec(["set", "animation", "on"]);
 });
 
 let focus = function () {

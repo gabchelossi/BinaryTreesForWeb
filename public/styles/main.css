@@ -63,7 +63,7 @@ html, body{
 
 
 .TreeElement.transform{
-    transition: border 1s, opacity 1s, transform 1s ease-in-out;
+    transition: border 1s, opacity 1s, transform 1s ease-in-out!important;
 }
 
 
