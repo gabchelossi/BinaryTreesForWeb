@@ -138,7 +138,6 @@ export class BinarySearchTree {
                     //await e.translate(`${(e.diameter/2 + this.width)/2}vw`, `1vh`, true);
                     await e.opac(1, true);
                     this.arr!.push(e);
-                    e.dom.title = "Rank: 0";
                     e.removeClass("transform");
                 }
                 else {
@@ -243,7 +242,7 @@ export class BinarySearchTree {
                 y: ""
             };
             let offset = (98) / 2 ** (depth + 1);
-            if(parentRank > 0){
+            if(parentRank >= 0){
                 if (parent.key > e.key) {
                     translateInfo.x = parent.xTransform - offset + "vw";
                 }
@@ -284,7 +283,8 @@ export class BinarySearchTree {
     return new Promise(async (resolve) => {
         let rank = this.rankOf(key);
         if (rank > -1) {
-            this.arr![rank].addClass("transform");
+            //this.arr![rank].addClass("transform");
+            
             await this.arr![rank].borderCol("red", true);
 
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
@@ -680,20 +680,23 @@ export class BinarySearchTree {
             return this.comparator;
         }
     
-        opac =  (value: number, synchronous:boolean) => { //for some weird reason js does not like a function whose name is opacity... maybe dom.style.opacity conflict?
-            //let e = this ;
-            return new Promise( (resolve) => {
-                this.opacity = value;
+        opac = (value: number, synchronous: boolean) => {
+            return new Promise((resolve) => {
+                // Force reflow before setting opacity
+                this.dom.offsetHeight;
+
                 if (synchronous) {
-                    this.dom.ontransitionend = function (e) {
-                        this.ontransitionend = null;
+                    this.dom.ontransitionend = (e) => {
+                        this.dom.ontransitionend = null;
                         resolve(e);
-                    }
-                }
-                else
+                    };
+                } else {
                     resolve(true);
+                }
+
+                this.opacity = value;
             });
-        }
+        };
     
         translate = (x:string, y:string, synchronous:boolean) => {
             //let e = this;
