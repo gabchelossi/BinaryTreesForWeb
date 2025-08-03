@@ -293,9 +293,9 @@ export class BinarySearchTree {
                 resolve("Hardest case not yet implemented");
             } else {
                 console.log("Easiest case scenario");
-
+                //await new Promise(() => {});
                 await this.arr![rank].opac(0, true);
-                this.arr![rank].dom.remove();
+                //this.arr![rank].dom.remove();
 
                 const shiftPreOrder = (from: number, to: number): void => {
                     let nodes = [...this.arr!];
@@ -681,10 +681,9 @@ export class BinarySearchTree {
         }
     
         opac = (value: number, synchronous: boolean) => {
+            this.dom.offsetHeight;
             return new Promise((resolve) => {
                 // Force reflow before setting opacity
-                this.dom.offsetHeight;
-
                 if (synchronous) {
                     this.dom.ontransitionend = (e) => {
                         this.dom.ontransitionend = null;
