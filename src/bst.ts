@@ -132,10 +132,7 @@ export class BinarySearchTree {
             else {
                 // console.log(`addNew Promise Opened`);
                 if (this.arr!.length == 0) {
-                    //const xCenter = 50 - e.diameter / 2;
-                    //await e.translate(`${xCenter}vw`, `1vh`, true)
                     this.assign(e, 0);
-                    //await e.translate(`${(e.diameter/2 + this.width)/2}vw`, `1vh`, true);
                     await e.opac(1, true);
                     this.arr!.push(e);
                     e.removeClass("transform");
@@ -148,8 +145,6 @@ export class BinarySearchTree {
                     await e.borderCol("orange", true);
                     await this.compareTransform(e, rank);
                 }
-                // console.log(`addNew Promise Resolved`);
-                // //console.clear();
                 resolve(++this.size);
             }
         });
@@ -232,6 +227,7 @@ export class BinarySearchTree {
     async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
         return new Promise(async (resolve) => {
             // console.log(`assign Promise Opened`);
+            e.addClass("transform");
             let nodes = this.arr;
             console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             let depth = Math.floor(Math.log2(rank + 1));
@@ -283,31 +279,27 @@ export class BinarySearchTree {
     return new Promise(async (resolve) => {
         let rank = this.rankOf(key);
         if (rank > -1) {
-            //this.arr![rank].addClass("transform");
-            
             await this.arr![rank].borderCol("red", true);
-
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 console.log("Hardest case scenario");
                 // (Insert logic for hardest case here)
-                resolve("Hardest case not yet implemented");
             } else {
                 console.log("Easiest case scenario");
-                //await new Promise(() => {});
+                
                 await this.arr![rank].opac(0, true);
-                //this.arr![rank].dom.remove();
+                this.arr![rank].dom.remove();
 
-                const shiftPreOrder = (from: number, to: number): void => {
+                let shiftPreOrder = (from: number, to: number): void => {
                     let nodes = [...this.arr!];
 
                     console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
                     this.arr![to] = nodes[from];
-                    this.arr![to].dom.title = `Rank: ${to}`;
+                    //this.arr![to].dom.title = `Rank: ${to}`;
                     this.assign(this.arr![from], to);
                     delete this.arr![from];
 
-                    const leftChild = from * 2 + 1;
-                    const rightChild = from * 2 + 2;
+                    let leftChild = from * 2 + 1;
+                    let rightChild = from * 2 + 2;
 
                     if (nodes[leftChild])
                         shiftPreOrder(leftChild, to * 2 + 1);
@@ -318,9 +310,8 @@ export class BinarySearchTree {
                 let startingRank = this.arr![rank * 2 + 1] ? rank * 2 + 1 : rank * 2 + 2;
                 console.log(`Calling removal function on rank ${startingRank}`);
                 shiftPreOrder(startingRank, rank);
-
-                resolve(--this.size);
             }
+            resolve(--this.size);
         } 
         else {
             resolve(`The key '${key}' is not in the binary search Tree`);
@@ -681,19 +672,22 @@ export class BinarySearchTree {
         }
     
         opac = (value: number, synchronous: boolean) => {
-            this.dom.offsetHeight;
             return new Promise((resolve) => {
                 // Force reflow before setting opacity
                 if (synchronous) {
-                    this.dom.ontransitionend = (e) => {
+                    this.dom.ontransitionend = async (e) => {
                         this.dom.ontransitionend = null;
+                        await new Promise((r) => requestAnimationFrame(r)); //essential in case youre calling other animation methods on the element
                         resolve(e);
                     };
+                    requestAnimationFrame(()=> {
+                        this.opacity = value;
+                    })
+                    
                 } else {
+                    this.opacity = value;
                     resolve(true);
                 }
-
-                this.opacity = value;
             });
         };
     
@@ -703,8 +697,9 @@ export class BinarySearchTree {
             return new Promise((resolve) => {
                 this.transform = `translate(${x}, ${y})`;
                 if (synchronous) {
-                    this.dom.ontransitionend = function (e) {
-                        this.ontransitionend = null;
+                    this.dom.ontransitionend = async (e) => {
+                        this.dom.ontransitionend = null;
+                        await new Promise((r) => requestAnimationFrame(r)); //essential in case youre calling other animation methods on the element
                         resolve(e);
                     }
                 }
@@ -715,16 +710,21 @@ export class BinarySearchTree {
     
         borderCol =(value:string, synchronous:boolean) => {
             this.dom.offsetHeight; //important for reflow
-            return new Promise((resolve) => {
-                this.borderColor = `${value}`;
+            return new Promise((resolve) => {                
                 if (synchronous) {
-                    this.dom.ontransitionend = function (e) {
+                    this.dom.ontransitionend = async function (e) {
                         this.ontransitionend = null;
+                        await new Promise((r) => requestAnimationFrame(r)); //essential in case youre calling other animation methods on the element
                         resolve(e);
                     }
+                    requestAnimationFrame(() => {
+                        this.borderColor = `${value}`;
+                    });
                 }
-                else
+                else{
+                    this.borderColor = `${value}`;
                     resolve(true);
+                }
             });
         }
     

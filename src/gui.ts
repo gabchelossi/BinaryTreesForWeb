@@ -273,11 +273,11 @@ let exec = async function (...parameters: any[]) {
                                         font-weight: bolder;
                                         font-size: 2.5vh;
                                         border: 2px solid rgb(37, 201, 37);
-                                        transition: border ${seconds}s, opacity ${seconds}s;
+                                        transition: border ${seconds}s, opacity ${seconds}s!important;
                                     }
 
                                     .TreeElement.transform{
-                                        transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out;
+                                        transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out!important;
                                     }
 
 
@@ -325,6 +325,12 @@ let exec = async function (...parameters: any[]) {
                         else {
                             if (params[2] == "off") {
                                 animation = false;
+                                let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
+                                    noAnimationElements.forEach((e) => {
+                                        //console.log(typeof(e));
+                                        e.classList.add("no-animation");
+                                        (e as HTMLElement).offsetHeight;
+                                    });
                                 returnval = `Animations have been turned off.`;
                             }
                             else {
@@ -332,7 +338,9 @@ let exec = async function (...parameters: any[]) {
                                     animation = true;
                                     let noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     noAnimationElements.forEach((e) => {
+                                        //console.log(typeof(e));
                                         e.classList.remove("no-animation");
+                                        (e as HTMLElement).offsetHeight;
                                     });
                                     returnval = `Animations have been turned on.`;
                                 }
