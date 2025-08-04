@@ -230,6 +230,7 @@ export class BinarySearchTree {
             e.addClass("transform");
             let nodes = this.arr;
             console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
+            e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
             let parentRank = Math.floor((rank - 1) / 2);
             let parent = nodes![parentRank];
@@ -255,7 +256,7 @@ export class BinarySearchTree {
             
             await e.translate(translateInfo.x, translateInfo.y, true);
             await e.borderCol("rgb(37, 201, 37)", true);
-            e.dom.title = `Rank: ${rank}`;
+            
             await this.connectTransform(rank, parentRank);
 
             e.removeClass("transform");
@@ -275,11 +276,14 @@ export class BinarySearchTree {
         });
     }
 
-    async removeKey(key: number): Promise<number | string> {
+    async removeKey(key: number): Promise<number | string> { //there is a weird bug when removing 5 and 15 in this order........
     return new Promise(async (resolve) => {
         let rank = this.rankOf(key);
         if (rank > -1) {
             await this.arr![rank].borderCol("red", true);
+            const index = this.connections.findIndex(c => c.parent === this.arr![rank]);
+            const line = index !== -1 ? this.connections[index] : null;
+
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 console.log("Hardest case scenario");
                 // (Insert logic for hardest case here)
@@ -287,6 +291,15 @@ export class BinarySearchTree {
                 console.log("Easiest case scenario");
                 
                 await this.arr![rank].opac(0, true);
+
+                let splitIndex = line!.transform.indexOf("scaleX")
+                line!.transform = line!.transform.substring(0, splitIndex) + "scaleX(0)";
+                line!.dom.onanimationend = () => {
+                    line!.dom.onanimationend = null;
+                    line!.dom.remove();
+                    delete this.connections[index];
+                }
+
                 this.arr![rank].dom.remove();
 
                 let shiftPreOrder = (from: number, to: number): void => {
@@ -303,23 +316,32 @@ export class BinarySearchTree {
 
                     if (nodes[leftChild]){
                         shiftPreOrder(leftChild, to * 2 + 1);
-
+                        let line = this.connections.filter((line) => {
+                            return line.parent == nodes[from] && line.child == nodes[leftChild];
+                        });
+                        //console.log(line);
+                        line.forEach(conn => {
+                            conn.draw(false);
+                            let parentId = conn.parent.dom.title.substring(6);
+                            let childId = conn.child.dom.title.substring(6);
+                            conn.dom.id = `${parentId}-${childId}`;
+                        });
                     }
                         
                     if (nodes[rightChild])
                         shiftPreOrder(rightChild, to * 2 + 2);
+                        let line = this.connections.filter((line) => {
+                            return line.parent == nodes[from] && line.child == nodes[rightChild];
+                        });
+                        //console.log(line);
+                        line.forEach(conn => {
+                            conn.draw(false);
+                            conn.dom.id = `${to}-${from-1}`;
+                        });
                 };
 
                 let startingRank = this.arr![rank * 2 + 1] ? rank * 2 + 1 : rank * 2 + 2;
-                let line = this.connections.filter((c) =>{
-                    return c.parent == this.arr![rank];
-                });
                 
-                for (const conn of line) {
-                    conn.transform = "scale(0)";
-                    //await conn.opac(0, true);
-                }
-                console.log(line);
                 
                 console.log(`Calling removal function on rank ${startingRank}`);
                 shiftPreOrder(startingRank, rank);

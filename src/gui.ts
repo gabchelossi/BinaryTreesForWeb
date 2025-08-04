@@ -308,7 +308,7 @@ let exec = async function (...parameters: any[]) {
                                         width: 100px; /* fixed base width */
                                         background-color: black;
                                         transform-origin: 0 0;
-                                        transition: transform ${seconds}s ease-out, opacity ${seconds}s;
+                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s;
                                         will-change: transform;
                                     }
 
@@ -491,7 +491,7 @@ let exec = async function (...parameters: any[]) {
 
 document.addEventListener("DOMContentLoaded", function() { 
     //exec(["insert", "full"]); //run the command 'insert full' at the beginning
-    exec(["insert",15,10,14,12,13]);
+    exec(["insert",15,5,10,8,9,7,13,14,11]);
     exec(["set", "animation", "on"]);
 });
 

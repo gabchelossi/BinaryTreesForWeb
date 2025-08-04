@@ -84,7 +84,7 @@ html, body{
   width: 100px; /* fixed base width */
   background-color: black;
   transform-origin: 0 0;
-  transition: transform 1s ease-out, opacity 1s;
+  transition: transform 1s ease-in-out, opacity 1s;
   will-change: transform;
 }
 
