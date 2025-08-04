@@ -301,13 +301,26 @@ export class BinarySearchTree {
                     let leftChild = from * 2 + 1;
                     let rightChild = from * 2 + 2;
 
-                    if (nodes[leftChild])
+                    if (nodes[leftChild]){
                         shiftPreOrder(leftChild, to * 2 + 1);
+
+                    }
+                        
                     if (nodes[rightChild])
                         shiftPreOrder(rightChild, to * 2 + 2);
                 };
 
                 let startingRank = this.arr![rank * 2 + 1] ? rank * 2 + 1 : rank * 2 + 2;
+                let line = this.connections.filter((c) =>{
+                    return c.parent == this.arr![rank];
+                });
+                
+                for (const conn of line) {
+                    conn.transform = "scale(0)";
+                    //await conn.opac(0, true);
+                }
+                console.log(line);
+                
                 console.log(`Calling removal function on rank ${startingRank}`);
                 shiftPreOrder(startingRank, rank);
             }
@@ -577,7 +590,7 @@ export class BinarySearchTree {
             this.parent = parent;
             this.draw(true);
             this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
-                this.dom.style.transition = "transform 0s";
+                //this.dom.style.transition = "transform 0s";
                 this.dom.ontransitionend = null;
                 //console.log(`removing animation triggered`);
             };
@@ -618,6 +631,22 @@ export class BinarySearchTree {
 
         get transform() {
             return this.dom.style.transform;
+        }
+
+        opac = (o:number, synchronous:boolean) => {
+            return new Promise((resolve)=> {
+                if(synchronous){
+                    this.dom.ontransitionend = () =>{
+                        this.dom.ontransitionend = null;
+                        resolve(true);
+                    }
+                }
+                else{
+                    resolve(true);
+                }
+                this.dom.style.opacity = (o).toString();
+            })
+            
         }
 
         set length(length) {

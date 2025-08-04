@@ -308,7 +308,7 @@ let exec = async function (...parameters: any[]) {
                                         width: 100px; /* fixed base width */
                                         background-color: black;
                                         transform-origin: 0 0;
-                                        transition: transform ${seconds}s ease-out;
+                                        transition: transform ${seconds}s ease-out, opacity ${seconds}s;
                                         will-change: transform;
                                     }
 
