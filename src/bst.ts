@@ -229,7 +229,7 @@ export class BinarySearchTree {
             // console.log(`assign Promise Opened`);
             e.addClass("transform");
             let nodes = this.arr;
-            console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
+            //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
             let parentRank = Math.floor((rank - 1) / 2);
@@ -292,7 +292,7 @@ export class BinarySearchTree {
                 
                 await this.arr![rank].opac(0, true);
 
-                let splitIndex = line!.transform.indexOf("scaleX")
+                let splitIndex = line!.transform.indexOf("scaleX");
                 line!.transform = line!.transform.substring(0, splitIndex) + "scaleX(0)";
                 line!.dom.onanimationend = () => {
                     line!.dom.onanimationend = null;
@@ -302,49 +302,98 @@ export class BinarySearchTree {
 
                 this.arr![rank].dom.remove();
 
-                let shiftPreOrder = (from: number, to: number): void => {
-                    let nodes = [...this.arr!];
+                let shiftPreOrder: ((from: number, to: number) => void) | undefined = undefined;
 
-                    console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
-                    this.arr![to] = nodes[from];
-                    //this.arr![to].dom.title = `Rank: ${to}`;
-                    this.assign(this.arr![from], to);
-                    delete this.arr![from];
+                if(this.arr![rank*2+1]){ //this version of shiftPreOrder makes sure so that the left handed children get assigned AFTER the right handed children
+                    shiftPreOrder = (from: number, to: number): void => {
+                        let nodes = [...this.arr!];
 
-                    let leftChild = from * 2 + 1;
-                    let rightChild = from * 2 + 2;
+                        console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
+                        this.arr![to] = nodes[from];
+                        //this.arr![to].dom.title = `Rank: ${to}`;
+                        this.assign(this.arr![from], to); //assigning the DOM element to the new parent
+                        delete this.arr![from];
 
-                    if (nodes[leftChild]){
-                        shiftPreOrder(leftChild, to * 2 + 1);
-                        let line = this.connections.filter((line) => {
-                            return line.parent == nodes[from] && line.child == nodes[leftChild];
-                        });
-                        //console.log(line);
-                        line.forEach(conn => {
-                            conn.draw(false);
-                            let parentId = conn.parent.dom.title.substring(6);
-                            let childId = conn.child.dom.title.substring(6);
-                            conn.dom.id = `${parentId}-${childId}`;
-                        });
-                    }
-                        
-                    if (nodes[rightChild])
-                        shiftPreOrder(rightChild, to * 2 + 2);
-                        let line = this.connections.filter((line) => {
-                            return line.parent == nodes[from] && line.child == nodes[rightChild];
-                        });
-                        //console.log(line);
-                        line.forEach(conn => {
-                            conn.draw(false);
-                            conn.dom.id = `${to}-${from-1}`;
-                        });
-                };
+                        let leftChild = from * 2 + 1;
+                        let rightChild = from * 2 + 2;
+                            
+                        if (this.arr![rightChild]){
+                            //console.log(`Moving right child`);
+                            shiftPreOrder!(rightChild, to * 2 + 2);
+                            let line = this.connections.filter((line) => {
+                                return line.parent == nodes[from] && line.child == nodes[rightChild];
+                            });
+                            //console.log(line);
+                            line.forEach(conn => {
+                                conn.draw(false);
+                                conn.dom.id = `${to}-${from-1}`;
+                            });
+                        }
+                            
+                        if (this.arr![leftChild]){
+                            console.log(`Moving left child`);
+                            shiftPreOrder!(leftChild, to * 2 + 1);
+                            let line = this.connections.filter((line) => {
+                                return line.parent == nodes[from] && line.child == nodes[leftChild];
+                            });
+                            //console.log(line);
+                            line.forEach(conn => {
+                                conn.draw(false);
+                                let parentId = conn.parent.dom.title.substring(6);
+                                let childId = conn.child.dom.title.substring(6);
+                                conn.dom.id = `${parentId}-${childId}`;
+                            });
+                        }
+                    };
+                }
+                else{
+                    shiftPreOrder = (from: number, to: number): void => { //the opposite of above
+                        let nodes = [...this.arr!];
+
+                        console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
+                        this.arr![to] = nodes[from];
+                        //this.arr![to].dom.title = `Rank: ${to}`;
+                        this.assign(this.arr![from], to); //assigning the DOM element to the new parent
+                        delete this.arr![from];
+
+                        let leftChild = from * 2 + 1;
+                        let rightChild = from * 2 + 2;
+                        if (this.arr![leftChild]){
+                            console.log(`Moving left child`);
+                            shiftPreOrder!(leftChild, to * 2 + 1);
+                            let line = this.connections.filter((line) => {
+                                return line.parent == nodes[from] && line.child == nodes[leftChild];
+                            });
+                            //console.log(line);
+                            line.forEach(conn => {
+                                conn.draw(false);
+                                let parentId = conn.parent.dom.title.substring(6);
+                                let childId = conn.child.dom.title.substring(6);
+                                conn.dom.id = `${parentId}-${childId}`;
+                            });
+                        }
+                            
+                        if (this.arr![rightChild]){
+                            //console.log(`Moving right child`);
+                            shiftPreOrder!(rightChild, to * 2 + 2);
+                            let line = this.connections.filter((line) => {
+                                return line.parent == nodes[from] && line.child == nodes[rightChild];
+                            });
+                            //console.log(line);
+                            line.forEach(conn => {
+                                conn.draw(false);
+                                conn.dom.id = `${to}-${from-1}`;
+                            });
+                        }
+                    };
+                }
+                
 
                 let startingRank = this.arr![rank * 2 + 1] ? rank * 2 + 1 : rank * 2 + 2;
                 
                 
                 console.log(`Calling removal function on rank ${startingRank}`);
-                shiftPreOrder(startingRank, rank);
+                shiftPreOrder!(startingRank, rank);
             }
             resolve(--this.size);
         } 
