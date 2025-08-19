@@ -1,2 +1,5 @@
 # Ignore compiled JS files
 /public/js/
+/node_modules/
+package-lock.json
+package.json
