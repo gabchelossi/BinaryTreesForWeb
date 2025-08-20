@@ -25,7 +25,7 @@ export class BinarySearchTree {
     inOrder(root: number): number[] {
         let returnArr : number[] = [];
         let nodes = this.arr;
-        if (nodes!![root * 2 + 1]) {
+        if (nodes![root * 2 + 1]) {
             returnArr = this.inOrder(root * 2 + 1);
         }
         returnArr.push(nodes!![root].key);
@@ -127,7 +127,7 @@ export class BinarySearchTree {
         e.dom.offsetHeight; //important for reflow
         return new Promise(async (resolve, reject) => {
             if (this.rankOf(e.key) > -1) {
-                reject(`'${e.key}' is already in the tree. No duplicates allowed`);
+                reject(`The key '${e.key}' is already in the tree. No duplicates allowed`);
             }
             else {
                 // console.log(`addNew Promise Opened`);
@@ -277,7 +277,7 @@ export class BinarySearchTree {
     }
 
     async removeKey(key: number): Promise<number | string> { //there is a weird bug when removing 5 and 15 in this order........
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
         let rank = this.rankOf(key);
         if (rank > -1) {
             await this.arr![rank].borderCol("red", true);
@@ -305,6 +305,7 @@ export class BinarySearchTree {
                 let shiftPreOrder: ((from: number, to: number) => void);
 
                 if(this.arr![rank*2+1]){ //this version of shiftPreOrder makes sure so that the left handed children get assigned AFTER the right handed children
+                    //console.log(`Before right children, after left children`);
                     shiftPreOrder = (from: number, to: number): void => {
                         let nodes = [...this.arr!];
 
@@ -326,12 +327,14 @@ export class BinarySearchTree {
                             //console.log(line);
                             line.forEach(conn => {
                                 conn.draw(false);
+                                
                                 conn.dom.id = `${to}-${from+1}`;
                             });
+                            console.log(`${to}-${from+1} Line 333`);
                         }
                             
                         if (this.arr![leftChild]){
-                            console.log(`Moving left child`);
+                            //console.log(`Moving left child`);
                             shiftPreOrder!(leftChild, to * 2 + 1);
                             let line = this.connections.filter((line) => {
                                 return line.parent == nodes[from] && line.child == nodes[leftChild];
@@ -341,15 +344,16 @@ export class BinarySearchTree {
                                 conn.draw(false);
                                 let parentId = conn.parent.dom.title.substring(6);
                                 let childId = conn.child.dom.title.substring(6);
-                                conn.dom.id = `${to}-${from}`;
+                                conn.dom.id = `${to}-${from+2}`;
                             });
+                            console.log(`${to}-${from+2} Line 348`);
                         }
                     };
                 }
                 else{
                     shiftPreOrder = (from: number, to: number): void => { //the opposite of above
                         let nodes = [...this.arr!];
-
+                        console.log(`Before left children, after right children`);
                         //console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
                         this.arr![to] = nodes[from];
                         //this.arr![to].dom.title = `Rank: ${to}`;
@@ -371,6 +375,7 @@ export class BinarySearchTree {
                                 let childId = conn.child.dom.title.substring(6);
                                 conn.dom.id = `${parentId}-${childId}`;
                             });
+                            console.log(`${to}-${from} Line 378`);
                         }
                             
                         if (this.arr![rightChild]){
@@ -382,8 +387,9 @@ export class BinarySearchTree {
                             //console.log(line);
                             line.forEach(conn => {
                                 conn.draw(false);
-                                conn.dom.id = `${to}-${from-1}`;
+                                conn.dom.id = `${to}-${from}`;
                             });
+                            console.log(`${to}-${from} Line 391`);
                         }
                     };
                 }
@@ -398,7 +404,7 @@ export class BinarySearchTree {
             resolve(--this.size);
         } 
         else {
-            resolve(`The key '${key}' is not in the binary search Tree`);
+            reject(`The key '${key}' is not in the binary search Tree`);
         }
         }); // <- this closes the Promise
     }

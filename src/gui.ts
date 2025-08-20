@@ -97,7 +97,12 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
                 point = previousCommands.length;
                 command!.id = "";
                 console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
-                command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
+                try{
+                    command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
+                }
+                catch(e){
+                    command!.innerHTML += `<br><br>${e}`;
+                }
                 let newLine = document.createElement("p");
                 newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
                 consoleOutput!.append(newLine);
@@ -217,6 +222,21 @@ let exec = async function (...parameters: any[]) {
                 document.getElementById("console-content")!.innerHTML = "";
                 break;
 
+            case 'remove': 
+                let element = parseInt(params[1]);
+                if(isNaN(element)){
+                    reject("The passed parameter is not a number.");
+                }
+                else{
+                    try{
+                        await binarysearchT.removeKey(element);
+                        resolve(`The key '${params[1]}' has been deleted.`);
+                    }
+                    catch(e){
+                        reject(e);
+                    }
+                }
+            break;
             case 'ls':
             case 'pwd':
             case 'chmod':
@@ -402,12 +422,23 @@ let exec = async function (...parameters: any[]) {
                 break;
             case "fill-random":
                 (async function () {
-                    await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
-                    for (let i = 0; i < 20; i++) {
-                        let random = Math.floor(Math.random() * 100);
-                        if (binarysearchT.rankOf(random) == -1)
-                            await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(random));
+                    if(animation){
+                        await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
+                        for (let i = 0; i < 20; i++) {
+                            let random = Math.floor(Math.random() * 100);
+                            if (binarysearchT.rankOf(random) == -1)
+                                await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(random));
+                        }
                     }
+                    else{
+                        await binarysearchT.addNew(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
+                        for (let i = 0; i < 20; i++) {
+                            let random = Math.floor(Math.random() * 100);
+                            if (binarysearchT.rankOf(random) == -1)
+                                await binarysearchT.addNew(new BinarySearchTree.TreeElement(random));
+                        }
+                    }
+                    
                 })();
 
                 break;
