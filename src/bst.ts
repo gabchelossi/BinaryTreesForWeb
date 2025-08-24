@@ -293,12 +293,13 @@ export class BinarySearchTree {
                 await this.arr![rank].opac(0, true);
 
                 let splitIndex = line!.transform.indexOf("scaleX");
-                line!.transform = line!.transform.substring(0, splitIndex) + "scaleX(0)";
-                line!.dom.onanimationend = () => {
-                    line!.dom.onanimationend = null;
+                
+                line!.dom.ontransitionend = () => {
+                    line!.dom.ontransitionend = null;
                     line!.dom.remove();
                     delete this.connections[index];
                 }
+                line!.transform = line!.transform.substring(0, splitIndex) + "scaleX(0)";
 
                 this.arr![rank].dom.remove();
 
@@ -322,15 +323,17 @@ export class BinarySearchTree {
                             //console.log(`Moving right child`);
                             shiftPreOrder!(rightChild, to * 2 + 2);
                             let line = this.connections.filter((line) => {
+                                
                                 return line.parent == nodes[from] && line.child == nodes[rightChild];
                             });
-                            //console.log(line);
+                            console.log(`line 329`);
+                            console.log(line);
                             line.forEach(conn => {
                                 conn.draw(false);
                                 
                                 conn.dom.id = `${to}-${from+1}`;
                             });
-                            console.log(`${to}-${from+1} Line 333`);
+                            //console.log(`${to}-${from+1} Line 333`);
                         }
                             
                         if (this.arr![leftChild]){
@@ -339,14 +342,16 @@ export class BinarySearchTree {
                             let line = this.connections.filter((line) => {
                                 return line.parent == nodes[from] && line.child == nodes[leftChild];
                             });
+                            console.log(`line 342`);
+                            console.log(line);
                             //console.log(line);
                             line.forEach(conn => {
                                 conn.draw(false);
                                 let parentId = conn.parent.dom.title.substring(6);
                                 let childId = conn.child.dom.title.substring(6);
-                                conn.dom.id = `${to}-${from+2}`;
+                                conn.dom.id = `${to}-${from}`;
                             });
-                            console.log(`${to}-${from+2} Line 348`);
+                            console.log(`${to}-${from} Line 348`);
                         }
                     };
                 }
@@ -366,6 +371,7 @@ export class BinarySearchTree {
                             //console.log(`Moving left child`);
                             shiftPreOrder!(leftChild, to * 2 + 1);
                             let line = this.connections.filter((line) => {
+                                console.log(line.dom);
                                 return line.parent == nodes[from] && line.child == nodes[leftChild];
                             });
                             //console.log(line);
@@ -382,6 +388,7 @@ export class BinarySearchTree {
                             //console.log(`Moving right child`);
                             shiftPreOrder!(rightChild, to * 2 + 2);
                             let line = this.connections.filter((line) => {
+                                console.log(line.dom);
                                 return line.parent == nodes[from] && line.child == nodes[rightChild];
                             });
                             //console.log(line);
