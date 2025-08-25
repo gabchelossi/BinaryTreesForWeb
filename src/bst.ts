@@ -326,8 +326,8 @@ export class BinarySearchTree {
                                 
                                 return line.parent == nodes[from] && line.child == nodes[rightChild];
                             });
-                            console.log(`line 329`);
-                            console.log(line);
+                            // console.log(`line 329`);
+                            // console.log(line);
                             line.forEach(conn => {
                                 conn.draw(false);
                                 
@@ -342,8 +342,8 @@ export class BinarySearchTree {
                             let line = this.connections.filter((line) => {
                                 return line.parent == nodes[from] && line.child == nodes[leftChild];
                             });
-                            console.log(`line 342`);
-                            console.log(line);
+                            // console.log(`line 342`);
+                            // console.log(line);
                             //console.log(line);
                             line.forEach(conn => {
                                 conn.draw(false);
@@ -351,14 +351,14 @@ export class BinarySearchTree {
                                 let childId = conn.child.dom.title.substring(6);
                                 conn.dom.id = `${to}-${from}`;
                             });
-                            console.log(`${to}-${from} Line 348`);
+                            //console.log(`${to}-${from} Line 348`);
                         }
                     };
                 }
                 else{
                     shiftPreOrder = (from: number, to: number): void => { //the opposite of above
                         let nodes = [...this.arr!];
-                        console.log(`Before left children, after right children`);
+                        //console.log(`Before left children, after right children`);
                         //console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
                         this.arr![to] = nodes[from];
                         //this.arr![to].dom.title = `Rank: ${to}`;
@@ -371,7 +371,7 @@ export class BinarySearchTree {
                             //console.log(`Moving left child`);
                             shiftPreOrder!(leftChild, to * 2 + 1);
                             let line = this.connections.filter((line) => {
-                                console.log(line.dom);
+                                //console.log(line.dom);
                                 return line.parent == nodes[from] && line.child == nodes[leftChild];
                             });
                             //console.log(line);
@@ -381,14 +381,14 @@ export class BinarySearchTree {
                                 let childId = conn.child.dom.title.substring(6);
                                 conn.dom.id = `${parentId}-${childId}`;
                             });
-                            console.log(`${to}-${from} Line 378`);
+                            // console.log(`${to}-${from} Line 378`);
                         }
                             
                         if (this.arr![rightChild]){
                             //console.log(`Moving right child`);
                             shiftPreOrder!(rightChild, to * 2 + 2);
                             let line = this.connections.filter((line) => {
-                                console.log(line.dom);
+                                // console.log(line.dom);
                                 return line.parent == nodes[from] && line.child == nodes[rightChild];
                             });
                             //console.log(line);
@@ -396,7 +396,7 @@ export class BinarySearchTree {
                                 conn.draw(false);
                                 conn.dom.id = `${to}-${from}`;
                             });
-                            console.log(`${to}-${from} Line 391`);
+                            // console.log(`${to}-${from} Line 391`);
                         }
                     };
                 }
