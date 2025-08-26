@@ -24,9 +24,21 @@ export class BinarySearchTree {
 
     trim(): boolean{
         let size = this.size;
-        if(Math.floor(this.arr!.length/2) > size){
-            this.arr = this.arr!.slice(0, size);
+
+        let lastIndex, count: number;
+        count = 0;
+        for(let i = 0; i<this.arr!.length; i++){
+            if(this.arr![i]){
+                count++;
+            }
+            if(count == this.size){
+                lastIndex = i;
+                i = this.arr!.length; //fancy way of not using break statement
+            }
         }
+        if(this.size>0)
+            lastIndex!++; //slice goes up to index n-1
+        this.arr! = this.arr!.slice(0,lastIndex!);
         this.connections = this.connections.filter(e => {return Boolean(e)});
         return true;
     }
@@ -295,22 +307,6 @@ export class BinarySearchTree {
         let rank = this.rankOf(key);
         if (rank > -1) {
             await this.arr![rank].borderCol("red", true);
-            const index = this.connections.findIndex(c => {
-                if(c == null) return false;
-                else{
-                    if(!(this.arr![rank * 2 + 1] || this.arr![rank * 2 + 2])){
-                        console.log("Leaf node");
-                        return c.child === this.arr![rank]; //it means that the node is a leaf node
-                    }
-                    else{
-                        console.log("Not a leaf node");
-                        console.log(this.arr![rank * 2 + 1], this.arr![rank * 2 + 2]);
-                        return c.parent === this.arr![rank]; //it means that the node is not a leaf node
-                    }
-                }
-            });
-            console.log(index);
-            const line = index !== -1 ? this.connections[index] : null;
 
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 console.log("Hardest case scenario");
@@ -318,8 +314,24 @@ export class BinarySearchTree {
             } 
             else {
                 console.log("Easiest case scenario");
-                
+                const index = this.connections.findIndex(c => {
+                    if(c == null) return false;
+                    else{
+                        if(!(this.arr![rank * 2 + 1] || this.arr![rank * 2 + 2])){
+                            //console.log("Leaf node");
+                            return c.child === this.arr![rank]; //it means that the node is a leaf node
+                        }
+                        else{
+                            //console.log("Not a leaf node");
+                            //console.log(this.arr![rank * 2 + 1], this.arr![rank * 2 + 2]);
+                            return c.parent === this.arr![rank]; //it means that the node is not a leaf node
+                        }
+                    }
+                });
+                console.log(index);
+                const line = index !== -1 ? this.connections[index] : null;
                 await this.arr![rank].opac(0, true);
+                console.log(line);
                 if(line){
                     let splitIndex = line!.transform.indexOf("scaleX");
                     delete this.connections[index];
@@ -335,8 +347,9 @@ export class BinarySearchTree {
 
                 let shiftPreOrder: ((from: number, to: number) => void);
                 if(this.arr![rank*2+1] || this.arr![rank*2+2]){
+                    console.log(`The node is not a leaf child, calling shiftPreOrder`);
                     if(this.arr![rank*2+1]){ //this version of shiftPreOrder makes sure so that the left handed children get assigned AFTER the right handed children
-                        //console.log(`Before right children, after left children`);
+                        console.log(`Before right children, after left children`);
                         shiftPreOrder = (from: number, to: number): void => {
                             let nodes = [...this.arr!];
     
@@ -360,7 +373,7 @@ export class BinarySearchTree {
                                 line.forEach(conn => {
                                     conn.draw(false);
                                     
-                                    conn.dom.id = `${to}-${from+1}`;
+                                    conn.dom.id = `${to}-${from}`;
                                 });
                                 //console.log(`${to}-${from+1} Line 333`);
                             }
@@ -387,7 +400,7 @@ export class BinarySearchTree {
                     else{
                         shiftPreOrder = (from: number, to: number): void => { //the opposite of above
                             let nodes = [...this.arr!];
-                            //console.log(`Before left children, after right children`);
+                            console.log(`Before left children, after right children`);
                             //console.log(`Moving key '${this.arr![from].key}' from rank ${from} to rank ${to}`);
                             this.arr![to] = nodes[from];
                             //this.arr![to].dom.title = `Rank: ${to}`;
@@ -396,8 +409,12 @@ export class BinarySearchTree {
     
                             let leftChild = from * 2 + 1;
                             let rightChild = from * 2 + 2;
+                            console.log(this.arr![leftChild], this.arr![rightChild]);
+                            
+                            console.log(leftChild, rightChild);
+
                             if (this.arr![leftChild]){
-                                //console.log(`Moving left child`);
+                                console.log(`Moving left child`);
                                 shiftPreOrder!(leftChild, to * 2 + 1);
                                 let line = this.connections.filter((line) => {
                                     //console.log(line.dom);
@@ -414,7 +431,7 @@ export class BinarySearchTree {
                             }
                                 
                             if (this.arr![rightChild]){
-                                //console.log(`Moving right child`);
+                                console.log(`Moving right child`);
                                 shiftPreOrder!(rightChild, to * 2 + 2);
                                 let line = this.connections.filter((line) => {
                                     // console.log(line.dom);
