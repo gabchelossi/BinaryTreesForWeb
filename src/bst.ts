@@ -1,7 +1,7 @@
 //@ts-check
 
 export class BinarySearchTree {
-
+    
     arr: (InstanceType<typeof BinarySearchTree.TreeElement>)[] | undefined;
     connections: InstanceType<typeof BinarySearchTree.Connection>[];
     s: number;
@@ -20,6 +20,15 @@ export class BinarySearchTree {
 
     set size(s) {
         this.s = s;
+    }
+
+    trim(): boolean{
+        let size = this.size;
+        if(Math.floor(this.arr!.length/2) > size){
+            this.arr = this.arr!.slice(0, size);
+        }
+        this.connections = this.connections.filter(e => {return Boolean(e)});
+        return true;
     }
 
     inOrder(root: number): number[] {
@@ -276,6 +285,11 @@ export class BinarySearchTree {
         });
     }
 
+    shrink(): void{
+        //shrink array by halving it in order to reach amortized constant time O(1)
+
+    }
+
     async removeKey(key: number): Promise<number | string> { //there is a weird bug when removing 5 and 15 in this order........
     return new Promise(async (resolve, reject) => {
         let rank = this.rankOf(key);
@@ -308,11 +322,10 @@ export class BinarySearchTree {
                 await this.arr![rank].opac(0, true);
                 if(line){
                     let splitIndex = line!.transform.indexOf("scaleX");
-                
+                    delete this.connections[index];
                     line!.dom.ontransitionend = () => {
                         line!.dom.ontransitionend = null;
                         line!.dom.remove();
-                        delete this.connections[index];
                     }
                     line!.transform = line!.transform.substring(0, splitIndex) + "scaleX(0)";
                 }
@@ -331,8 +344,7 @@ export class BinarySearchTree {
                             this.arr![to] = nodes[from];
                             //this.arr![to].dom.title = `Rank: ${to}`;
                             this.assign(this.arr![from], to); //assigning the DOM element to the new parent
-                            delete this.arr![from];
-    
+                            delete this.arr![from];    
                             let leftChild = from * 2 + 1;
                             let rightChild = from * 2 + 2;
                                 
@@ -426,6 +438,7 @@ export class BinarySearchTree {
                 }
             }
             resolve(--this.size);
+            this.trim();
         } 
         else {
             reject(`The key '${key}' is not in the binary search Tree`);
