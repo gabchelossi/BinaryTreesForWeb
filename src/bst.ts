@@ -328,7 +328,7 @@ export class BinarySearchTree {
                         }
                     }
                 });
-                console.log(index);
+                // console.log(index);
                 const line = index !== -1 ? this.connections[index] : null;
                 await this.arr![rank].opac(0, true);
                 console.log(line);
