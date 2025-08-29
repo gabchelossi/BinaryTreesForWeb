@@ -313,11 +313,12 @@ export class BinarySearchTree {
                 // (Insert logic for hardest case here)
             } 
             else {
-                console.log("Easiest case scenario");
+                //console.log("Easiest case scenario");
+                let isLeaf = (this.arr![rank * 2 + 1] || this.arr![rank * 2 + 2])? false : true;
                 const index = this.connections.findIndex(c => {
                     if(c == null) return false;
                     else{
-                        if(!(this.arr![rank * 2 + 1] || this.arr![rank * 2 + 2])){
+                        if(isLeaf){
                             //console.log("Leaf node");
                             return c.child === this.arr![rank]; //it means that the node is a leaf node
                         }
@@ -333,13 +334,23 @@ export class BinarySearchTree {
                 await this.arr![rank].opac(0, true);
                 console.log(line);
                 if(line){
-                    let splitIndex = line!.transform.indexOf("scaleX");
-                    delete this.connections[index];
-                    line!.dom.ontransitionend = () => {
-                        line!.dom.ontransitionend = null;
-                        line!.dom.remove();
+                    if(isLeaf){
+                        let splitIndex = line!.transform.indexOf("scaleX");
+                        delete this.connections[index];
+                        line!.dom.ontransitionend = () => {
+                            line!.dom.ontransitionend = null;
+                            line!.dom.remove();
+                        }
+                        line!.transform = line!.transform.substring(0, splitIndex) + "scaleX(0)";
                     }
-                    line!.transform = line!.transform.substring(0, splitIndex) + "scaleX(0)";
+                    else{
+                        let child = (this.arr![rank*2+1])? this.arr![rank*2+1]:this.arr![rank*2+2];
+                        line.child = child;
+                    }
+                    
+                }
+                else{
+                    console.log(`Line not found...`);
                 }
                 
 
@@ -447,11 +458,12 @@ export class BinarySearchTree {
                         };
                     }
                     let startingRank = this.arr![rank * 2 + 1] ? rank * 2 + 1 : rank * 2 + 2;
-                    console.log(`Calling removal function on rank ${startingRank}`);
+                    console.log(`Calling shifting function on rank ${startingRank}`);
                     shiftPreOrder!(startingRank, rank);
                 }
                 else{
                     delete this.arr![rank]; //no children
+                    console.log(`Leaf child deleted`);
                 }
             }
             resolve(--this.size);
