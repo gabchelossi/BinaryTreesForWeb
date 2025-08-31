@@ -314,6 +314,22 @@ export class BinarySearchTree {
             else {
                 //console.log("Easiest case scenario");
                 await this.arr![rank].opac(0, true);
+                this.arr![rank].dom.remove();
+                if(this.arr![rank * 2 + 1]){
+
+                }
+                else{
+                    if(this.arr![rank * 2 + 2]){
+
+                    }
+                    else{
+                        //leaf node
+                        const connection = this.connections.find(c => c.child === this.arr![rank]);
+                        let index = connection!.transform.indexOf("scaleX");
+                        await(connection?.changeLength("0", true));
+                        connection?.dom.remove();
+                    }
+                }
             }
             resolve(--this.size);
             this.trim();
@@ -638,6 +654,25 @@ export class BinarySearchTree {
                 }
                 this.dom.style.opacity = (o).toString();
             })
+            
+        }
+
+        changeLength = (length: string, synchronous:boolean) => {
+            this.l = length;
+            return new Promise((resolve) => {
+                let transformProperty = this.transform.substring(0, this.dom.style.transform.indexOf("scaleX"));
+                transformProperty += ` scaleX(0)`;
+                if(synchronous){
+                    this.dom.ontransitionend = () =>{
+                        this.dom.ontransitionend = null;
+                        resolve(true);
+                    }
+                }
+                else{
+                    resolve(true);
+                }
+                this.transform = transformProperty;
+            });
             
         }
 
