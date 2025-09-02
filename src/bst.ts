@@ -305,7 +305,7 @@ export class BinarySearchTree {
     async removeKey(key: number): Promise<number | string> { //there is a weird bug when removing 5 and 15 in this order........
     return new Promise(async (resolve, reject) => {
         let rank = this.rankOf(key);
-        console.log(rank);
+        //console.log(rank);
         if (rank > -1) {
             await this.arr![rank].borderCol("red", true);
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
@@ -315,7 +315,7 @@ export class BinarySearchTree {
             else {
                 let index = this.connections.findIndex(c => c.parent === this.arr![rank]);
                 let line = this.connections[index];
-                //console.log("Easiest case scenario");
+                console.log("Easiest case scenario");
                 await this.arr![rank].opac(0, true);
                 
                 this.arr![rank].dom.remove();
@@ -332,8 +332,9 @@ export class BinarySearchTree {
                     line?.changeLength("0", true, () => {
                         line.dom.ontransitionend = null;
                         //line.dom.remove();
-                        console.log(`${line.dom.id} removed`);
+                        //console.log(`${line.dom.id} removed`);
                         delete this.connections[index];
+                        line.dom.remove();
                     });       
                     if(this.arr![rank * 2 + 1]){ // has left child
 
@@ -351,30 +352,43 @@ export class BinarySearchTree {
                             this.arr![to] = node;
                             this.assign(node, to);   // await animations if any
                             //this.arr![from] = undefined;
-
-                            if (this.arr![leftFrom])  {
-                                index = this.connections.findIndex(c => c.child === this.arr![leftFrom]);
-                                let line = this.connections[index];
-                                line.parent = this.arr![to];
+                            console.log(Boolean(this.arr![leftFrom]));
+                            if (this.arr![leftFrom]){
+                                //index = this.connections.findIndex(c => c.child === this.arr![leftFrom]);
+                                //let line = this.connections[index];
+                                //console.log(line.dom);
+                                //line.parent = this.arr![to];
                                 shiftUp!(leftFrom,  2*to + 1);
-                                line.child = this.arr![2*to+1];
-                                line.dom.id = `${to}-${to*2+1}`;
-                                line.draw(false);
+                                //line.child = this.arr![2*to+1];
+                                //line.dom.id = `${to}-${to*2+1}`;
+                                //line.draw(false);
+                                this.connections.forEach((connection) => {
+                                    if(connection != line){
+                                        connection.draw(false);
+                                    }
+                                });
+                                console.log("leftFrom");
                             }
                             if (this.arr![rightFrom]) {
-                                index = this.connections.findIndex(c => c.child === this.arr![rightFrom]);
-                                let line = this.connections[index];
-                                line.parent = this.arr![to];
+                                //index = this.connections.findIndex(c => c.child === this.arr![rightFrom]);
+                                //let line = this.connections[index];
+                                //line.parent = this.arr![to];
                                 shiftUp!(rightFrom, 2*to + 2);
-                                line.child = this.arr![2*to+2];
-                                line.dom.id = `${to}-${to*2+2}`;
-                                line.draw(false);
+                                //line.child = this.arr![2*to+2];
+                                //line.dom.id = `${to}-${to*2+2}`;
+                                //line.draw(false);
+                                this.connections.forEach((connection) => {
+                                    if(connection != line){
+                                        connection.draw(false);
+                                    }
+                                });
+                                console.log("rightFrom");
                             }
-                            
+                                                    
                         }
-                        shiftUp(rank * 2 + 2, rank);
-
+                        shiftUp!(rank, Math.floor((rank - 1) / 2));
                     }
+                    
                 }
             }
             resolve(--this.size);
