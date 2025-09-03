@@ -40,7 +40,7 @@ function awaitInput() {
     });
 }
 
-var binarysearchT = new BinarySearchTree();
+export var binarysearchT = new BinarySearchTree();
 (window as any).binarysearchT = binarysearchT;
 
 let resizeTimeout: string | number | NodeJS.Timeout | undefined;

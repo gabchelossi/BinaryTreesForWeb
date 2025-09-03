@@ -340,8 +340,9 @@ export class BinarySearchTree {
                         //console.log(`${line.dom.id} removed`);
                         this.connections.splice(index, 1);
                         line.dom.remove();
-                        console.log(this.connections)
+                        //console.log(this.connections)
                     }); 
+                    
                     if(this.arr![rank * 2 + 1]){ // has left child
 
                     }
@@ -365,6 +366,7 @@ export class BinarySearchTree {
                             //this.arr![from] = undefined;
                             if(!(this.arr![leftFrom] || this.arr![rightFrom])){
                                 let lines = this.connections.filter(c => c.child === this.arr![from]);
+                                console.log(`This child is a leaf node: ${this.arr![from].key}`);
                                 lines.forEach((line) => {
                                     line.dom.remove();
                                     this.connections.splice(this.connections.indexOf(line), 1);
@@ -373,15 +375,15 @@ export class BinarySearchTree {
                             else{
                                 if (this.arr![leftFrom]){
                                     shiftUp!(leftFrom,  2*to + 1);
-                            }
+                                }
                                 if (this.arr![rightFrom]) {
                                     shiftUp!(rightFrom, 2*to + 2);
                                 }
-                                this.connections.forEach((connection) => {
+                                /*this.connections.forEach((connection) => {
                                     if(connection != line){
                                         connection.draw(false);
                                     }
-                                });
+                                });*/
                             }
                         
                             
@@ -641,9 +643,15 @@ export class BinarySearchTree {
     }
 
     onResize() {
-        for (const conn of this.connections) {
+        /*for (const conn of this.connections) {
+            
             conn.draw(false); // pass false so draw() never re-append
-        }
+        }*/
+       console.log(`Resize event triggered, modified`);
+        /*this.connections.forEach((connection) => {
+            console.log(`Drawing connection: ${connection.dom.id}`);
+            connection.draw(false);
+        });*/
     }
 
     static Connection = class {
