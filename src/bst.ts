@@ -314,7 +314,7 @@ export class BinarySearchTree {
             } 
             else {
                 let index = this.connections.findIndex(c => c.parent === this.arr![rank]);
-                let line = this.connections[index];
+                let deleteLine = this.connections[index];
                 
                 console.log("Easiest case scenario");
                 await this.arr![rank].opac(0, true);
@@ -324,8 +324,8 @@ export class BinarySearchTree {
                 
                 if(!(this.arr![rank * 2 + 1] || this.arr![rank * 2 + 2])){ //leaf Node
                     index = this.connections.findIndex(c => c.child === this.arr![rank]);
-                    line = this.connections[index];
-                    await line?.changeLength("0", true, ()=>{});
+                    deleteLine = this.connections[index];
+                    await deleteLine?.changeLength("0", true, ()=>{});
                     this.connections.splice(index, 1);
                     delete this.arr![rank];
                 }
@@ -334,15 +334,20 @@ export class BinarySearchTree {
                     //console.log(parent.key);
                     let child:InstanceType<typeof BinarySearchTree.TreeElement> | undefined;
                     
-                    line?.changeLength("0", true, () => {
-                        line.dom.ontransitionend = null;
+                    deleteLine?.changeLength("0", true, () => {
+                        deleteLine.dom.ontransitionend = null;
                         //line.dom.remove();
+                        console.log(`Deleting Parent ${deleteLine.parent.key} and Child ${deleteLine.child.key}`);
                         //console.log(`${line.dom.id} removed`);
-                        this.connections.splice(index, 1);
-                        line.dom.remove();
+                        console.log(`Index to remove: ${index}`);
+                        //console.log(this.connections.splice(index, 1));
+                        delete this.connections[index];
+                        deleteLine.dom.remove();
                         //console.log(this.connections)
-                    }); 
-                    
+                        this.connections.forEach((connection) => {
+                            console.log(`Parent ${connection.parent.key} and Child ${connection.child.key}`);
+                        });
+                    });
                     if(this.arr![rank * 2 + 1]){ // has left child
 
                     }
@@ -351,7 +356,9 @@ export class BinarySearchTree {
                         index = this.connections.findIndex(c => c.parent === parent && c.child.key == key);
                         let keepLine = this.connections[index];
                         keepLine.child = child!;
-
+                        keepLine.parent = parent!;
+                        //console.log(keepLine);
+                        
                         shiftUp = async (from:number, to:number) => {
                             
                             const node = this.arr![from];
@@ -364,26 +371,23 @@ export class BinarySearchTree {
                             this.arr![to] = node;
                             this.assign(node, to);   // await animations if any
                             //this.arr![from] = undefined;
-                            if(!(this.arr![leftFrom] || this.arr![rightFrom])){
+                            if(!(this.arr![leftFrom] || this.arr![rightFrom])){ //leaf node
                                 let lines = this.connections.filter(c => c.child === this.arr![from]);
-                                console.log(`This child is a leaf node: ${this.arr![from].key}`);
-                                lines.forEach((line) => {
+                                //console.log(`This child is a leaf node: ${this.arr![from].key}`);
+                                lines.forEach((line/*, index*/) => {
                                     line.dom.remove();
                                     this.connections.splice(this.connections.indexOf(line), 1);
+                                    //console.log(index);
                                 });
                             }
                             else{
                                 if (this.arr![leftFrom]){
+
                                     shiftUp!(leftFrom,  2*to + 1);
                                 }
                                 if (this.arr![rightFrom]) {
                                     shiftUp!(rightFrom, 2*to + 2);
                                 }
-                                /*this.connections.forEach((connection) => {
-                                    if(connection != line){
-                                        connection.draw(false);
-                                    }
-                                });*/
                             }
                         
                             
@@ -391,10 +395,17 @@ export class BinarySearchTree {
                         }
                         console.log(`${rank}, ${Math.floor((rank - 1) / 2)}`);
                         shiftUp!(rank, Math.floor((rank - 1) / 2));
+                        keepLine.draw(false);
+                        /*this.connections.forEach((connection) => {
+                            if(connection != line){
+                                connection.draw(false);
+                            }
+                        });*/
                     }
                     
                 }
             }
+            //this.connections.forEach(c => {console.log(`Parent ${c.parent.key} and Child ${c.child.key}`)});
             resolve(--this.size);
             this.trim();
         } 
@@ -648,10 +659,10 @@ export class BinarySearchTree {
             conn.draw(false); // pass false so draw() never re-append
         }*/
        console.log(`Resize event triggered, modified`);
-        /*this.connections.forEach((connection) => {
-            console.log(`Drawing connection: ${connection.dom.id}`);
+        this.connections.forEach((connection) => {
+            //console.log(`Drawing connection: ${connection.dom.id}`);
             connection.draw(false);
-        });*/
+        });
     }
 
     static Connection = class {
@@ -698,6 +709,7 @@ export class BinarySearchTree {
                 document.body.append(this.dom);
             }
             this.dom.offsetHeight; //force reflow
+            //this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${scale})`;
             requestAnimationFrame(() => {
                 this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${scale})`;
             });
