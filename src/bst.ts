@@ -315,8 +315,7 @@ export class BinarySearchTree {
             else {
                 let index = this.connections.findIndex(c => c.parent === this.arr![rank]);
                 let deleteLine = this.connections[index];
-                
-                console.log("Easiest case scenario");
+                //console.log("Easiest case scenario");
                 await this.arr![rank].opac(0, true);
                 
                 this.arr![rank].dom.remove();
@@ -330,36 +329,32 @@ export class BinarySearchTree {
                     delete this.arr![rank];
                 }
                 else{ //not leaf node
+                    console.log(deleteLine);
                     let parent = this.arr![Math.floor((rank - 1) / 2)];
-                    //console.log(parent.key);
                     let child:InstanceType<typeof BinarySearchTree.TreeElement> | undefined;
                     
                     deleteLine?.changeLength("0", true, () => {
                         deleteLine.dom.ontransitionend = null;
-                        //line.dom.remove();
                         console.log(`Deleting Parent ${deleteLine.parent.key} and Child ${deleteLine.child.key}`);
-                        //console.log(`${line.dom.id} removed`);
                         console.log(`Index to remove: ${index}`);
-                        //console.log(this.connections.splice(index, 1));
-                        delete this.connections[index];
                         deleteLine.dom.remove();
-                        //console.log(this.connections)
-                        this.connections.forEach((connection) => {
-                            console.log(`Parent ${connection.parent.key} and Child ${connection.child.key}`);
-                        });
+                        delete this.connections[index];
                     });
+
+                    // Up to this point, everything works nicely
+
                     if(this.arr![rank * 2 + 1]){ // has left child
 
                     }
                     else{ // has right child
                         child = this.arr![rank*2+2];
                         index = this.connections.findIndex(c => c.parent === parent && c.child.key == key);
-                        let keepLine = this.connections[index];
-                        keepLine.child = child!;
-                        keepLine.parent = parent!;
-                        //console.log(keepLine);
+                        this.connections[index].child = child!;
+                        this.connections[index].parent = parent!
                         
-                        shiftUp = async (from:number, to:number) => {
+                        //keepLine.draw(false);
+                        
+                        /*shiftUp = async (from:number, to:number) => {
                             
                             const node = this.arr![from];
                             if (!node) return;
@@ -374,11 +369,11 @@ export class BinarySearchTree {
                             if(!(this.arr![leftFrom] || this.arr![rightFrom])){ //leaf node
                                 let lines = this.connections.filter(c => c.child === this.arr![from]);
                                 //console.log(`This child is a leaf node: ${this.arr![from].key}`);
-                                lines.forEach((line/*, index*/) => {
-                                    line.dom.remove();
-                                    this.connections.splice(this.connections.indexOf(line), 1);
+                                //lines.forEach((line, index) => {
+                                //    line.dom.remove();
+                                //    this.connections.splice(this.connections.indexOf(line), 1);
                                     //console.log(index);
-                                });
+                                //});
                             }
                             else{
                                 if (this.arr![leftFrom]){
@@ -400,7 +395,7 @@ export class BinarySearchTree {
                             if(connection != line){
                                 connection.draw(false);
                             }
-                        });*/
+                        }); */
                     }
                     
                 }
@@ -660,7 +655,7 @@ export class BinarySearchTree {
         }*/
        console.log(`Resize event triggered, modified`);
         this.connections.forEach((connection) => {
-            //console.log(`Drawing connection: ${connection.dom.id}`);
+            console.log(`Drawing connection: ${connection.dom.id}`);
             connection.draw(false);
         });
     }
