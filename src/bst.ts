@@ -250,7 +250,7 @@ export class BinarySearchTree {
             // console.log(`assign Promise Opened`);
             e.addClass("transform");
             let nodes = this.arr;
-            //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
+            console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
             let parentRank = Math.floor((rank - 1) / 2);
@@ -262,9 +262,11 @@ export class BinarySearchTree {
             let offset = (98) / 2 ** (depth + 1);
             if(parentRank >= 0){
                 if (parent.key > e.key) {
+                    console.log(`${parent.key} > ${e.key}`);
                     translateInfo.x = parent.xTransform - offset + "vw";
                 }
                 else {
+                    console.log(`${parent.key} > ${e.key}`);
                     translateInfo.x = parent.xTransform + offset + "vw";
                 }
                 translateInfo.y = parent.yTransform + Math.sin(Math.PI / 4) * 10 + "vh";
@@ -297,11 +299,6 @@ export class BinarySearchTree {
         });
     }
 
-    shrink(): void{
-        //shrink array by halving it in order to reach amortized constant time O(1)
-
-    }
-
     async removeKey(key: number): Promise<number | string> { //there is a weird bug when removing 5 and 15 in this order........
     return new Promise(async (resolve, reject) => {
         let rank = this.rankOf(key);
@@ -313,116 +310,83 @@ export class BinarySearchTree {
                 // (Insert logic for hardest case here)
             } 
             else {
-                let index = this.connections.findIndex(c => c.child === this.arr![rank]);
-                let deleteLine = this.connections[index];
-                //console.log("Easiest case scenario");
                 await this.arr![rank].opac(0, true);
-                
-                this.arr![rank].dom.remove();
-                let shiftUp: Function | null = null;
-                
-                if(!(this.arr![rank * 2 + 1] || this.arr![rank * 2 + 2])){ //leaf Node
-                    //index = this.connections.findIndex(c => c.child === this.arr![rank]);
-                    //deleteLine = this.connections[index];
-                    await deleteLine?.changeLength("0", true, ()=>{
-                        this.connections.splice(index, 1);
-                        delete this.arr![rank];
-                    });                    
+                const parent = this.arr![Math.floor((rank-1)/2)];
+                const child = this.arr![rank*2+1]?this.arr![rank*2+1]:this.arr![rank*2+2];
+                let removeLineIndex = this.connections.findIndex((c) => {return c.child.key == this.arr![rank].key});
+                if(rank == 0){
+                    removeLineIndex = this.connections.findIndex((c) => {return c.parent.key == this.arr![rank].key});
+                    //this.connections[removeLineIndex]!.dom.style.transition = "0";
+                    //this.connections[removeLineIndex]!.dom.style.opacity = "0";
                 }
-                else{ //not leaf node
-                    console.log(deleteLine);
-                    let parent = this.arr![Math.floor((rank - 1) / 2)];
-                    let child:InstanceType<typeof BinarySearchTree.TreeElement> | undefined;
-                    
-                    await deleteLine?.changeLength("0", true, () => {
-                        deleteLine.dom.ontransitionend = null;
-                        //console.log(`Deleting Parent ${deleteLine.parent.key} and Child ${deleteLine.child.key}`);
-                        //console.log(`Index to remove: ${index}`);
-                        deleteLine.dom.remove();
-                        delete this.connections[index]
-                    });
-                    
-                    // Up to this point, everything works nicely
+                
+                this.connections[removeLineIndex].changeLength('0', true, () => { //remove the line that has the removed key as child
+                    this.connections[removeLineIndex].dom.remove();
+                    delete this.connections[removeLineIndex];
+                    delete this.arr![rank];
+                });
+                const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});
+                this.connections[reassingLineIndex]!.parent = parent;
+                
 
-                    if(this.arr![rank * 2 + 1]){ // has left child
+                let shiftUp: Function | null;
 
-                    }
-                    else{ // has right child
-                        child = this.arr![rank*2+2];
-                        //console.log(key);
-                        index = this.connections.findIndex(c => {
-                            if(c){
-                                //console.log(`Child key ${c.child.key}`);
-                                return c.child.key == child!.key;
-                            }
-                                
-                        });
-                        this.connections[index].child = child!;
-                        this.connections[index].parent = parent!
-                        const keepLine = this.connections[index];
-                        keepLine.draw(false);
+                if(this.arr![rank*2+1]){ //if left child
+                    shiftUp = (from: number, to: number) => {
+                        //console.log(`Assigning rank ${from} to rank ${to}`);
+                        const node = this.arr![from];
+                        this.arr![to] = node;
+                        this.assign(node, to);
+                        const leftChild = this.arr![from*2+1];
+                        const rightChild = this.arr![from*2+2];
+                        const redrawLine = this.connections.find((c) => {return c.child.key == node.key});
                         
-                        shiftUp = async (from:number, to:number) => {
-                            
-                            const node = this.arr![from];
-                            if (!node) return;
-
-                            const leftFrom  = 2*from + 1;
-                            const rightFrom = 2*from + 2;
-
-                            // place current node at its new rank
-                            this.arr![to] = node;
-                            this.assign(node, to);   // await animations if any
-                            //this.arr![from] = undefined;
-                        
-                            let renameLine :InstanceType<typeof BinarySearchTree.Connection> | undefined;
-                            console.log(node.key);
-                            try{
-                                console.log(this.arr![leftFrom].key);
-                            }
-                            catch(e){}
-                            try{
-                                console.log(this.arr![rightFrom].key);
-                            }
-                            catch(e){}
-                            
-                            
-                            if (this.arr![leftFrom]){
-                                renameLine = this.connections.find((c) => {
-                                    if(c){
-                                        //console.log(c);
-                                        return c.parent == node && c.child == this.arr![leftFrom]}
-                                    } 
-                                    
-                                );
-                                renameLine!.dom.id = `${to}-${2*to+1}`;
-                                shiftUp!(leftFrom,  2*to + 1);
-                            }
-                            if (this.arr![rightFrom]) {
-                                renameLine = this.connections.find((c) => {
-                                    if(c){
-                                        //console.log(c.parent, c.child);
-                                        return c.parent == node && c.child == this.arr![rightFrom]}
-                                    } );
-                                renameLine!.dom.id = `${to}-${2*to+2}`;
-                                shiftUp!(rightFrom, 2*to + 2);
-                            }
-                            
-                        
-                            
-                                                    
+                        if(rightChild){
+                            shiftUp!(from*2+2, to*2+2);
                         }
-                        console.log(`${rank}, ${Math.floor((rank - 1) / 2)}`);
-                        shiftUp!(rank, Math.floor((rank - 1) / 2));
-                        keepLine.draw(false);
-                        this.connections.forEach((connection) => {
-                            if(connection != keepLine){
-                                connection.draw(false);
-                            }
-                        }); 
+                        if(leftChild){
+                            shiftUp!(from*2+1, to*2+1);
+                        }
+                        try{
+                            console.log(`${Math.floor((to-1)/2)}-${to}`);
+                            redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
+                            redrawLine!.draw(false);
+                        }
+                        catch(e){}
                     }
-                    
+                    shiftUp(rank*2+1, rank);
                 }
+                else{
+                    if(this.arr![rank*2+2]){ //if right child
+                        shiftUp = (from: number, to: number) => {
+                            //console.log(`Assigning rank ${from} to rank ${to}`);
+                            const node = this.arr![from];
+                            this.arr![to] = node;
+                            this.assign(node, to);
+                            const leftChild = this.arr![from*2+1];
+                            const rightChild = this.arr![from*2+2];
+                            const redrawLine = this.connections.find((c) => {return c.child.key == node.key});
+                            if(leftChild){
+                                shiftUp!(from*2+1, to*2+1);
+                            }
+                            if(rightChild){
+                                shiftUp!(from*2+2, to*2+2);
+                            }
+                            try{
+                                console.log(`${Math.floor((to-1)/2)}-${to}`);
+                                redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
+                                redrawLine!.draw(false);
+                            }
+                            catch(e){}
+                        }
+                        shiftUp(rank*2+2, rank);
+                    }
+                    else{
+                        //leaf node
+                    }
+                }
+                this.connections[reassingLineIndex].draw(false);
+
             }
             //this.connections.forEach(c => {console.log(`Parent ${c.parent.key} and Child ${c.child.key}`)});
             resolve(--this.size);
@@ -677,10 +641,11 @@ export class BinarySearchTree {
             
             conn.draw(false); // pass false so draw() never re-append
         }*/
-       console.log(`Resize event triggered, modified`);
+        console.log(`Resize event triggered, modified`);
         this.connections.forEach((connection) => {
-            console.log(`Drawing connection: ${connection.dom.id}`);
-            connection.draw(false);
+            if(connection)
+                console.log(`Drawing connection: ${connection.dom.id}`);
+                connection.draw(false);
         });
     }
 
