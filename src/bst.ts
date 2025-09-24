@@ -250,7 +250,7 @@ export class BinarySearchTree {
             // console.log(`assign Promise Opened`);
             e.addClass("transform");
             let nodes = this.arr;
-            console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
+            //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
             let parentRank = Math.floor((rank - 1) / 2);
@@ -262,11 +262,11 @@ export class BinarySearchTree {
             let offset = (98) / 2 ** (depth + 1);
             if(parentRank >= 0){
                 if (parent.key > e.key) {
-                    console.log(`${parent.key} > ${e.key}`);
+                    //console.log(`${parent.key} > ${e.key}`);
                     translateInfo.x = parent.xTransform - offset + "vw";
                 }
                 else {
-                    console.log(`${parent.key} > ${e.key}`);
+                    //console.log(`${parent.key} > ${e.key}`);
                     translateInfo.x = parent.xTransform + offset + "vw";
                 }
                 translateInfo.y = parent.yTransform + Math.sin(Math.PI / 4) * 10 + "vh";
@@ -316,15 +316,16 @@ export class BinarySearchTree {
                 let removeLineIndex = this.connections.findIndex((c) => {return c.child.key == this.arr![rank].key});
                 if(rank == 0){
                     removeLineIndex = this.connections.findIndex((c) => {return c.parent.key == this.arr![rank].key});
-                    //this.connections[removeLineIndex]!.dom.style.transition = "0";
-                    //this.connections[removeLineIndex]!.dom.style.opacity = "0";
                 }
                 
                 this.connections[removeLineIndex].changeLength('0', true, () => { //remove the line that has the removed key as child
                     this.connections[removeLineIndex].dom.remove();
                     delete this.connections[removeLineIndex];
-                    delete this.arr![rank];
+                    
                 });
+
+                delete this.arr![rank]; //delete it NOW, not after the event is triggered.
+
                 const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});
                 this.connections[reassingLineIndex]!.parent = parent;
                 
@@ -332,9 +333,9 @@ export class BinarySearchTree {
                 let shiftUp: Function | null;
 
                 if(this.arr![rank*2+1]){ //if left child
-                    shiftUp = (from: number, to: number) => {
-                        //console.log(`Assigning rank ${from} to rank ${to}`);
+                    shiftUp = (from: number, to: number)  => {
                         const node = this.arr![from];
+
                         this.arr![to] = node;
                         this.assign(node, to);
                         const leftChild = this.arr![from*2+1];
@@ -347,12 +348,16 @@ export class BinarySearchTree {
                         if(leftChild){
                             shiftUp!(from*2+1, to*2+1);
                         }
+                        if(!(rightChild || leftChild)){
+                            delete this.arr![from];
+                        }
+
                         try{
-                            console.log(`${Math.floor((to-1)/2)}-${to}`);
                             redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                             redrawLine!.draw(false);
                         }
                         catch(e){}
+                    
                     }
                     shiftUp(rank*2+1, rank);
                 }
@@ -362,6 +367,7 @@ export class BinarySearchTree {
                             //console.log(`Assigning rank ${from} to rank ${to}`);
                             const node = this.arr![from];
                             this.arr![to] = node;
+                            console.log(`At rank ${to} there is ${this.arr![to].key}`);
                             this.assign(node, to);
                             const leftChild = this.arr![from*2+1];
                             const rightChild = this.arr![from*2+2];
@@ -372,8 +378,12 @@ export class BinarySearchTree {
                             if(rightChild){
                                 shiftUp!(from*2+2, to*2+2);
                             }
+
+                            if(!(rightChild || leftChild)){
+                                delete this.arr![from];
+                            }
+
                             try{
-                                console.log(`${Math.floor((to-1)/2)}-${to}`);
                                 redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                                 redrawLine!.draw(false);
                             }
@@ -382,7 +392,7 @@ export class BinarySearchTree {
                         shiftUp(rank*2+2, rank);
                     }
                     else{
-                        //leaf node
+                        
                     }
                 }
                 this.connections[reassingLineIndex].draw(false);

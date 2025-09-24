@@ -521,8 +521,8 @@ let exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded", function() { 
-    //exec(["insert", 5,7,6,9,11,10,12]);
-    exec(["insert", 10,5,4,8,2,1,3]);
+    exec(["insert", 5,7,6,9,11,10,12]);
+    //exec(["insert", 10,5,4,8,2,1,3]);
     exec(["set", "animation", "on"]);
 });
 
