@@ -8,6 +8,11 @@ html, body{
     overflow: hidden;
 }
 
+body{
+    width: auto;
+    min-width: 1000px;
+}
+
 .TreeElement{
     cursor: help;
     position: absolute;
@@ -73,7 +78,7 @@ html, body{
     top:0 !important;
     left: 0 !important;
     opacity: 0;
-    transition: opacity 0.5s transform 1s;
+    transition: opacity 0.5s, transform 1s;
     z-index: 3;
     /*background-color: rgba(255, 0, 0, 0.3); */
 }
@@ -83,9 +88,13 @@ html, body{
   height: 2px;
   width: 100px; /* fixed base width */
   background-color: black;
+  transition: transform 0s, opacity 0s;
   transform-origin: 0 0;
-  transition: transform 1s ease-in-out, opacity 1s;
-  will-change: transform;
+}
+
+.line.transform{
+    transition: transform 1s ease-in-out, opacity 1s!important;
+    will-change: transform;
 }
 
 .comparatorTransform{
@@ -105,7 +114,7 @@ html, body{
 
 
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 999px) {
     .TreeElement{
         height: 4vw;
         width: 4vw;
@@ -118,7 +127,6 @@ html, body{
     .comparatorTransform.bef{
         right: 4vw;
     }
-    
 }
 
 

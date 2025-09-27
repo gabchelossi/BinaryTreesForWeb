@@ -20,6 +20,9 @@ export class BinarySearchTree {
 
     set size(s) {
         this.s = s;
+        if(this.s == 1){
+            this.connections = [];
+        }
     }
 
     trim(): boolean{
@@ -39,7 +42,6 @@ export class BinarySearchTree {
         if(this.size>0)
             lastIndex!++; //slice goes up to index n-1
         this.arr! = this.arr!.slice(0,lastIndex!);
-        //this.connections = this.connections.filter(e => {return Boolean(e)});
         return true;
     }
 
@@ -293,7 +295,14 @@ export class BinarySearchTree {
         return new Promise((resolve) => {
             let e = this.arr![rank];
             let parent = this.arr![parentRank];
-            this.connections.push(new BinarySearchTree.Connection(e, parent));
+            const newConnection = new BinarySearchTree.Connection(e, parent);
+            const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
+            if(emptyIndex >= 0){
+                this.connections[emptyIndex] = newConnection;
+            }
+            else{
+                this.connections.push(newConnection);
+            }
             // console.log(`connectTransform Promise Resolved`);
             resolve(true);
         });
@@ -325,25 +334,23 @@ export class BinarySearchTree {
                     }
                 });
                 if(rank == 0){
-                    removeLineIndex = this.connections.findIndex((c) => {return c.parent.key == this.arr![rank].key});
+                    removeLineIndex = this.connections.findIndex((c) => {if(c) return c.parent.key == this.arr![rank].key});
                 }
-                
-                this.connections[removeLineIndex].changeLength('0', true, () => { //remove the line that has the removed key as child
-                    try{
-                        this.connections[removeLineIndex].dom.remove();
-                        delete this.connections[removeLineIndex];
-                    }
-                    catch(e){
-                        console.log(e);
-                        console.log(removeLineIndex);
-                    }
-                    
-                });
+                if(this.size>1)
+                    this.connections[removeLineIndex].changeLength('0', true, () => { //remove the line that has the removed key as child
+                        try{
+                            this.connections[removeLineIndex].dom.remove();
+                            delete this.connections[removeLineIndex];
+                        }
+                        catch(e){
+                            console.log(e);
+                            console.log(removeLineIndex);
+                        }
+                        
+                    });
 
                 delete this.arr![rank]; //delete it NOW, not after the event is triggered.
 
-                /*const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});
-                this.connections[reassingLineIndex]!.parent = parent;*/
                 
 
                 let shiftUp: Function | null;
@@ -402,8 +409,6 @@ export class BinarySearchTree {
                             }
 
                             try{
-                                //let removeDuplicate = document.getElementById(`${Math.floor((to-1)/2)}-${to}`);
-                                //removeDuplicate?.remove();
                                 redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                                 redrawLine!.draw(false);
                             }
@@ -411,17 +416,18 @@ export class BinarySearchTree {
                         }
                         shiftUp(rank*2+2, rank);
                     }
-                    else{
-                        
+                }
+                if((this.arr![rank*2+1] || this.arr![rank*2+2])){
+                    if(Boolean(parent)){
+                        const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});
+                        this.connections[reassingLineIndex]!.parent = parent;
+                        this.connections[reassingLineIndex].draw(false);
                     }
-                }
-                if(this.arr![rank*2+1] || this.arr![rank*2+2]){
-                    const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});
-                    this.connections[reassingLineIndex]!.parent = parent;
-                    this.connections[reassingLineIndex].draw(false);
-                }
-                
+                    else{
 
+                    }
+                    
+                }
             }
             //this.connections.forEach(c => {console.log(`Parent ${c.parent.key} and Child ${c.child.key}`)});
             resolve(--this.size);
@@ -691,7 +697,7 @@ export class BinarySearchTree {
         l!: string;
         constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>) {
             this.dom = document.createElement("div");
-            this.dom.classList.add("line");
+            this.dom.classList.add("line", "transform");
             //console.log(`${child} and ${parent}`)
             this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
             this.child = child;
@@ -700,6 +706,7 @@ export class BinarySearchTree {
             this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
                 //this.dom.style.transition = "transform 0s";
                 this.dom.ontransitionend = null;
+                this.dom.classList.remove("transform");
                 //console.log(`removing animation triggered`);
             };
         }
