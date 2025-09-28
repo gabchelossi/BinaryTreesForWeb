@@ -8,11 +8,6 @@ html, body{
     overflow: hidden;
 }
 
-body{
-    width: auto;
-    min-width: 1000px;
-}
-
 .TreeElement{
     cursor: help;
     position: absolute;
@@ -93,7 +88,7 @@ body{
 }
 
 .line.transform{
-    transition: transform 1s ease-in-out, opacity 1s!important;
+    transition: transform 1s ease-in-out, opacity 1s;
     will-change: transform;
 }
 

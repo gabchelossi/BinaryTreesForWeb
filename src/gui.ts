@@ -322,13 +322,17 @@ let exec = async function (...parameters: any[]) {
                                         margin:0;
                                     }
 
-                                    .line {
+                                    /*.line {
                                         position: absolute;
                                         height: 2px;
                                         width: 100px; /* fixed base width */
                                         background-color: black;
                                         transform-origin: 0 0;
-                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s;
+                                        will-change: transform;
+                                    }*/
+
+                                    .line.transform{
+                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s!important;
                                         will-change: transform;
                                     }
 
@@ -520,10 +524,19 @@ let exec = async function (...parameters: any[]) {
 
 
 
-document.addEventListener("DOMContentLoaded", function() { 
-    exec(["insert", 5,7,6,9,11,10,12]);
+document.addEventListener("DOMContentLoaded",async function() { 
+    //exec(["insert", 10,20,15,25,13,17,23,27,11,14,16,18,21,24,26,28]);
     //exec(["insert", 10,5,4,8,2,1,3]);
+    exec(["insert", "full"]);
+    exec(["set", "animation", "speed", 5]);
     exec(["set", "animation", "on"]);
+    /*await sleep(1000);
+    console.log(`Fire in the hole`);
+    for(const e of binarysearchT.arr!){
+        if(e)
+            await exec(["remove", e.key]);
+    }*/
+
 });
 
 let focus = function () {
