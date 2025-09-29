@@ -11,24 +11,69 @@
 
 </head>
 <body>    
-    <!-- <div class = "left-color five"></div>
-    <div class = "right-color five"></div>
-    <div class = "ruler middle"></div> -->
-    <div id="console">
-        <div id="resizer"></div> <!-- This is the draggable resizer -->
-        <div id="console-bar">
-            <!-- <span class="console-dot red"></span>-->
-            <span class="console-dot green"></span> 
-            <span class="console-dot yellow" id="toggle-console"></span>
-        </div>
-        <div id="console-content">
-            <p>
-                <b>guest@gchelossi:</b>
-                <span id="text"></span>
-                <span id="cursor"> █</span>
-            </p>
-        </div>
-    </div>
+    <fieldset id = "control-panel">
+        <legend>Control Panel</legend>
+        <table style = "height: 100%;">
+            <tr>
+                <th colspan="1">Key</th>
+                <th colspan="3">Operations</th>
+            </tr>
+            <tr>
+                <td>
+                    <input type = "number">
+                </td>
+                <td>
+                    <input type = "button" value = "add">
+                </td>
+                <td>
+                    <input type = "button" value = "delete">
+                </td>
+                <td>
+                    <input type = "button" value = "search">
+                </td>
+            </tr>            
+        </table>
+        <table style = "height: 100%;">
+            <tr>
+                <th colspan="1">Animation</th>
+                <th colspan="3">Keys</th>
+            </tr>
+            <tr>
+                <td>
+                    <input type = "number">
+                </td>
+                <td>
+                    <input type = "button" value = "&#9658;">
+                </td>
+                <td>
+                    <input type = "button" value = "delete">
+                </td>
+                <td>
+                    <input type = "button" value = "search">
+                </td>
+            </tr>            
+        </table>
+        <table style = "height: 100%;">
+            <tr>
+                <th colspan="1">Output</th>
+                <th colspan="3">Verbose</th>
+            </tr>
+            <tr>
+                <td>
+                    <input type = "text" disabled>
+                </td>
+                <td>
+                    <input type = "button" value = "add">
+                </td>
+                <td>
+                    <input type = "button" value = "delete">
+                </td>
+                <td>
+                    <input type = "button" value = "search">
+                </td>
+            </tr>            
+        </table>
+    </fieldset>       
     <script src="./js/gui.js" type="module"></script>
 </body>
 </html>
