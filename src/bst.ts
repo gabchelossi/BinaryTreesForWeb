@@ -29,26 +29,28 @@ export class BinarySearchTree {
 
 
     trim(): boolean{
-        /*let size = this.size;
-
+        let size = this.size;
+        if(!this.arr![this.arr!.length-1]){
+            console.log(`Truncating the arr`);
+        }
         let lastIndex, count: number;
         count = 0;
         for(let i = 0; i<this.arr!.length; i++){
             if(this.arr![i]){
                 count++;
             }
-            if(count == this.size){
+            if(count == size){
                 lastIndex = i;
                 i = this.arr!.length; //fancy way of not using break statement
             }
         }
-        if(this.size>0)
+        if(size>0)
             lastIndex!++; //slice goes up to index n-1
-        this.arr! = this.arr!.slice(0,lastIndex!);*/
+        this.arr! = this.arr!.slice(0,lastIndex!);
         return true;
     }
 
-    inOrder(root: number): number[] {
+    inOrder(root: number = 0): number[] {
         let returnArr : number[] = [];
         let nodes = this.arr;
         if (nodes![root * 2 + 1]) {
@@ -62,7 +64,7 @@ export class BinarySearchTree {
         return returnArr;
     }
 
-    preOrder(root: number): number[] {
+    preOrder(root: number = 0): number[] {
         let returnArr = [];
         let nodes = this.arr;
 
@@ -79,7 +81,7 @@ export class BinarySearchTree {
         return returnArr;
     }
 
-    postOrder(root:number) : number[] {
+    postOrder(root: number = 0) : number[] {
         let nodes = this.arr;
         let returnArr: number[] = [];
         if (nodes![root * 2 + 1])
@@ -321,13 +323,15 @@ export class BinarySearchTree {
                 console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 await this.trasversal(rank, "in-order", true).then(async (result) =>{
                     this.arr![rank].dom.innerHTML = result[0].toString();
-                    await this.removeKey(result[0]);
+                    await this.removeKey(result[0]); 
+                    this.size++; //to counter the previous instruction side-effect
                     this.arr![rank].key = result[0];
                     await this.arr![rank].borderCol("rgb(37, 201, 37)", true);
                 });
             } 
             else {
                 await this.arr![rank].opac(0, true);
+                this.arr![rank].dom.remove(); 
                 const parent = this.arr![Math.floor((rank-1)/2)];
                 const child = this.arr![rank*2+1]?this.arr![rank*2+1]:this.arr![rank*2+2];
                 //console.log(`Removing rank with key: ${this.arr![rank].key}`);
@@ -579,10 +583,7 @@ export class BinarySearchTree {
                     if(removing){ //find the first key in an in-order trasversal after the key we want to delete
                         inOrder(root*2+2).then(async function (result) { //call the function and handle the result
                             //trasverse = result;
-                            arrow.ontransitionend = async function () {
-                                arrow.ontransitionend = null;
-                                arrow.remove();
-                            };
+                            
                             let target = nodes![root];
                             const centerXvw = target.xTransform + diameterVw / 2;
                             const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
@@ -590,7 +591,11 @@ export class BinarySearchTree {
                             await waitTransition(arrow, () => {
                                 arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                             });
-                            arrow.style.opacity = (0).toString();
+
+                            await waitTransition(arrow, () => {
+                                arrow.style.opacity = (0).toString();
+                            }).then(() => {arrow.remove();});
+                            
                             //target.key = result[0];
                             //target.dom.innerHTML = result[0].toString();
                             

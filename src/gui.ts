@@ -528,14 +528,20 @@ document.addEventListener("DOMContentLoaded",async function() {
     //exec(["insert", 10,20,15,25,13,17,23,27,11,14,16,18,21,24,26,28]);
     //exec(["insert", 10,5,4,8,2,1,3]);
     exec(["insert", "full"]);
-    exec(["set", "animation", "speed", 5]);
+    //exec(["insert", 43,33,50,37,45,55,47,53,60]);
+    exec(["set", "animation", "speed", 10]);
     exec(["set", "animation", "on"]);
-    /*await sleep(1000);
+    await sleep(1000);
+    let keys = binarysearchT.preOrder();
     console.log(`Fire in the hole`);
-    for(const e of binarysearchT.arr!){
-        if(e)
-            await exec(["remove", e.key]);
-    }*/
+    for(const k of keys){
+        console.log(binarysearchT.size);
+        await exec(["remove", k]);
+        await awaitInput();
+        if(k == 35){
+            break;
+        }
+    }
 
 });
 
