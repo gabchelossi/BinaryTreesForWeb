@@ -13,13 +13,16 @@
 <body>    
     <fieldset id = "control-panel">
         <legend>Control Panel</legend>
-        <table style = "height: 100%;">
+        <table style = "height: 100%; width: 80%;">
             <tr>
                 <th colspan="1">Key</th>
                 <th colspan="3">Operations</th>
+                <th colspan="3">Animation</th>
+                <th colspan="3">Keys</th>
+                <th colspan = "5">Terminal</th>
             </tr>
             <tr>
-                <td rowspan="2">
+                <td rowspan="3">
                     <input type = "number" style = "height: 100%; font-size: 25px;text-align: center;">
                 </td>
                 <td>
@@ -31,14 +34,45 @@
                 <td>
                     <input type = "button" value = "Search">
                 </td>
+                <td>
+                    <input type="radio" id="Automatic" name="animationselection" value="Automatic" checked />
+                        <label for="Automatic">Automatic</label>
+                </td>
+                <td>
+                    <input type="radio" id="Manual" name="animationselection" value="Manual" />
+                        <label for="Manual">Manual</label>
+                </td>
+                <td>
+                    <input type="radio" id="Off" name="animationselection" value="Off" />
+                        <label for="Off">Off</label>
+                </td>
+                <td colspan ="2" rowspan="3">
+                    <input type = "button" value = "&#9658;">
+                </td>
+                <td rowspan="3">
+                    <input type = "button" value = "&#8594;">
+                </td>
+                <td colspan="5" rowspan = "4">
+                    <div id = "console"></div>
+                </td>
             </tr>
             <tr>
                 <td colspan="3">
                     <input type = "button" value = "Trasverse" style = "width: 100%">
                 </td>
+                <td colspan="3">
+                    <input
+                        type="range"
+                        id="speed"
+                        name="speed"
+                        min="1"
+                        max="5"
+                        value="1"
+                        step="1" />
+                    <label for="speed">x1 Animation Speed</label>
+                </td>
             </tr>
             <tr>
-                <td></td>
                 <td>
                     <input type="radio" id="In-Order" name="trasversalselection" value="In-Order" checked />
                         <label for="In-Order">In-Order</label>
@@ -51,13 +85,9 @@
                     <input type="radio" id="Post-Order" name="trasversalselection" value="Post-Order" />
                         <label for="Post-Order">Post-Order</label>
                 </td>
-            </tr>       
-        </table>
-        <table style = "height: 100%;">
-            <tr>
-                <th colspan="3">Animation</th>
-                <th colspan="3">Keys</th>
+                
             </tr>
+            <!--
             <tr>
                 <td>
                     <input type="radio" id="Automatic" name="animationselection" value="Automatic" checked />
@@ -77,9 +107,20 @@
                 <td>
                     <input type = "button" value = "&#8594;">
                 </td>
-            </tr>            
-        </table>
-        <table style = "height: 100%;">
+            </tr>   
+            <tr>
+                <td colspan="6">
+                    <input
+                        type="range"
+                        id="speed"
+                        name="speed"
+                        min="1"
+                        max="5"
+                        value="1"
+                        step="1" />
+                    <label for="speed">Speed</label>
+                </td>
+            </tr>
             <tr>
                 <th colspan="1">Output</th>
                 <th colspan="3">Verbose</th>
@@ -97,7 +138,7 @@
                 <td>
                     <input type = "button" value = "search">
                 </td>
-            </tr>            
+            </tr>-->            
         </table>
     </fieldset>       
     <script src="./js/gui.js" type="module"></script>

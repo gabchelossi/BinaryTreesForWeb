@@ -142,7 +142,7 @@ html, body{
 }
 
 #control-panel table {
-    min-width: 30vw;
+    min-width: 25vw;
     display: inline-table;
     /*vertical-align: middle; */  /* aligns the tables themselves */
     border: 2px solid black;
@@ -153,7 +153,8 @@ html, body{
 #control-panel td {
     text-align: center;       /* horizontal centering */
     /*vertical-align: middle; */  /* vertical centering */
-    padding: 8px;             /* spacing for readability */
+    padding: 8px;    
+    border: 1px solid black;         /* spacing for readability */
 }
 
 #control-panel > tr:first-child{
