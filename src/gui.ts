@@ -547,7 +547,7 @@ document.addEventListener("DOMContentLoaded",async function() {
 
 let focus = function () {
     focused = true;
-    cursorAnimation();
+    //cursorAnimation();
 }
 
 let leave = function () {
@@ -567,10 +567,10 @@ let paste = async function (e: { preventDefault: () => void; }) {
 
 
 setInterval(function () {
-    cursorAnimation();
+    //cursorAnimation();
 }, 1000);
 
-let cursorAnimation = function () {
+/*let cursorAnimation = function () {
 
     if (focused) {
         if (displayed) {
@@ -588,7 +588,7 @@ let cursorAnimation = function () {
         }
     }
 
-}
+}*/
 let consoleHeight = debconsole!.offsetHeight;
 
 let minimize = function () {

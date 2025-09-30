@@ -130,30 +130,34 @@ html, body{
     bottom: 0;
     left: 0;
     right: 0;
-    min-height: 200px;
+    /*min-height: 200px;*/
     border: 2px solid black;
     background-color:rgb(193 229 194);
     font-family: "Ubuntu Mono", monospace;
     text-align: center;
 }
 
+#control-panel legend{
+    font-size: 30px;
+}
+
 #control-panel table {
     min-width: 30vw;
-    display: inline-block;
-    vertical-align: middle;   /* aligns the tables themselves */
+    display: inline-table;
+    /*vertical-align: middle; */  /* aligns the tables themselves */
     border: 2px solid black;
-    min-height: 200px;
+    min-height: 20vh;
 }
 
 #control-panel th,
 #control-panel td {
     text-align: center;       /* horizontal centering */
-    vertical-align: middle;   /* vertical centering */
+    /*vertical-align: middle; */  /* vertical centering */
     padding: 8px;             /* spacing for readability */
 }
 
-#control-panel tbody tr{
-    width: 100%;
+#control-panel > tr:first-child{
+    border-right: 1px solid black;
 }
 
 
