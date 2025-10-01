@@ -53,6 +53,7 @@ window.addEventListener('resize', () => {
 });
 
 let type = async function (e: { key: string; preventDefault: () => void; }) {
+    console.log(focused);
     if (focused) {
         switch (e.key) {
             case "Backspace":
@@ -60,8 +61,10 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
                 break;
 
             default:
-                if (!(e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta"))
+                if (!(e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta")){
+                    console.log(e.key);
                     command!.innerHTML = command!.innerHTML + e.key;
+                }
                 else {
                     e.preventDefault();
                 }
@@ -91,27 +94,32 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
 
 
             case "Enter":
-                let consoleOutput = document.getElementById("console-content");
-                cursor!.remove();
-                previousCommands.push(command!.innerHTML);
-                point = previousCommands.length;
-                command!.id = "";
-                console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
-                try{
-                    command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
-                }
-                catch(e){
-                    command!.innerHTML += `<br><br>${e}`;
-                }
-                let newLine = document.createElement("p");
-                newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
-                consoleOutput!.append(newLine);
-                command = document.getElementById("text");
-                (consoleOutput!.lastChild as Element).append(cursor!);
-                consoleOutput!.scrollTo(0, consoleOutput!.scrollHeight);
+                
+                parseCommand();
                 break;
         }
     }
+}
+
+const parseCommand = async function () {
+    let consoleOutput = document.getElementById("console-content");
+    cursor!.remove();
+    previousCommands.push(command!.innerHTML);
+    point = previousCommands.length;
+    command!.id = "";
+    console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
+    try{
+        command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
+    }
+    catch(e){
+        command!.innerHTML += `<br><br>${e}`;
+    }
+    let newLine = document.createElement("p");
+    newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
+    consoleOutput!.append(newLine);
+    command = document.getElementById("text");
+    (consoleOutput!.lastChild as Element).append(cursor!);
+    debconsole!.scrollTo(0, consoleOutput!.scrollHeight);
 }
 
 let exec = async function (...parameters: any[]) {
@@ -301,7 +309,7 @@ let exec = async function (...parameters: any[]) {
                                     }
 
 
-                                    .trasverser{
+                                    .traverser{
                                         position: absolute;
                                         font-size: 3vw;
                                         top:0;
@@ -447,69 +455,73 @@ let exec = async function (...parameters: any[]) {
 
                 break;
 
-            case "trasverse":
-                let trasverseType = params[1].toLowerCase();
+            case "traverse":
+                let traverseType: string = params[1].toLowerCase();
+                if(!params[1]){
+                    returnval = `You must specify a traversal mode. Try 'in-order', 'pre-order' or 'post-order'`;
+                    break;
+                }
                 if (binarysearchT.size > 0) {
-                    switch (trasverseType) {
+                    switch (traverseType) {
                         case "in-order":
                         case "inorder":
-                            if (params[2]) { //if the trasversal starts from a certain key
+                            if (params[2]) { //if the traversal starts from a certain key
                                 if (animation)
-                                    returnval = await binarysearchT.trasversal(parseInt(params[2]), "in-order");
+                                    returnval = await binarysearchT.traversal(parseInt(params[2]), "in-order");
                                 else
                                     returnval = binarysearchT.inOrder(parseInt(params[2]));
                             }
                             else {
                                 if (animation)
-                                    returnval = await binarysearchT.trasversal(0, "in-order");
+                                    returnval = await binarysearchT.traversal(0, "in-order");
                                 else
                                     returnval = binarysearchT.inOrder(0);
 
                             }
-                            returnval = "In-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
+                            returnval = "In-order traversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
                             break;
                         case "pre-order":
                         case "preorder":
-                            if (params[2]) { //if the trasversal starts from a certain key
+                            if (params[2]) { //if the traversal starts from a certain key
                                 if (animation)
-                                    returnval = await binarysearchT.trasversal(parseInt(params[2]), "pre-order");
+                                    returnval = await binarysearchT.traversal(parseInt(params[2]), "pre-order");
                                 else
                                     returnval = binarysearchT.preOrder(parseInt(params[2]));
                             }
                             else {
                                 if (animation)
-                                    returnval = await binarysearchT.trasversal(0, "pre-order");
+                                    returnval = await binarysearchT.traversal(0, "pre-order");
                                 else
                                     returnval = binarysearchT.preOrder(0);
                             }
-                            returnval = "Pre-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
+                            returnval = "Pre-order traversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
                             break;
 
                         case "post-order":
                         case "postorder":
-                            if (params[2]) { //if the trasversal starts from a certain key
+                            if (params[2]) { //if the traversal starts from a certain key
                                 if (animation)
-                                    returnval = await binarysearchT.trasversal(parseInt(params[2]), "post-order");
+                                    returnval = await binarysearchT.traversal(parseInt(params[2]), "post-order");
                                 else
                                     returnval = binarysearchT.postOrder(parseInt(params[2]));
                             }
                             else {
                                 if (animation)
-                                    returnval = await binarysearchT.trasversal(0, "post-order");
+                                    returnval = await binarysearchT.traversal(0, "post-order");
                                 else
                                     returnval = binarysearchT.postOrder(0);
                             }
-                            returnval = "Post-order Trasversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
+                            returnval = "Post-order traversal: [" + returnval.toString().replaceAll(",", ", ") + "]";
                             break;
 
                         default:
-                            returnval = `The parameter given '${params[1]}' is not a valid trasversal mode.`;
+                            returnval = `The parameter given '${params[1]}' is not a valid traversal mode.`;
                             break;
 
                     }
                 }
                 else {
-                    returnval = `The binary search tree is empty. Cannot trasverse it`;
+                    returnval = `The binary search tree is empty. Cannot traverse it`;
                 }
                 break;
 
@@ -547,7 +559,7 @@ document.addEventListener("DOMContentLoaded",async function() {
 
 let focus = function () {
     focused = true;
-    //cursorAnimation();
+    cursorAnimation();
 }
 
 let leave = function () {
@@ -567,10 +579,10 @@ let paste = async function (e: { preventDefault: () => void; }) {
 
 
 setInterval(function () {
-    //cursorAnimation();
+    cursorAnimation();
 }, 1000);
 
-/*let cursorAnimation = function () {
+let cursorAnimation = function () {
 
     if (focused) {
         if (displayed) {
@@ -588,10 +600,10 @@ setInterval(function () {
         }
     }
 
-}*/
+}
 let consoleHeight = debconsole!.offsetHeight;
 
-let minimize = function () {
+/*let minimize = function () {
     let output = document.getElementById("console-content");
     let bar = document.getElementById("console-bar");
 
@@ -629,17 +641,39 @@ function resizeConsole() {
         document.onmousemove = null; //so it does not call these functions unless the user clicks again on the resizer
         document.onmouseup = null;
     }
-};
+};*/
 
 
 //All event listeners
 //The document catches the event and sets to false, unless the terminal overrides it with its listeners (capture vs target)
+document.getElementById("add-button")!.addEventListener("click", function(){ 
+    console.log(`Add fired!`);
+    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement).value;
+    command!.innerHTML = `insert ${input}`;
+    parseCommand();
+});
+document.getElementById("delete-button")!.addEventListener("click", function(){ 
+    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement).value;
+    command!.innerHTML = `remove ${input}`;
+    parseCommand();
+});
+document.getElementById("search-button")!.addEventListener("click", function(){ 
+    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement).value;
+    command!.innerHTML = `rank ${input}`;
+    parseCommand();
+});
+document.getElementById("traverse-button")!.addEventListener("click", function(){
+    const selectedRadio = document.querySelector('input[name="trasversalselection"]:checked');
+    command!.innerHTML = `traverse ${selectedRadio?.value}`;
+    parseCommand();
+});
+document.addEventListener("click", function () { focused = false; }, true);
 document.addEventListener("click", leave, true);
 document.addEventListener("focus", leave, true);
 debconsole!.addEventListener("click", focus);
 debconsole!.addEventListener("focus", focus);
 debconsole!.addEventListener("contextmenu", paste);
 document.addEventListener("keydown", type);
-document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", minimize);
-document.getElementsByClassName("console-dot green")[0].addEventListener("click", maximize);
-document.getElementById("resizer")!.addEventListener("mousedown", resizeConsole);
+//document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", minimize);
+//document.getElementsByClassName("console-dot green")[0].addEventListener("click", maximize);
+//document.getElementById("resizer")!.addEventListener("mousedown", resizeConsole);

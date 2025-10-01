@@ -321,7 +321,7 @@ export class BinarySearchTree {
             await this.arr![rank].borderCol("red", true);
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 console.log("Hardest case scenario"); //turned out to be the easiest one LOL
-                await this.trasversal(rank, "in-order", true).then(async (result) =>{
+                await this.traversal(rank, "in-order", true).then(async (result) =>{
                     this.arr![rank].dom.innerHTML = result[0].toString();
                     await this.removeKey(result[0]); 
                     this.size++; //to counter the previous instruction side-effect
@@ -489,27 +489,27 @@ export class BinarySearchTree {
         return -1;
     }
 
-    async trasversal(root: number, mode: string, removing: boolean = false) : Promise<number[]> {
+    async traversal(root: number, mode: string, removing: boolean = false) : Promise<number[]> {
         let nodes = this.arr;
-        let trasverse = [];
+        let traverse = [];
         let arrow = document.createElement("span");
-        arrow.classList.add("trasverser");
+        arrow.classList.add("traverser");
         arrow.innerHTML = "↑";
         document.body.append(arrow);
         arrow.offsetHeight; //reflow stuff
         //let output = document.getTreeElementById("output");
         let original = root;
 
-        let setupTrasversal = function (root: number, color: string = 'red') { //sets all the children to red (unvisited)
+        let setuptraversal = function (root: number, color: string = 'red') { //sets all the children to red (unvisited)
             if (nodes![root * 2 + 1])
-                setupTrasversal(root * 2 + 1);
+                setuptraversal(root * 2 + 1);
             nodes![root].borderColor = color;
 
             if (nodes![root * 2 + 2])
-                setupTrasversal(root * 2 + 2);
+                setuptraversal(root * 2 + 2);
             return;
         }
-        if(!removing) setupTrasversal(root);
+        if(!removing) setuptraversal(root);
 
 
         let waitTransition = async function (dom : any, fn: Function) { //first class function
@@ -580,9 +580,9 @@ export class BinarySearchTree {
                         return returnArr;
                     }
 
-                    if(removing){ //find the first key in an in-order trasversal after the key we want to delete
+                    if(removing){ //find the first key in an in-order traversal after the key we want to delete
                         inOrder(root*2+2).then(async function (result) { //call the function and handle the result
-                            //trasverse = result;
+                            //traverse = result;
                             
                             let target = nodes![root];
                             const centerXvw = target.xTransform + diameterVw / 2;
@@ -604,7 +604,7 @@ export class BinarySearchTree {
                     }
                     else{
                         inOrder(root).then(function (result) { //call the function and handle the result
-                            //trasverse = result;
+                            //traverse = result;
     
                             arrow.ontransitionend = async function () {
                                 arrow.ontransitionend = null;
@@ -654,7 +654,7 @@ export class BinarySearchTree {
                         return returnArr;
                     }
                     preOrder(root).then(function (result) { //call the function and handle the result
-                        //trasverse = result;
+                        //traverse = result;
 
                         arrow.ontransitionend = async function () {
                             arrow.ontransitionend = null;
@@ -699,7 +699,7 @@ export class BinarySearchTree {
                     }
 
                     postOrder(root).then(function (result) { //call the function and handle the result
-                        //trasverse = result;
+                        //traverse = result;
 
                         arrow.ontransitionend = async function () {
                             arrow.ontransitionend = null;
