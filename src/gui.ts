@@ -685,6 +685,7 @@ document.querySelectorAll('input[name="animationselection"]')
 
 document.getElementById("speed")!.addEventListener("mouseup", function () {
     command!.innerHTML = `set animation speed ${this.value}`;
+    document.getElementById("labelspeed").innerHTML = `x${this.value} Animation Speed`;
     parseCommand();
 });
 
