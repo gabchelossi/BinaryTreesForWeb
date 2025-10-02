@@ -53,7 +53,7 @@ window.addEventListener('resize', () => {
 });
 
 let type = async function (e: { key: string; preventDefault: () => void; }) {
-    console.log(focused);
+    //console.log(focused);
     if (focused) {
         switch (e.key) {
             case "Backspace":
@@ -62,7 +62,7 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
 
             default:
                 if (!(e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta")){
-                    console.log(e.key);
+                    //console.log(e.key);
                     command!.innerHTML = command!.innerHTML + e.key;
                 }
                 else {
@@ -237,7 +237,7 @@ let exec = async function (...parameters: any[]) {
                 }
                 else{
                     try{
-                        await binarysearchT.removeKey(element);
+                        await binarysearchT.removeKey(element, animation);
                         resolve(`The key '${params[1]}' has been deleted.`);
                     }
                     catch(e){
@@ -537,24 +537,9 @@ let exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() { 
-    //exec(["insert", 10,20,15,25,13,17,23,27,11,14,16,18,21,24,26,28]);
-    //exec(["insert", 10,5,4,8,2,1,3]);
-    exec(["insert", "full"]);
-    //exec(["insert", 43,33,50,37,45,55,47,53,60]);
-    exec(["set", "animation", "speed", 10]);
-    exec(["set", "animation", "on"]);
-    await sleep(1000);
-    let keys = binarysearchT.preOrder();
-    console.log(`Fire in the hole`);
-    for(const k of keys){
-        console.log(binarysearchT.size);
-        await exec(["remove", k]);
-        await awaitInput();
-        if(k == 35){
-            break;
-        }
-    }
-
+    exec(["set", "animation", "off"]);
+    exec(["insert", 1,2,3]);
+    //exec(["set", "animation", "off"]);
 });
 
 let focus = function () {

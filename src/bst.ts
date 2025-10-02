@@ -141,7 +141,7 @@ export class BinarySearchTree {
                 this.arr![rank] = e;
                 //console.log(`${e} and ${parent}`)
                 //console.log(`${rank} and ${parentRank}`)
-                this.connectTransform(rank, parentRank);
+                this.connectTransform(rank, parentRank, false);
                 e.removeClass("transform");
 
             }
@@ -252,10 +252,10 @@ export class BinarySearchTree {
         });
     }
 
-    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
+    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true) {
         return new Promise(async (resolve) => {
             // console.log(`assign Promise Opened`);
-            e.addClass("transform");
+            if(animation) e.addClass("transform");
             let nodes = this.arr;
             //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
@@ -287,20 +287,22 @@ export class BinarySearchTree {
             await e.translate(translateInfo.x, translateInfo.y, true);
             await e.borderCol("rgb(37, 201, 37)", true);
             
-            await this.connectTransform(rank, parentRank);
+            if(!reassign){
+                await this.connectTransform(rank, parentRank, animation);
+            }
 
-            e.removeClass("transform");
+            if(animation) e.removeClass("transform");
             // console.log(`assign Promise Resolved`);
             resolve(true);
         });
     }
 
-    async connectTransform(rank: number, parentRank: number) {
+    async connectTransform(rank: number, parentRank: number, animation: boolean = true) {
         // console.log(`connectTransform Promise Opened`);
         return new Promise((resolve) => {
             let e = this.arr![rank];
             let parent = this.arr![parentRank];
-            const newConnection = new BinarySearchTree.Connection(e, parent);
+            const newConnection = new BinarySearchTree.Connection(e, parent, animation);
             const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
             if(emptyIndex >= 0){
                 this.connections[emptyIndex] = newConnection;
@@ -313,12 +315,12 @@ export class BinarySearchTree {
         });
     }
 
-    async removeKey(key: number): Promise<number | string> { //there is a weird bug when removing 5 and 15 in this order........
+    async removeKey(key: number, animation: boolean = true): Promise<number | string> { 
     return new Promise(async (resolve, reject) => {
         let rank = this.rankOf(key);
         //console.log(rank);
         if (rank > -1) {
-            await this.arr![rank].borderCol("red", true);
+            await this.arr![rank].borderCol("red", animation);
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 await this.traversal(rank, "in-order", true).then(async (result) =>{
@@ -330,7 +332,7 @@ export class BinarySearchTree {
                 });
             } 
             else {
-                await this.arr![rank].opac(0, true);
+                await this.arr![rank].opac(0, animation);
                 this.arr![rank].dom.remove(); 
                 const parent = this.arr![Math.floor((rank-1)/2)];
                 const child = this.arr![rank*2+1]?this.arr![rank*2+1]:this.arr![rank*2+2];
@@ -338,8 +340,6 @@ export class BinarySearchTree {
                 let removeLineIndex = this.connections.findIndex((c, i) => {
                     if (c) {
                         if(c.child.key == this.arr![rank].key){
-                            //console.log(`Found matching child with line at index ${i}`);
-                            //console.log(c.dom);
                             return c.child.key == this.arr![rank].key;
                         }
                         
@@ -348,10 +348,13 @@ export class BinarySearchTree {
                 if(rank == 0){
                     removeLineIndex = this.connections.findIndex((c) => {if(c) return c.parent.key == this.arr![rank].key});
                 }
+                if(animation){
+                    this.connections[removeLineIndex].dom.classList.add("transform");
+                }
                 if(this.size>1)
-                    this.connections[removeLineIndex].changeLength('0', true, () => { //remove the line that has the removed key as child
+                    this.connections[removeLineIndex].changeLength('0', animation, () => { //remove the line that has the removed key as child
                         try{
-                            //console.log(`Remove Line Index: ${removeLineIndex}`);
+                            console.log(`Remove Line Index: ${removeLineIndex}`);
                             this.connections[removeLineIndex].dom.remove();
                             delete this.connections[removeLineIndex];
                         }
@@ -374,13 +377,17 @@ export class BinarySearchTree {
                         return new Promise(async (resolve) => {
                             const node = this.arr![from];
                             this.arr![to] = node;
-                            this.assign(node, to);
+                            this.assign(node, to, true, animation);
                             delete this.arr![from]; //it is not necessarely true that there will be a child that will overrwrite this node
                             const leftChild = this.arr![from*2+1];
                             const rightChild = this.arr![from*2+2];
                             const redrawLine = this.connections.find((c) => { if(c) return c.child.key == node.key});
-                            redrawLine!.parent = this.arr![Math.floor((to-1)/2)];
-                            //let key = this.arr![from].key;
+                            //console.log(`${Math.floor((to-1)/2)}`);
+                            if(redrawLine){
+                                redrawLine!.parent = this.arr![Math.floor((to-1)/2)];
+                                if(animation) redrawLine!.dom.classList.add("transform");
+                            }
+
                             if(rightChild){
                                 await shiftUp!(from*2+2, to*2+2);
                             }
@@ -391,6 +398,11 @@ export class BinarySearchTree {
                             try{
                                 redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                                 redrawLine!.draw(false);
+                                if(animation)
+                                    redrawLine!.dom.onanimationend = (() =>{
+                                        redrawLine!.dom.onanimationend = null;
+                                        redrawLine!.dom.classList.remove("transform");
+                                    });
                             }
                             catch(e){}
                             resolve(true);
@@ -406,11 +418,16 @@ export class BinarySearchTree {
                                 const node = this.arr![from];
                                 this.arr![to] = node;
                                 delete this.arr![from]; //it is not necessarely true that there will be a child that will overrwrite this node
-                                this.assign(node, to);
+                                this.assign(node, to, true, animation);
                                 const leftChild = this.arr![from*2+1];
                                 const rightChild = this.arr![from*2+2];
+                                //console.log(`${Math.floor((to-1)/2)}`);
                                 const redrawLine = this.connections.find((c) => { if(c) return c.child.key == node.key});
-                                redrawLine!.parent = this.arr![Math.floor((to-1)/2)];
+                                if(redrawLine){
+                                    redrawLine!.parent = this.arr![Math.floor((to-1)/2)];
+                                    if(animation) redrawLine!.dom.classList.add("transform");
+                                }                               
+                                
                                 if(leftChild){
                                     await shiftUp!(from*2+1, to*2+1);
                                 }
@@ -421,11 +438,17 @@ export class BinarySearchTree {
                                 try{
                                     redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                                     redrawLine!.draw(false);
+                                    if(animation)
+                                        redrawLine!.dom.onanimationend = (() =>{
+                                            redrawLine!.dom.onanimationend = null;
+                                            redrawLine!.dom.classList.remove("transform");
+                                        });
                                 }
                                 catch(e){}
                                 resolve(true);
                             });
                         }
+                        console.log(`Calling ${rank*2+2} to be moved to ${rank}`);
                         await shiftUp(rank*2+2, rank);
                     }
                 }
@@ -732,20 +755,24 @@ export class BinarySearchTree {
         child: InstanceType<typeof BinarySearchTree.TreeElement>;
         parent: InstanceType<typeof BinarySearchTree.TreeElement>;
         l!: string;
-        constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>) {
+        constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
             this.dom = document.createElement("div");
-            this.dom.classList.add("transform", "line");
+            this.dom.classList.add("line");
+            if(animation){
+                this.dom.classList.add("transform");
+            }
             //console.log(`${child} and ${parent}`)
             this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
             this.child = child;
             this.parent = parent;
-            this.draw(true);
             this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
                 //this.dom.style.transition = "transform 0s";
                 this.dom.ontransitionend = null;
-                //this.dom.classList.remove("transform");
+                this.dom.classList.remove("transform");
                 //console.log(`removing animation triggered`);
             };
+            this.draw(true);
+            
         }
 
         draw(appendToBody: boolean) {
