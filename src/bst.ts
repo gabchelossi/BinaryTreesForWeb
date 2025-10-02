@@ -348,7 +348,7 @@ export class BinarySearchTree {
                 if(rank == 0){
                     removeLineIndex = this.connections.findIndex((c) => {if(c) return c.parent.key == this.arr![rank].key});
                 }
-                if(animation){
+                if(animation && this.connections[removeLineIndex]){
                     this.connections[removeLineIndex].dom.classList.add("transform");
                 }
                 if(this.size>1)

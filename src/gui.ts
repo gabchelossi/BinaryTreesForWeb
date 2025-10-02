@@ -182,18 +182,30 @@ let exec = async function (...parameters: any[]) {
                         })();
                     }
                     else {
-                        await (async function () {
-                            try {
-                                if (animation)
-                                    await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(parseInt(params[1])));
-                                else
-                                    binarysearchT.addNew(new BinarySearchTree.TreeElement(parseInt(params[1])));
-                                returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
+                        if(isNaN(parseInt(params[1]))){
+                            reject(`The passed parameter is not a number.`);
+                        }
+                        else{
+                            if(binarysearchT.rankOf(parseInt(params[1]))>-1){
+                                reject(`The key '${parseInt(params[1])}' is already present in the tree.`);
                             }
-                            catch (e) {
-                                returnval = String(e);
+                            else{
+                                await (async function () {
+                                    try {
+                                        if (animation)
+                                            await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(parseInt(params[1])));
+                                        else
+                                            binarysearchT.addNew(new BinarySearchTree.TreeElement(parseInt(params[1])));
+                                        returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
+                                    }
+                                    catch (e) {
+                                        returnval = String(e);
+                                    }
+                                })();
                             }
-                        })();
+                            
+                        }
+                        
                     }
                 }
 
@@ -357,6 +369,9 @@ let exec = async function (...parameters: any[]) {
                         else {
                             if (params[2] == "off") {
                                 animation = false;
+                                let radiobtn = document.getElementById("Off");
+                                radiobtn!.checked = true;
+                                document.getElementById("speed")!.disabled = true;
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
                                     noAnimationElements.forEach((e) => {
                                         //console.log(typeof(e));
@@ -366,8 +381,11 @@ let exec = async function (...parameters: any[]) {
                                 returnval = `Animations have been turned off.`;
                             }
                             else {
-                                if (params[2] == "on") {
+                                if (params[2] == "automatic") {
                                     animation = true;
+                                    let radiobtn = document.getElementById("Automatic");
+                                    radiobtn!.checked = true;
+                                    document.getElementById("speed")!.disabled = false;
                                     let noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     noAnimationElements.forEach((e) => {
                                         //console.log(typeof(e));
@@ -632,19 +650,22 @@ function resizeConsole() {
 //All event listeners
 //The document catches the event and sets to false, unless the terminal overrides it with its listeners (capture vs target)
 document.getElementById("add-button")!.addEventListener("click", function(){ 
-    console.log(`Add fired!`);
-    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement).value;
-    command!.innerHTML = `insert ${input}`;
+    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement);
+    command!.innerHTML = `insert ${input.value}`;
+    input.value = ``;
     parseCommand();
 });
 document.getElementById("delete-button")!.addEventListener("click", function(){ 
-    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement).value;
-    command!.innerHTML = `remove ${input}`;
+
+    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement);
+    command!.innerHTML = `remove ${input.value}`;
+    input.value = ``;
     parseCommand();
 });
 document.getElementById("search-button")!.addEventListener("click", function(){ 
-    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement).value;
-    command!.innerHTML = `rank ${input}`;
+    let input = (document.getElementsByTagName("input")[0] as HTMLInputElement);
+    command!.innerHTML = `rank ${input.value}`;
+    input.value = ``;
     parseCommand();
 });
 document.getElementById("traverse-button")!.addEventListener("click", function(){
@@ -652,6 +673,21 @@ document.getElementById("traverse-button")!.addEventListener("click", function()
     command!.innerHTML = `traverse ${selectedRadio?.value}`;
     parseCommand();
 });
+
+document.querySelectorAll('input[name="animationselection"]')
+    .forEach((element) => {
+        element.addEventListener("click", () => {
+            //console.log(element.value);
+            command!.innerHTML = `set animation ${element.value.toLowerCase()}`;
+            parseCommand();
+        });
+    });
+
+document.getElementById("speed")!.addEventListener("mouseup", function () {
+    command!.innerHTML = `set animation speed ${this.value}`;
+    parseCommand();
+});
+
 document.addEventListener("click", function () { focused = false; }, true);
 document.addEventListener("click", leave, true);
 document.addEventListener("focus", leave, true);
