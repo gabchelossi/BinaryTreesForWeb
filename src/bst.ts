@@ -50,13 +50,16 @@ export class BinarySearchTree {
         return true;
     }
 
-    inOrder(root: number = 0): number[] {
+    inOrder(root: number = 0, removing: boolean=false): number[] {
         let returnArr : number[] = [];
         let nodes = this.arr;
         if (nodes![root * 2 + 1]) {
             returnArr = this.inOrder(root * 2 + 1);
         }
         returnArr.push(nodes!![root].key);
+
+        if(removing)
+            return returnArr;
 
         if (nodes![root * 2 + 2])
             returnArr = [...returnArr, ...this.inOrder(root * 2 + 2)];
@@ -320,16 +323,29 @@ export class BinarySearchTree {
         let rank = this.rankOf(key);
         //console.log(rank);
         if (rank > -1) {
-            await this.arr![rank].borderCol("red", animation);
+            if(animation) await this.arr![rank].borderCol("red", animation);
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 console.log("Hardest case scenario"); //turned out to be the easiest one LOL
-                await this.traversal(rank, "in-order", true).then(async (result) =>{
-                    this.arr![rank].dom.innerHTML = result[0].toString();
-                    await this.removeKey(result[0]); 
-                    this.size++; //to counter the previous instruction side-effect
-                    this.arr![rank].key = result[0];
-                    await this.arr![rank].borderCol("rgb(37, 201, 37)", true);
-                });
+                if(animation){
+                    await this.traversal(rank, "in-order", true).then(async (result) =>{
+                        this.arr![rank].dom.innerHTML = result[0].toString();
+                        await this.removeKey(result[0], animation); 
+                        this.size++; //to counter the previous instruction side-effect
+                        this.arr![rank].key = result[0];
+                        await this.arr![rank].borderCol("rgb(37, 201, 37)", animation);
+                    });
+                }
+                else{
+                    const match = this.inOrder(rank*2+2, true)[0];
+                    //const rankofMatch = this.rankOf(match);
+                    await this.removeKey(match, false);
+                    this.arr![rank].dom.innerHTML = match.toString();
+                    console.log(`this.removeKey(${match}, false)`);
+                    this.size++;
+                    this.arr![rank].key = match;
+                    
+                }
+                
             } 
             else {
                 await this.arr![rank].opac(0, animation);

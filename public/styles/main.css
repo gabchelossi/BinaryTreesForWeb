@@ -144,7 +144,8 @@ html, body{
 #control-panel table {
     min-width: 25vw;
     display: inline-table;
-    /*vertical-align: middle; */  /* aligns the tables themselves */
+    /*vertical-align: middle; */  /* aligns the tables themselves 
+    font-size: 20px;*/
     border: 2px solid black;
     min-height: 20vh;
 }

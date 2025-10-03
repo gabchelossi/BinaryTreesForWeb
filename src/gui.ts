@@ -556,8 +556,20 @@ let exec = async function (...parameters: any[]) {
 
 document.addEventListener("DOMContentLoaded",async function() { 
     exec(["set", "animation", "off"]);
-    exec(["insert", 1,2,3]);
-    //exec(["set", "animation", "off"]);
+    exec(["fill-random"]);
+    exec(["set", "animation", "automatic"]);
+    
+    exec(["set", "animation", "speed", 5]);
+
+    await(sleep(1000));
+    while(true){
+        while(binarysearchT.size > 0){
+            await binarysearchT.removeKey(binarysearchT.arr![0].key, animation);
+            await(sleep(100));
+        }
+        exec(["fill-random"]);
+    }
+    
 });
 
 let focus = function () {
@@ -685,7 +697,7 @@ document.querySelectorAll('input[name="animationselection"]')
 
 document.getElementById("speed")!.addEventListener("mouseup", function () {
     command!.innerHTML = `set animation speed ${this.value}`;
-    document.getElementById("labelspeed").innerHTML = `x${this.value} Animation Speed`;
+    document.getElementById("labelspeed")!.innerHTML = `x${this.value} Speed`;
     parseCommand();
 });
 
