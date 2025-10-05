@@ -328,11 +328,11 @@ export class BinarySearchTree {
                 console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 if(animation){
                     await this.traversal(rank, "in-order", true).then(async (result) =>{
-                        this.arr![rank].dom.innerHTML = result[0].toString();
+                        //this.arr![rank].dom.innerHTML = result[0].toString();
                         await this.removeKey(result[0], animation); 
                         this.size++; //to counter the previous instruction side-effect
                         this.arr![rank].key = result[0];
-                        await this.arr![rank].borderCol("rgb(37, 201, 37)", animation);
+                        //await this.arr![rank].borderCol("rgb(37, 201, 37)", animation);
                     });
                 }
                 else{
@@ -632,6 +632,8 @@ export class BinarySearchTree {
                             });
 
                             await waitTransition(arrow, () => {
+                                target.dom.innerHTML = result[0].toString();
+                                target.borderCol("rgb(37, 201, 37)", false);
                                 arrow.style.opacity = (0).toString();
                             }).then(() => {arrow.remove();});
                             

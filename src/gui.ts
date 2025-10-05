@@ -555,13 +555,12 @@ let exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() { 
-    exec(["set", "animation", "off"]);
-    exec(["fill-random"]);
-    exec(["set", "animation", "automatic"]);
+    await exec(["set", "animation", "off"]);
+    await exec(["fill-random"]);
+    await exec(["set", "animation", "automatic"]);
     
-    exec(["set", "animation", "speed", 5]);
+   // exec(["set", "animation", "speed", 5]);
 
-    await(sleep(1000));
     while(true){
         while(binarysearchT.size > 0){
             await binarysearchT.removeKey(binarysearchT.arr![0].key, animation);
