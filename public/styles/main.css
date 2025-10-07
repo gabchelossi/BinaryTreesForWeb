@@ -27,6 +27,10 @@ html, body{
     transition: border 1s, opacity 1s;
 }
 
+.TreeElement.search{
+    border: 2px solid rgb(71 173 199);;
+}
+
 .no-animation{
     transition: none!important; 
 }
@@ -83,12 +87,12 @@ html, body{
   height: 2px;
   width: 100px; /* fixed base width */
   background-color: black;
-  transition: transform 0s, opacity 0s;
+  transition: 0s;
   transform-origin: 0 0;
 }
 
 .line.transform{
-    transition: transform 1s ease-in-out, opacity 1s;
+    transition: transform 1s ease-in-out, opacity 1s, background-color 1s;
     will-change: transform;
 }
 

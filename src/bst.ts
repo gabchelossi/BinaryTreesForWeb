@@ -528,6 +528,52 @@ export class BinarySearchTree {
         return -1;
     }
 
+    search(key: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            let rank = 0;
+            let nodes = this.arr;
+            console.log(nodes![rank]);
+            while(nodes![rank]){
+                if(rank>0){
+                    const line = this.connections.find((c) => { if(c) return c.child.key == nodes![rank].key});
+                    line!.dom.style.backgroundColor = "rgb(71 173 199)";
+                }
+                               
+                await nodes![rank].borderCol("rgb(71 173 199)", true);
+                let leftKey: number | null = nodes![rank*2+1]?.key || null;
+                let rightKey: number | null = nodes![rank*2+2]?.key || null;
+                if(leftKey && key < nodes![rank].key){
+                    rank = rank*2+1;
+                }
+                else{
+                    if(rightKey && key > nodes![rank].key){
+                        rank = rank*2+2;
+                    }
+                    else{
+                        if(key == nodes![rank].key){
+                            console.log(`Found key ${key} at rank ${rank}`);
+                            resolve(rank);
+                        }
+                        else{
+                            console.log(`Key ${key} not found at rank ${rank}`);
+                            reject(`The key '${key}' is not in the binary search Tree`);
+                        }
+                        const resetElements = nodes?.filter((n) => {if(n) {
+                            //console.log(n.dom.style.borderColor, n.dom.style.borderColor === "rgb(71, 173, 199)");
+                            return n.dom.style.borderColor == "rgb(71, 173, 199)";}
+                            });
+                        const resetLines = this.connections.filter((c) => {if(c) return c.dom.style.backgroundColor == "rgb(71, 173, 199)";});
+                        console.log(resetElements, resetLines);
+                        resetElements?.forEach((n) => {n.borderCol("rgb(37, 201, 37)", false);});
+                        resetLines?.forEach((c) => {c.dom.style.backgroundColor = "black";});
+                    }
+                }
+            }
+            
+            
+        });
+    }
+
     async traversal(root: number, mode: string, removing: boolean = false) : Promise<number[]> {
         let nodes = this.arr;
         let traverse = [];

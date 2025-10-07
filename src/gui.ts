@@ -345,14 +345,14 @@ let exec = async function (...parameters: any[]) {
                                     /*.line {
                                         position: absolute;
                                         height: 2px;
-                                        width: 100px; /* fixed base width */
+                                        width: 100px; /* fixed base width 
                                         background-color: black;
                                         transform-origin: 0 0;
                                         will-change: transform;
                                     }*/
 
                                     .line.transform{
-                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s!important;
+                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s, background-color ${seconds}s;!important;
                                         will-change: transform;
                                     }
 
@@ -373,11 +373,17 @@ let exec = async function (...parameters: any[]) {
                                 radiobtn!.checked = true;
                                 document.getElementById("speed")!.disabled = true;
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
-                                    noAnimationElements.forEach((e) => {
-                                        //console.log(typeof(e));
-                                        e.classList.add("no-animation");
-                                        (e as HTMLElement).offsetHeight;
-                                    });
+                                noAnimationElements.forEach((e) => {
+                                    //console.log(typeof(e));
+                                    e.classList.add("no-animation");
+                                    (e as HTMLElement).offsetHeight;
+                                });
+                                let lines = [...document.getElementsByClassName("line")];
+                                lines.forEach((e) => {
+                                    //console.log(typeof(e));
+                                    e.classList.remove("transform");
+                                    (e as HTMLElement).offsetHeight;
+                                });
                                 returnval = `Animations have been turned off.`;
                             }
                             else {
@@ -393,6 +399,11 @@ let exec = async function (...parameters: any[]) {
                                         (e as HTMLElement).offsetHeight;
                                     });
                                     returnval = `Animations have been turned on.`;
+                                    let lines = [...document.getElementsByClassName("line")];
+                                    lines.forEach((e) => {
+                                        e.classList.add("transform");
+                                        (e as HTMLElement).offsetHeight;
+                                    });
                                 }
                                 else {
                                     returnval = `Invalid animation parameter ${params[2]}`;
@@ -557,17 +568,18 @@ let exec = async function (...parameters: any[]) {
 document.addEventListener("DOMContentLoaded",async function() { 
     await exec(["set", "animation", "off"]);
     await exec(["fill-random"]);
+    await sleep(500);
     await exec(["set", "animation", "automatic"]);
     
-   // exec(["set", "animation", "speed", 5]);
+   //exec(["set", "animation", "speed", 5]);
 
-    while(true){
+    /*while(true){
         while(binarysearchT.size > 0){
             await binarysearchT.removeKey(binarysearchT.arr![0].key, animation);
             await(sleep(100));
         }
         exec(["fill-random"]);
-    }
+    }*/
     
 });
 
