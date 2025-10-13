@@ -227,7 +227,7 @@ let exec = async function (...parameters: any[]) {
             case 'help':
                 returnval = "'insert [value]' inserts a key into the binary tree <br> \
                 'delete [value]' deletes (if exists) a key from the binary tree<br> \
-                'rank [value] returns the rank of a given value.'<br> \
+                'search [value] returns the rank of a given value.'<br> \
                 'show' will show the array representing the data structure: \t-array (?boolean:show empty slots)<br> \
                 'clear' clears the console (it gets too messy sometimes)<br> \
                 'credits' to show the credits of the developer who made this site";
@@ -270,15 +270,27 @@ let exec = async function (...parameters: any[]) {
                 binarysearchT.reset();
                 break;
 
-            case "rank":
-                let rank = binarysearchT.rankOf(params[1]);
-                if (rank == -1) {
-                    returnval = `The value '${params[1]}' is not in the tree`;
+            case "search":
+                if(animation){
+                    try{
+                        const rankAt = await binarysearchT.search(params[1]);
+                        returnval = `The key '${params[1]}' is found at rank ${rankAt}`;
+                    }
+                    catch(e){
+                        returnval = `The key '${params[1]}' is not present in the Binary Search Tree`;
+                    }
                 }
-                else {
-                    returnval = `The value '${params[1]}' is at rank ${rank}`;
+                else{
+                    const rank = binarysearchT.rankOf(params[1]);
+                    if (rank == -1) {
+                        returnval = `The value '${params[1]}' is not in the tree`;
+                    }
+                    else {
+                        returnval = `The value '${params[1]}' is at rank ${rank}`;
+                    }
                 }
                 break;
+                
 
             case "set":
                 switch (params[1]) {
@@ -687,7 +699,7 @@ document.getElementById("delete-button")!.addEventListener("click", function(){
 });
 document.getElementById("search-button")!.addEventListener("click", function(){ 
     let input = (document.getElementsByTagName("input")[0] as HTMLInputElement);
-    command!.innerHTML = `rank ${input.value}`;
+    command!.innerHTML = `search ${input.value}`;
     input.value = ``;
     parseCommand();
 });
