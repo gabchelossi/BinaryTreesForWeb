@@ -579,7 +579,7 @@ let exec = async function (...parameters: any[]) {
 
 document.addEventListener("DOMContentLoaded",async function() { 
     await exec(["set", "animation", "off"]);
-    await exec(["fill-random"]);
+    await exec(["insert", 5,3,10,9,11,6,0,1]);
     await sleep(500);
     await exec(["set", "animation", "automatic"]);
     

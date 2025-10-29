@@ -535,11 +535,11 @@ export class BinarySearchTree {
             while(nodes![rank]){
                 if(rank>0){
                     const line = this.connections.find((c) => { if(c) return c.child.key == nodes![rank].key});
-                    line!.dom.style.backgroundColor = "rgb(71 173 199)";
-                }         
-                await nodes![rank].borderCol("rgb(71 173 199)", true);
-                let leftKey: number | null = nodes![rank*2+1]?.key || null;
-                let rightKey: number | null = nodes![rank*2+2]?.key || null;
+                    line!.dom.style.backgroundColor = "rgb(71, 173, 199)";
+                }
+                await nodes![rank].borderCol("rgb(71, 173, 199)", true);
+                let leftKey = nodes![rank*2+1];
+                let rightKey = nodes![rank*2+2];
                 if(leftKey && key < nodes![rank].key){
                     rank = rank*2+1;
                 }
@@ -552,7 +552,7 @@ export class BinarySearchTree {
                             resolve(rank);
                         }
                         else{
-                            reject(-1);
+                            reject(new Error(`The key '${key}' is not in the binary search Tree`));
                         }
                         rank = -1;
                         const resetElements = nodes?.filter((n) => {if(n) return n.dom.style.borderColor == "rgb(71, 173, 199)";});
