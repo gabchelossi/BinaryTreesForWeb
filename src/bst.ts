@@ -100,6 +100,7 @@ export class BinarySearchTree {
 
     addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add('no-animation');
+        console.log(`Adding new element ${e.key} with no amination`);
         if (this.rankOf(e.key) > -1) {
             return false;
         }
@@ -258,7 +259,9 @@ export class BinarySearchTree {
     async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true) {
         return new Promise(async (resolve) => {
             // console.log(`assign Promise Opened`);
-            if(animation) e.addClass("transform");
+            if(animation) {
+                e.addClass("transform");
+            }
             let nodes = this.arr;
             //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
@@ -286,15 +289,15 @@ export class BinarySearchTree {
                 translateInfo.y = "1vh";
             }
             
-            
+            e.dom.onanimationend = function(){
+                e.dom.ontransitionend = null;
+
+            }
             await e.translate(translateInfo.x, translateInfo.y, true);
             await e.borderCol("rgb(37, 201, 37)", true);
-            
             if(!reassign){
                 await this.connectTransform(rank, parentRank, animation);
             }
-
-            if(animation) e.removeClass("transform");
             // console.log(`assign Promise Resolved`);
             resolve(true);
         });
@@ -305,6 +308,7 @@ export class BinarySearchTree {
         return new Promise((resolve) => {
             let e = this.arr![rank];
             let parent = this.arr![parentRank];
+            //console.log(`calling connect transform with animation ${animation}`)
             const newConnection = new BinarySearchTree.Connection(e, parent, animation);
             const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
             if(emptyIndex >= 0){
@@ -353,7 +357,7 @@ export class BinarySearchTree {
                 const parent = this.arr![Math.floor((rank-1)/2)];
                 const child = this.arr![rank*2+1]?this.arr![rank*2+1]:this.arr![rank*2+2];
                 //console.log(`Removing rank with key: ${this.arr![rank].key}`);
-                let removeLineIndex = this.connections.findIndex((c, i) => {
+                let removeLineIndex = this.connections.findIndex((c) => {
                     if (c) {
                         if(c.child.key == this.arr![rank].key){
                             return c.child.key == this.arr![rank].key;
@@ -364,11 +368,13 @@ export class BinarySearchTree {
                 if(rank == 0){
                     removeLineIndex = this.connections.findIndex((c) => {if(c) return c.parent.key == this.arr![rank].key});
                 }
+                console.log(removeLineIndex);
                 if(animation && this.connections[removeLineIndex]){
                     this.connections[removeLineIndex].dom.classList.add("transform");
                 }
                 if(this.size>1)
                     this.connections[removeLineIndex].changeLength('0', animation, () => { //remove the line that has the removed key as child
+                        console.log(`Inside the first citizen function`);
                         try{
                             console.log(`Remove Line Index: ${removeLineIndex}`);
                             this.connections[removeLineIndex].dom.remove();
@@ -393,6 +399,7 @@ export class BinarySearchTree {
                         return new Promise(async (resolve) => {
                             const node = this.arr![from];
                             this.arr![to] = node;
+                            console.log(`Calling assign method with animation ${animation}`);
                             this.assign(node, to, true, animation);
                             delete this.arr![from]; //it is not necessarely true that there will be a child that will overrwrite this node
                             const leftChild = this.arr![from*2+1];
@@ -401,7 +408,13 @@ export class BinarySearchTree {
                             //console.log(`${Math.floor((to-1)/2)}`);
                             if(redrawLine){
                                 redrawLine!.parent = this.arr![Math.floor((to-1)/2)];
-                                if(animation) redrawLine!.dom.classList.add("transform");
+                                if(animation) {
+                                        redrawLine!.dom.classList.add("transform");
+                                        redrawLine.dom.ontransitionend = function() {
+                                            redrawLine.dom.classList.remove("transform");
+                                            redrawLine.dom.ontransitionend = null;
+                                        };
+                                    }
                             }
 
                             if(rightChild){
@@ -414,11 +427,6 @@ export class BinarySearchTree {
                             try{
                                 redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                                 redrawLine!.draw(false);
-                                if(animation)
-                                    redrawLine!.dom.onanimationend = (() =>{
-                                        redrawLine!.dom.onanimationend = null;
-                                        redrawLine!.dom.classList.remove("transform");
-                                    });
                             }
                             catch(e){}
                             resolve(true);
@@ -434,6 +442,7 @@ export class BinarySearchTree {
                                 const node = this.arr![from];
                                 this.arr![to] = node;
                                 delete this.arr![from]; //it is not necessarely true that there will be a child that will overrwrite this node
+                                console.log(`Calling assign method with animation ${animation}`);
                                 this.assign(node, to, true, animation);
                                 const leftChild = this.arr![from*2+1];
                                 const rightChild = this.arr![from*2+2];
@@ -441,7 +450,13 @@ export class BinarySearchTree {
                                 const redrawLine = this.connections.find((c) => { if(c) return c.child.key == node.key});
                                 if(redrawLine){
                                     redrawLine!.parent = this.arr![Math.floor((to-1)/2)];
-                                    if(animation) redrawLine!.dom.classList.add("transform");
+                                    if(animation) {
+                                        redrawLine!.dom.classList.add("transform");
+                                        redrawLine.dom.ontransitionend = function() {
+                                            redrawLine.dom.classList.remove("transform");
+                                            redrawLine.dom.ontransitionend = null;
+                                        };
+                                    }
                                 }                               
                                 
                                 if(leftChild){
@@ -454,11 +469,6 @@ export class BinarySearchTree {
                                 try{
                                     redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                                     redrawLine!.draw(false);
-                                    if(animation)
-                                        redrawLine!.dom.onanimationend = (() =>{
-                                            redrawLine!.dom.onanimationend = null;
-                                            redrawLine!.dom.classList.remove("transform");
-                                        });
                                 }
                                 catch(e){}
                                 resolve(true);
@@ -560,6 +570,7 @@ export class BinarySearchTree {
                         console.log(resetElements, resetLines);
                         resetElements?.forEach((n) => {n.borderCol("rgb(37, 201, 37)", false);});
                         resetLines?.forEach((c) => {c.dom.style.backgroundColor = "black";});
+
                     }
                 }
             }
@@ -795,16 +806,17 @@ export class BinarySearchTree {
 
     }
 
-    onResize() {
+    async onResize(animation:boolean = false) {
         /*for (const conn of this.connections) {
             
             conn.draw(false); // pass false so draw() never re-append
         }*/
         console.log(`Resize event triggered, modified`);
-        this.connections.forEach((connection) => {
-            if(connection)
-                console.log(`Drawing connection: ${connection.dom.id}`);
-                connection.draw(false);
+        this.connections.forEach((conn) => {
+            try{
+                if(conn) conn.draw(false);
+            }
+            catch(e){}
         });
     }
 
@@ -816,19 +828,22 @@ export class BinarySearchTree {
         constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
             this.dom = document.createElement("div");
             this.dom.classList.add("line");
+            console.log(`Calling animation on Connection ${animation}`);
+            console.log(this.dom.classList);
             if(animation){
+                console.log(`Animation if triggered`);
                 this.dom.classList.add("transform");
+                this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
+                    //this.dom.style.transition = "transform 0s";
+                    this.dom.ontransitionend = null;
+                    this.dom.classList.remove("transform");
+                    //console.log(`removing animation triggered`);
+                };
             }
             //console.log(`${child} and ${parent}`)
             this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
             this.child = child;
             this.parent = parent;
-            this.dom.ontransitionend = () => { //so when the window is resized it does not get weird animations
-                //this.dom.style.transition = "transform 0s";
-                this.dom.ontransitionend = null;
-                this.dom.classList.remove("transform");
-                //console.log(`removing animation triggered`);
-            };
             this.draw(true);
             
         }
@@ -856,6 +871,7 @@ export class BinarySearchTree {
                 this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${0})`;
                 document.body.append(this.dom);
             }
+            
             this.dom.offsetHeight; //force reflow
             //this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${scale})`;
             requestAnimationFrame(() => {
@@ -908,17 +924,6 @@ export class BinarySearchTree {
             });
             
         }
-
-        /*setBackGroundColor = (color:string, synchronous:boolean) => {
-            return new Promise((resolve) => {
-                if(synchronous){
-
-                }
-                else{
-                    resolve(0);
-                }
-            });
-        }*/
 
         set length(length) {
             this.l = length;
@@ -1000,6 +1005,7 @@ export class BinarySearchTree {
                     this.dom.ontransitionend = async (e) => {
                         this.dom.ontransitionend = null;
                         await new Promise((r) => requestAnimationFrame(r)); //essential in case youre calling other animation methods on the element
+                        this.removeClass("transform");
                         resolve(e);
                     }
                 }

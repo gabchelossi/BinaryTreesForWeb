@@ -48,7 +48,7 @@ let resizeTimeout: string | number | NodeJS.Timeout | undefined;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-        binarysearchT.onResize();
+        binarysearchT.onResize(animation);
     }, 200); // only trigger after 200ms of no further resize events
 });
 
@@ -412,10 +412,6 @@ let exec = async function (...parameters: any[]) {
                                     });
                                     returnval = `Animations have been turned on.`;
                                     let lines = [...document.getElementsByClassName("line")];
-                                    lines.forEach((e) => {
-                                        e.classList.add("transform");
-                                        (e as HTMLElement).offsetHeight;
-                                    });
                                 }
                                 else {
                                     returnval = `Invalid animation parameter ${params[2]}`;
@@ -639,47 +635,8 @@ let cursorAnimation = function () {
     }
 
 }
-let consoleHeight = debconsole!.offsetHeight;
+//let consoleHeight = debconsole!.offsetHeight;
 
-/*let minimize = function () {
-    let output = document.getElementById("console-content");
-    let bar = document.getElementById("console-bar");
-
-    output!.style.display = "none";
-    bar!.style.bottom = "0";
-}
-
-let maximize = function () {
-    let output = document.getElementById("console-content");
-    let bar = document.getElementById("console-bar");
-
-    output!.style.display = "block";
-    bar!.style.bottom = consoleHeight.toString();
-
-}
-
-function resizeConsole() {
-    let output = document.getElementById("console-content");
-    document.body.style.cursor = "ns-resize";
-    if (output!.style.display == "none") { //resize even when minimized
-        output!.style.display = "block";
-        output!.style.height = (0).toString();
-    }
-
-    document.onmousemove = function (e) {
-        if (e.clientY > 30) {
-            consoleHeight = window.innerHeight - e.clientY;
-            output!.style.height = consoleHeight - 29 + "px";
-        }
-
-    }
-
-    document.onmouseup = function () {
-        document.body.style.cursor = "default";
-        document.onmousemove = null; //so it does not call these functions unless the user clicks again on the resizer
-        document.onmouseup = null;
-    }
-};*/
 
 
 //All event listeners
