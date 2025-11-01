@@ -100,7 +100,7 @@ export class BinarySearchTree {
 
     addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add('no-animation');
-        console.log(`Adding new element ${e.key} with no amination`);
+        //console.log(`Adding new element ${e.key} with no amination`);
         if (this.rankOf(e.key) > -1) {
             return false;
         }
@@ -368,10 +368,11 @@ export class BinarySearchTree {
                 if(rank == 0){
                     removeLineIndex = this.connections.findIndex((c) => {if(c) return c.parent.key == this.arr![rank].key});
                 }
-                console.log(removeLineIndex);
+                console.log(removeLineIndex, this.connections[removeLineIndex]);
                 if(animation && this.connections[removeLineIndex]){
                     this.connections[removeLineIndex].dom.classList.add("transform");
                 }
+                //console.log(animation);
                 if(this.size>1)
                     this.connections[removeLineIndex].changeLength('0', animation, () => { //remove the line that has the removed key as child
                         console.log(`Inside the first citizen function`);
@@ -399,7 +400,7 @@ export class BinarySearchTree {
                         return new Promise(async (resolve) => {
                             const node = this.arr![from];
                             this.arr![to] = node;
-                            console.log(`Calling assign method with animation ${animation}`);
+                            //console.log(`Calling assign method with animation ${animation}`);
                             this.assign(node, to, true, animation);
                             delete this.arr![from]; //it is not necessarely true that there will be a child that will overrwrite this node
                             const leftChild = this.arr![from*2+1];
@@ -811,12 +812,14 @@ export class BinarySearchTree {
             
             conn.draw(false); // pass false so draw() never re-append
         }*/
-        console.log(`Resize event triggered, modified`);
+        //console.log(`Resize event triggered, modified`);
         this.connections.forEach((conn) => {
             try{
                 if(conn) conn.draw(false);
             }
-            catch(e){}
+            catch(e: any){
+                console.error(e.toString());
+            }
         });
     }
 
@@ -828,8 +831,8 @@ export class BinarySearchTree {
         constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
             this.dom = document.createElement("div");
             this.dom.classList.add("line");
-            console.log(`Calling animation on Connection ${animation}`);
-            console.log(this.dom.classList);
+            //console.log(`Calling animation on Connection ${animation}`);
+            //console.log(this.dom.classList);
             if(animation){
                 console.log(`Animation if triggered`);
                 this.dom.classList.add("transform");
@@ -907,7 +910,10 @@ export class BinarySearchTree {
             this.l = length;
             return new Promise((resolve) => {
                 let transformProperty = this.transform.substring(0, this.dom.style.transform.indexOf("scaleX"));
+                //console.log(`Parsed transform Property: ${transformProperty}`);
                 transformProperty += ` scaleX(${length})`;
+                //console.log(`Parsed transform Property after change: ${transformProperty}`);
+                //console.log(`Inside the changelenght method`);
                 if(synchronous){
                     this.dom.ontransitionend = () =>{
                         this.dom.ontransitionend = null;
@@ -919,7 +925,9 @@ export class BinarySearchTree {
                     onTransitionEnd?.();
                     resolve(true);
                 }
+                console.log(this.transform);
                 this.transform = transformProperty;
+                console.log(this.transform);
                 this.l = length;
             });
             

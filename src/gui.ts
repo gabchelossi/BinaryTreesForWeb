@@ -579,16 +579,6 @@ document.addEventListener("DOMContentLoaded",async function() {
     await sleep(500);
     await exec(["set", "animation", "automatic"]);
     
-   //exec(["set", "animation", "speed", 5]);
-
-    /*while(true){
-        while(binarysearchT.size > 0){
-            await binarysearchT.removeKey(binarysearchT.arr![0].key, animation);
-            await(sleep(100));
-        }
-        exec(["fill-random"]);
-    }*/
-    
 });
 
 let focus = function () {
