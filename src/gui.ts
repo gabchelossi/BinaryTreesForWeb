@@ -107,7 +107,7 @@ const parseCommand = async function () {
     previousCommands.push(command!.innerHTML);
     point = previousCommands.length;
     command!.id = "";
-    console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
+    //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
     try{
         command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
     }
@@ -576,6 +576,7 @@ let exec = async function (...parameters: any[]) {
 document.addEventListener("DOMContentLoaded",async function() { 
     await exec(["set", "animation", "off"]);
     await exec(["insert", 5,3,10,9,11,6,0,1]);
+    await exec(["set", "animation", "speed", "5"]);
     await sleep(500);
     await exec(["set", "animation", "automatic"]);
     
