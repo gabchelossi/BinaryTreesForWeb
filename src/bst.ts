@@ -167,12 +167,12 @@ export class BinarySearchTree {
                     this.assign(e, 0);
                     await e.opac(1, true);
                     this.arr!.push(e);
-                    e.removeClass("transform");
+                    //e.removeClass("transform");
                 }
                 else {
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
                     let rank = 0;
-                    await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
+                    await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true, false);
                     await e.opac(1, true);
                     await e.borderCol("orange", true);
                     await this.compareTransform(e, rank);
@@ -247,7 +247,7 @@ export class BinarySearchTree {
             //await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
             coordinates.x = (parent.xTransform+e.diameter/2) + e.diameter + "vw";
             coordinates.y = parent.yTransform + "vh";
-            await e.translate(coordinates.x, coordinates.y, true);
+            await e.translate(coordinates.x, coordinates.y, true, false);
             //await pause(); //for debugging purposes 
             await this.compareTransform(e, rank);
             //console.log(`prepareNextCompare Promise Resolved`);
@@ -293,7 +293,7 @@ export class BinarySearchTree {
                 e.dom.ontransitionend = null;
 
             }
-            await e.translate(translateInfo.x, translateInfo.y, true);
+            await e.translate(translateInfo.x, translateInfo.y, true, true);
             await e.borderCol("rgb(37, 201, 37)", true);
             if(!reassign){
                 await this.connectTransform(rank, parentRank, animation);
@@ -1000,7 +1000,7 @@ export class BinarySearchTree {
             });
         };
     
-        translate = (x:string, y:string, synchronous:boolean) => {
+        translate = (x:string, y:string, synchronous:boolean, finish:boolean = true) => {
             //let e = this;
             this.dom.offsetHeight; //important for reflow
             return new Promise((resolve) => {
@@ -1009,7 +1009,7 @@ export class BinarySearchTree {
                     this.dom.ontransitionend = async (e) => {
                         this.dom.ontransitionend = null;
                         await new Promise((r) => requestAnimationFrame(r)); //essential in case youre calling other animation methods on the element
-                        this.removeClass("transform");
+                        if(finish) this.removeClass("transform");
                         resolve(e);
                     }
                 }
