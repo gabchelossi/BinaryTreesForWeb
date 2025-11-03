@@ -167,7 +167,11 @@ html, body{
     border-right: 1px solid black;
 }
 
-
+#console-container{
+    padding: 0px!important;
+    width: 100%; /* to avoid overlap with control panel */
+    
+}
 #console{
     /*position: fixed;
     bottom: 0;
@@ -180,7 +184,7 @@ html, body{
     font-family: "Ubuntu Mono", monospace;
     font-weight: 500;
     font-style: normal;
-    font-size: 15px;
+    font-size: 17px;
     color: white;
     z-index: 4;
     text-align: left;
