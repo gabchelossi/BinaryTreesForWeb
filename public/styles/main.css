@@ -87,12 +87,13 @@ html, body{
   height: 2px;
   width: 100px; /* fixed base width */
   background-color: black;
-  transition: 0s;
+  transition: background-color 2s;
   transform-origin: 0 0;
+  
 }
 
 .line.transform{
-    transition: transform 1s ease-in-out, opacity 1s, background-color 1s;
+    transition: transform 1s ease-in-out, opacity 1s, background-color 2s;
     will-change: transform;
 }
 

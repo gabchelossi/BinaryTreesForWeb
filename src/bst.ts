@@ -547,7 +547,7 @@ export class BinarySearchTree {
             while(nodes![rank]){
                 if(rank>0){
                     const line = this.connections.find((c) => { if(c) return c.child.key == nodes![rank].key});
-                    line!.dom.style.backgroundColor = "rgb(71, 173, 199)";
+                    await line!.changeColor("rgb(71, 173, 199)", true);
                 }
                 await nodes![rank].borderCol("rgb(71, 173, 199)", true);
                 let leftKey = nodes![rank*2+1];
@@ -571,7 +571,9 @@ export class BinarySearchTree {
                         const resetLines = this.connections.filter((c) => {if(c) return c.dom.style.backgroundColor == "rgb(71, 173, 199)";});
                         console.log(resetElements, resetLines);
                         resetElements?.forEach((n) => {n.borderCol("rgb(37, 201, 37)", false);});
-                        resetLines?.forEach((c) => {c.dom.style.backgroundColor = "black";});
+                        resetLines?.forEach((c) => {
+                            c.changeColor("black", false);
+                        });
 
                     }
                 }
@@ -927,6 +929,21 @@ export class BinarySearchTree {
                 this.l = length;
             });
             
+        }
+
+        changeColor = (color: string, synchronous:boolean) => {
+            return new Promise((resolve) => {
+                if(synchronous){
+                    this.dom.ontransitionend = () =>{
+                        this.dom.ontransitionend = null;
+                        resolve(true);
+                    }
+                }
+                else{
+                    resolve(true);
+                }
+                this.dom.style.backgroundColor = color;
+            });
         }
 
         set length(length) {

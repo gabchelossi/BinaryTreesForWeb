@@ -354,14 +354,14 @@ let exec = async function (...parameters: any[]) {
                                         margin:0;
                                     }
 
-                                    /*.line {
+                                    .line {
                                         position: absolute;
                                         height: 2px;
-                                        width: 100px; /* fixed base width 
+                                        width: 100px; /* fixed base width */
                                         background-color: black;
+                                        transition: background-color ${seconds}s;
                                         transform-origin: 0 0;
-                                        will-change: transform;
-                                    }*/
+                                    }
 
                                     .line.transform{
                                         transition: transform ${seconds}s ease-in-out, opacity ${seconds}s, background-color ${seconds}s;!important;
