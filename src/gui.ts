@@ -321,15 +321,15 @@ let exec = async function (...parameters: any[]) {
                                         height: ${diameter}vw;
                                         width: ${diameter}vw;
                                         border-radius: 50%;
-                                        background-color: white!important;
+                                        background-color: white;
                                         font-weight: bolder;
                                         font-size: 2.5vh;
                                         border: 2px solid rgb(37, 201, 37);
-                                        transition: border ${seconds}s, opacity ${seconds}s!important;
+                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s !important;
                                     }
 
                                     .TreeElement.transform{
-                                        transition: border ${seconds}s, opacity ${seconds}s, transform ${seconds}s ease-in-out!important;
+                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s, transform ${seconds}s ease-in-out!important;
                                     }
 
 
@@ -359,7 +359,7 @@ let exec = async function (...parameters: any[]) {
                                         height: 2px;
                                         width: 100px; /* fixed base width */
                                         background-color: black;
-                                        transition: background-color ${seconds}s;
+                                        transition: background-color ${seconds*2}s;
                                         transform-origin: 0 0;
                                     }
 
@@ -576,9 +576,9 @@ let exec = async function (...parameters: any[]) {
 document.addEventListener("DOMContentLoaded",async function() { 
     await exec(["set", "animation", "off"]);
     await exec(["insert", 5,3,10,9,11,6,0,1]);
-    await exec(["set", "animation", "speed", "5"]);
+    /*await exec(["set", "animation", "speed", "5"]);
     await sleep(500);
-    await exec(["set", "animation", "automatic"]);
+    await exec(["set", "animation", "automatic"]);*/
     
 });
 

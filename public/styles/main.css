@@ -8,6 +8,19 @@ html, body{
     overflow: hidden;
 }
 
+#alternate{
+    display: none;
+}
+
+#alternate h1{
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; /* For horizontal centering of text within the h1 */
+    width: 100%; /* Ensure the h1 takes full width for text-align to work */
+}
+
 .TreeElement{
     cursor: help;
     position: absolute;
@@ -17,14 +30,14 @@ html, body{
     height: 2.5vw;
     width: 2.5vw;
     border-radius: 50%;
-    background-color: white!important;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bolder;
     font-size: 2.5vh;
     border: 2px solid rgb(37, 201, 37);
-    transition: border 1s, opacity 1s;
+    transition: border 1s, opacity 1s, background-color 1s;
 }
 
 .TreeElement.search{
@@ -114,18 +127,12 @@ html, body{
 
 
 
-@media screen and (max-width: 999px) {
-    .TreeElement{
-        height: 4vw;
-        width: 4vw;
-        font-size: 2vw;
+@media screen and (max-width: 999px), (max-height: 562px) {
+    #main, .TreeElement, .line{
+        display: none!important;
     }
-    .comparatorTransform.aft{
-        left: 4vw;
-    }
-
-    .comparatorTransform.bef{
-        right: 4vw;
+    #alternate{
+        display: block;
     }
 }
 
@@ -140,6 +147,7 @@ html, body{
     background-color:rgb(193 229 194);
     font-family: "Ubuntu Mono", monospace;
     text-align: center;
+    z-index: 10;
 }
 
 #control-panel legend{

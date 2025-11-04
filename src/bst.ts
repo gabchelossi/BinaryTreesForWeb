@@ -1,5 +1,7 @@
 //@ts-check
 
+//reverted instance
+
 export class BinarySearchTree {
     
     arr: (InstanceType<typeof BinarySearchTree.TreeElement>)[] | undefined;
@@ -549,6 +551,7 @@ export class BinarySearchTree {
                     const line = this.connections.find((c) => { if(c) return c.child.key == nodes![rank].key});
                     await line!.changeColor("rgb(71, 173, 199)", true);
                 }
+                nodes![rank].backgroundCol(`rgb(131 255 255)`, false);
                 await nodes![rank].borderCol("rgb(71, 173, 199)", true);
                 let leftKey = nodes![rank*2+1];
                 let rightKey = nodes![rank*2+2];
@@ -570,7 +573,10 @@ export class BinarySearchTree {
                         const resetElements = nodes?.filter((n) => {if(n) return n.dom.style.borderColor == "rgb(71, 173, 199)";});
                         const resetLines = this.connections.filter((c) => {if(c) return c.dom.style.backgroundColor == "rgb(71, 173, 199)";});
                         console.log(resetElements, resetLines);
-                        resetElements?.forEach((n) => {n.borderCol("rgb(37, 201, 37)", false);});
+                        resetElements?.forEach((n) => {
+                            n.borderCol("rgb(37, 201, 37)", false);
+                            n.backgroundCol("white", false);
+                        });
                         resetLines?.forEach((c) => {
                             c.changeColor("black", false);
                         });
@@ -1054,6 +1060,26 @@ export class BinarySearchTree {
                 }
             });
         }
+
+        backgroundCol = (value:string, synchronous:boolean){
+            this.dom.offsetHeight; //important for reflow
+            return new Promise((resolve) => {                
+                if (synchronous) {
+                    this.dom.ontransitionend = async function (e) {
+                        this.ontransitionend = null;
+                        await new Promise((r) => requestAnimationFrame(r)); //essential in case youre calling other animation methods on the element
+                        resolve(e);
+                    }
+                    requestAnimationFrame(() => {
+                        this.backgroundColor = `${value}`;
+                    });
+                }
+                else{
+                    this.backgroundColor = `${value}`;
+                    resolve(true);
+                }
+            });
+        }
     
         addClass = (...classes: string[]): void => {
             this.dom.classList.add(...classes);
@@ -1069,6 +1095,10 @@ export class BinarySearchTree {
     
         set borderColor(b: string | number) {
             this.dom.style.borderColor = `${b}`;
+        }
+
+        set backgroundColor(c: string){
+            this.dom.style.backgroundColor = c;
         }
     
         set transform(transform) {
