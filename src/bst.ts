@@ -1061,7 +1061,7 @@ export class BinarySearchTree {
             });
         }
 
-        backgroundCol = (value:string, synchronous:boolean){
+        backgroundCol = (value:string, synchronous:boolean) => {
             this.dom.offsetHeight; //important for reflow
             return new Promise((resolve) => {                
                 if (synchronous) {

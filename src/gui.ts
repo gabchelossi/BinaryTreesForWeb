@@ -61,9 +61,13 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
                 break;
 
             default:
-                if (!(e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta")){
+                if (!( e.key == "PageDown" || e.key == "PageUp" || e.key == "NumLock" || e.key == "Delete" || e.key == "Home" || e.key == "Insert" || e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta")){
                     //console.log(e.key);
-                    command!.innerHTML = command!.innerHTML + e.key;
+                    //command!.innerHTML = command!.innerHTML + e.key;
+                    let char = e.key.toString();
+                    const re = new RegExp("^[A-Za-z0-9]$");
+                    re.exec(char);
+                    command!.innerHTML = command!.innerHTML + char;
                 }
                 else {
                     e.preventDefault();
@@ -108,12 +112,15 @@ const parseCommand = async function () {
     point = previousCommands.length;
     command!.id = "";
     //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
+    let allInputs = Array.from(document.getElementsByTagName('input'));
+    allInputs.forEach((i)=>{i.disabled = true})
     try{
         command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
     }
     catch(e){
         command!.innerHTML += `<br><br>${e}`;
     }
+    allInputs.forEach((i) => {i.disabled = false});
     let newLine = document.createElement("p");
     newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
     consoleOutput!.append(newLine);

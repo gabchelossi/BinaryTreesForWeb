@@ -136,6 +136,19 @@ html, body{
     }
 }
 
+#inputtd{
+    width: 25%;
+}
+
+#inputtd > *{
+    width: 100%;
+}
+
+
+
+
+
+
 #control-panel{
     font-weight: 900;
     position: fixed;
