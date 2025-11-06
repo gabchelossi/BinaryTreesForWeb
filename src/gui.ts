@@ -679,6 +679,18 @@ document.getElementById("speed")!.addEventListener("mouseup", function () {
     parseCommand();
 });
 
+document.getElementById("AVL")!.addEventListener("mouseup", function () {
+    const el = this as HTMLElement;
+    if(el.checked){
+        command!.innerHTML = `set avl off`;
+    }
+    else{
+        command!.innerHTML = `set avl on`;
+    }
+    
+    parseCommand();
+});
+
 document.addEventListener("click", function () { focused = false; }, true);
 document.addEventListener("click", leave, true);
 document.addEventListener("focus", leave, true);
