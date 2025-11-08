@@ -102,6 +102,7 @@ export class BinarySearchTree {
 
     addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add('no-animation');
+        e.dom.classList.add("totalavl");
         //console.log(`Adding new element ${e.key} with no amination`);
         if (this.rankOf(e.key) > -1) {
             return false;
@@ -109,7 +110,7 @@ export class BinarySearchTree {
         else {
             if (this.arr!.length == 0) {
                 const xCenter = 50 - e.diameter / 2;
-                e.translate(`${xCenter}vw`, `1vh`, true);
+                e.translate(`${xCenter}vw`, `2vh`, true);
                 this.arr!.push(e);
                 e.dom.title = "Rank: 0";
                 e.removeClass("transform");
@@ -158,6 +159,7 @@ export class BinarySearchTree {
 
     async addNewTransform(e: InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add("transform");
+        e.dom.classList.add("totalavl");
         e.dom.offsetHeight; //important for reflow
         return new Promise(async (resolve, reject) => {
             if (this.rankOf(e.key) > -1) {
@@ -174,7 +176,7 @@ export class BinarySearchTree {
                 else {
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
                     let rank = 0;
-                    await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true, false);
+                    await e.translate((50 + (this.arr![0].diameter)) + "vw", `2vh`, true, false);
                     await e.opac(1, true);
                     await e.borderCol("orange", true);
                     await this.compareTransform(e, rank);
@@ -974,10 +976,14 @@ export class BinarySearchTree {
             this.dom.classList.add("TreeElement");
             this.dom.innerHTML = key.toString();
             this.dom.style.backgroundColor = "#FFFFFF";
-            this.dom.style.zIndex = (1).toString();
+            this.dom.style.zIndex = (1).toString(); //this is so cringe
             this.opacity = 0;
             this.comparator = new BinarySearchTree.TreeElement.Comparator();
-            this.dom.append(this.comparator.dom);
+            let spanLeft = document.createElement("span");
+            let spanRight = document.createElement("span");
+            spanLeft.classList.add("avl", "left");
+            spanRight.classList.add("avl", "right");
+            this.dom.append(this.comparator.dom, spanLeft, spanRight);
             document.body.append(this.dom);
         }
     

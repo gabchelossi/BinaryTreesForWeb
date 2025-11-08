@@ -60,7 +60,7 @@ let type = async function (e: { key: string; preventDefault: () => void; }) {
                 command!.innerHTML = command!.innerHTML.substring(0, command!.innerHTML.length - 1);
                 break;
 
-            default:
+            default: //NEEDS OPTIMIZING
                 if (!( e.key == "PageDown" || e.key == "PageUp" || e.key == "NumLock" || e.key == "Delete" || e.key == "Home" || e.key == "Insert" || e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta")){
                     //console.log(e.key);
                     //command!.innerHTML = command!.innerHTML + e.key;
@@ -129,7 +129,7 @@ const parseCommand = async function () {
     debconsole!.scrollTo(0, consoleOutput!.scrollHeight);
 }
 
-let exec = async function (...parameters: any[]) {
+const exec = async function (...parameters: any[]) {
     return new Promise(async function (resolve, reject) {
         let returnval: string | number[] = "Command succesfully executed";
         let params = parameters[0];
@@ -388,9 +388,12 @@ let exec = async function (...parameters: any[]) {
                         else {
                             if (params[2] == "off") {
                                 animation = false;
-                                let radiobtn = document.getElementById("Off");
-                                radiobtn!.checked = true;
-                                document.getElementById("speed")!.disabled = true;
+                                let radiobtn = document.getElementById("Off") as HTMLInputElement;
+                                radiobtn.checked = true;
+                                let speedBar = document.getElementById("speed") as HTMLInputElement;
+                                speedBar.disabled = true;
+                                console.log(speedBar);
+                                
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
                                 noAnimationElements.forEach((e) => {
                                     //console.log(typeof(e));
@@ -408,9 +411,10 @@ let exec = async function (...parameters: any[]) {
                             else {
                                 if (params[2] == "automatic") {
                                     animation = true;
-                                    let radiobtn = document.getElementById("Automatic");
-                                    radiobtn!.checked = true;
-                                    document.getElementById("speed")!.disabled = false;
+                                    let radiobtn = document.getElementById("Automatic") as HTMLInputElement;
+                                    radiobtn.checked = true;
+                                    let speedBar = document.getElementById("speed") as HTMLInputElement;
+                                    speedBar.disabled = false;
                                     let noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     noAnimationElements.forEach((e) => {
                                         //console.log(typeof(e));
@@ -418,7 +422,6 @@ let exec = async function (...parameters: any[]) {
                                         (e as HTMLElement).offsetHeight;
                                     });
                                     returnval = `Animations have been turned on.`;
-                                    let lines = [...document.getElementsByClassName("line")];
                                 }
                                 else {
                                     returnval = `Invalid animation parameter ${params[2]}`;
@@ -667,6 +670,7 @@ document.getElementById("traverse-button")!.addEventListener("click", function()
 document.querySelectorAll('input[name="animationselection"]')
     .forEach((element) => {
         element.addEventListener("click", () => {
+            
             //console.log(element.value);
             command!.innerHTML = `set animation ${element.value.toLowerCase()}`;
             parseCommand();
@@ -674,13 +678,14 @@ document.querySelectorAll('input[name="animationselection"]')
     });
 
 document.getElementById("speed")!.addEventListener("mouseup", function () {
-    command!.innerHTML = `set animation speed ${this.value}`;
-    document.getElementById("labelspeed")!.innerHTML = `x${this.value} Speed`;
+    let parsed = this as HTMLInputElement;
+    command!.innerHTML = `set animation speed ${parsed.value}`;
+    document.getElementById("labelspeed")!.innerHTML = `x${parsed.value} Speed`;
     parseCommand();
 });
 
 document.getElementById("AVL")!.addEventListener("mouseup", function () {
-    const el = this as HTMLElement;
+    const el = this as HTMLInputElement;
     if(el.checked){
         command!.innerHTML = `set avl off`;
     }
