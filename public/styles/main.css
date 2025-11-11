@@ -40,7 +40,18 @@ html, body{
     transition: border 1s, opacity 1s, background-color 1s;
 }
 
+.TreeElement.transform{
+    transition: border 1s, opacity 1s, transform 1s ease-in-out, width 1s, height 1s, font-size 1s!important;
+}
+
+.TreeElement.smaller{
+    height: 1.5vw;
+    width: 1.5vw;
+    font-size: 1.5vh;
+}
+
 .TreeElement.totalavl::after {
+    display: none;
     content: "0";
     position: absolute;
     /* display: inline; */
@@ -49,6 +60,15 @@ html, body{
     /* transform: translateY(-100%); */
     font-size: 0.8rem;
     color: red;
+}
+
+.TreeElement.totalavl.active::after{
+    display: inline;
+}
+
+.TreeElement.totalavl.active span.avl.left::after,
+.TreeElement.totalavl.active span.avl.right::after {
+    display: inline;
 }
 
 
@@ -62,6 +82,7 @@ span.avl{
 }
 
 span.avl.left::after{
+    display: none;
     content: "0";
     position: absolute;
     /* display: inline; */
@@ -72,12 +93,23 @@ span.avl.left::after{
 }
 
 span.avl.right::after{
+    display: none;
     content: "0";
     position: absolute;
     /* display: inline; */
     top: 75%;
     left: 100%;
     /* transform: translateY(-100%); */
+}
+
+.line > span.avl::after{
+    content: "0";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* display: inline; */
+    top: 0%;
+    left: 100%;
 }
 
 
@@ -120,9 +152,6 @@ span.avl.right::after{
 }
 
 
-.TreeElement.transform{
-    transition: border 1s, opacity 1s, transform 1s ease-in-out!important;
-}
 
 
 .traverser{

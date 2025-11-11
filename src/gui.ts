@@ -336,7 +336,7 @@ const exec = async function (...parameters: any[]) {
                                     }
 
                                     .TreeElement.transform{
-                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s, transform ${seconds}s ease-in-out!important;
+                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s, transform ${seconds}s ease-in-out, width ${seconds}s, height ${seconds}s, font-size ${seconds}s !important;
                                     }
 
 
@@ -434,6 +434,25 @@ const exec = async function (...parameters: any[]) {
                     case "help":
                         returnval = `'set speed ([1-10])' sets the animation speed`;
                         break;
+
+                    case "avl":
+                        if((params[2] != "on" && params[2] != "off") || !params[2]){
+                            returnval = "Wrong use of 'set avl' command. Type 'help' for instructions";
+                        }
+                        else{
+                            
+                            const elements = Array.from(document.getElementsByClassName("TreeElement"));
+
+                            if(params[2] == "on") {
+                                elements.forEach((e) => {e.classList.add("active")});
+                                returnval = "AVL mode activated";
+                            }
+                            else {
+                                elements.forEach((e) => {e.classList.remove("active")});
+                                returnval = "AVL mode deactivated";
+                        };
+                        }
+                    break;
 
                     default:
                         returnval = `The passed parameter is not valid`;

@@ -13,7 +13,7 @@ export class BinarySearchTree {
         this.arr = [];
         this.connections = [];
         this.s = 0;
-        this.width = 90;
+        this.width = 85;
     }
 
     get size() {
@@ -121,9 +121,11 @@ export class BinarySearchTree {
                 let nodes = this.arr;
                 while (this.arr![rank]) {
                     if (e.key < this.arr![rank].key) {
+                        this.arr![rank].leftWeight ++;
                         rank = rank * 2 + 1;
                     }
                     else {
+                        this.arr![rank].rightWeight ++;
                         rank = rank * 2 + 2;
                     }
                 }
@@ -133,8 +135,15 @@ export class BinarySearchTree {
                     x: "",
                     y: ""
                 };
-                let depth = Math.floor(Math.log2(rank + 1));
+                const depth = Math.floor(Math.log2(rank + 1));
                 let offset = (98) / 2 ** (depth + 1);
+                if(depth>3){
+                    e.addClass("smaller");
+                }
+                if(depth==4){
+                    offset += Math.sin(Math.PI / 4);
+                }
+                
                 if (parent.key > e.key) {
                     translateInfo.x = parent.xTransform - offset + "vw";
                 }
@@ -146,8 +155,6 @@ export class BinarySearchTree {
                 e.borderCol("rgb(37, 201, 37)", false);
                 e.dom.title = `Rank: ${rank}`;
                 this.arr![rank] = e;
-                //console.log(`${e} and ${parent}`)
-                //console.log(`${rank} and ${parentRank}`)
                 this.connectTransform(rank, parentRank, false);
                 e.removeClass("transform");
 
@@ -248,6 +255,9 @@ export class BinarySearchTree {
                 x: "",
                 y: ""
             };
+            const depth = Math.floor(Math.log2(rank + 1));
+            if(depth>3)
+                e.addClass("smaller");
             //await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
             coordinates.x = (parent.xTransform+e.diameter/2) + e.diameter + "vw";
             coordinates.y = parent.yTransform + "vh";
@@ -270,6 +280,11 @@ export class BinarySearchTree {
             //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
+            if(depth>3){
+                e.addClass("smaller");
+            }
+            else
+                e.removeClass("smaller"); //in case it is getting shifted up
             let parentRank = Math.floor((rank - 1) / 2);
             let parent = nodes![parentRank];
             let translateInfo : {x: string, y: string} = {
@@ -290,7 +305,7 @@ export class BinarySearchTree {
             }
             else{
                 translateInfo.x = 50 - e.diameter / 2 + "vw";
-                translateInfo.y = "1vh";
+                translateInfo.y = "2vh";
             }
             
             e.dom.onanimationend = function(){
@@ -630,8 +645,8 @@ export class BinarySearchTree {
 
         const vwToPx = window.innerWidth / 100;
         const vhToPx = window.innerHeight / 100;
-        const diameterVw = nodes![0].diameter;
-        const diameterPx = diameterVw * vwToPx;
+        //const diameterVw = nodes![0].diameter;
+        //const diameterPx = diameterVw * vwToPx;
         const arrowWidthPx = arrow.getBoundingClientRect().width;
         const arrowOffsetVw = (arrowWidthPx / window.innerWidth) * 50;
         //const arrowOffsetVw = 0.75;     
@@ -641,6 +656,8 @@ export class BinarySearchTree {
                 case "in-order":
                     let inOrder = async function (root: number) {
                         let target = nodes![root];
+                        const diameterVw = nodes![root].diameter;
+                        const diameterPx = diameterVw * vwToPx;
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
 
@@ -726,6 +743,8 @@ export class BinarySearchTree {
                 case "pre-order":
                     let preOrder = async function (root:number) {
                         let target = nodes![root];
+                        const diameterVw = nodes![root].diameter;
+                        const diameterPx = diameterVw * vwToPx;
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
 
@@ -773,6 +792,8 @@ export class BinarySearchTree {
                     let postOrder = async function (root:number) {
                         let returnArr: number[] = [];
                         let target = nodes![root];
+                        const diameterVw = nodes![root].diameter;
+                        const diameterPx = diameterVw * vwToPx;
                         const centerXvw = target.xTransform + diameterVw / 2;
                         const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
                         await waitTransition(arrow, () => {
@@ -842,8 +863,6 @@ export class BinarySearchTree {
         constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
             this.dom = document.createElement("div");
             this.dom.classList.add("line");
-            //console.log(`Calling animation on Connection ${animation}`);
-            //console.log(this.dom.classList);
             if(animation){
                 //console.log(`Animation if triggered`);
                 this.dom.classList.add("transform");
@@ -875,8 +894,9 @@ export class BinarySearchTree {
             let angle = Math.atan2(dy, dx);
             let lengthInPx = Math.sqrt(dx ** 2 + dy ** 2);
             this.l = lengthInPx + "px";
-            let offsetXpx = (parent.diameter * (window.innerWidth / 100)) / 2;
-            let offsetYpx = (parent.diameter * (window.innerHeight / 100)) / 2;
+            console.log(child.diameter);
+            let offsetXpx = (child.diameter * (window.innerWidth / 100)) / 2;
+            let offsetYpx = (child.diameter * (window.innerHeight / 100)) / 2;
             let x = 100 * (parentXpx + offsetXpx) / window.innerWidth;
             let y = 100 * (parentYpx + offsetYpx) / window.innerHeight;
             const baseLengthPx = 100; // Matches your CSS .line width
@@ -969,6 +989,8 @@ export class BinarySearchTree {
         key : number;
         dom: HTMLDivElement;
         comparator: InstanceType<typeof BinarySearchTree.TreeElement.Comparator>;
+        leftSpan: HTMLSpanElement;
+        rightSpan: HTMLSpanElement;
     
         constructor(key: number) {
             this.key = key;
@@ -979,11 +1001,11 @@ export class BinarySearchTree {
             this.dom.style.zIndex = (1).toString(); //this is so cringe
             this.opacity = 0;
             this.comparator = new BinarySearchTree.TreeElement.Comparator();
-            let spanLeft = document.createElement("span");
-            let spanRight = document.createElement("span");
-            spanLeft.classList.add("avl", "left");
-            spanRight.classList.add("avl", "right");
-            this.dom.append(this.comparator.dom, spanLeft, spanRight);
+            this.leftSpan = document.createElement("span");
+            this.rightSpan = document.createElement("span");
+            this.leftSpan.classList.add("avl", "left");
+            this.rightSpan.classList.add("avl", "right");
+            this.dom.append(this.comparator.dom, this.leftSpan, this.rightSpan);
             document.body.append(this.dom);
         }
     
