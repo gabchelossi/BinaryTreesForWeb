@@ -21,8 +21,7 @@
                     <th colspan="1">Key</th>
                     <th colspan="3">Operations</th>
                     <th colspan="3">Animation</th>
-                    <th colspan="3">Keys</th>
-                    <th colspan = "3">Terminal</th>
+                    <th colspan = "6">Terminal</th>
                 </tr>
                 <tr>
                     <td rowspan="3" id = "inputtd">
@@ -37,23 +36,13 @@
                     <td>
                         <input id = "search-button" type = "button" value = "Search">
                     </td>
-                    <td>
+                    <td colspan="2">
                         <input type="radio" id="Automatic" name="animationselection" value="Automatic" checked />
-                            <label for="Automatic">Automatic</label>
-                    </td>
-                    <td>
-                        <input type="radio" id="Manual" name="animationselection" value="Manual" />
-                            <label for="Manual">Manual</label>
+                            <label for="Automatic">On</label>
                     </td>
                     <td>
                         <input type="radio" id="Off" name="animationselection" value="Off" />
                             <label for="Off">Off</label>
-                    </td>
-                    <td colspan ="2" rowspan="2">
-                        <input type = "button" value = "&#9658;">
-                    </td>
-                    <td rowspan="2">
-                        <input type = "button" value = "&#8594;">
                     </td>
                     <td id="console-container" colspan="3" rowspan = "3">
                         <div id="console">
@@ -96,7 +85,7 @@
                         <input type="radio" id="Post-Order" name="trasversalselection" value="post-order" />
                             <label for="Post-Order">Post-Order</label>
                     </td>
-                    <td colspan="6">
+                    <td colspan="3">
                         <label for="AVL">AVL?</label>
                         <input type="checkbox" id="AVL" name="AVL" />  
                     </td>
