@@ -45,34 +45,12 @@ html, body{
 }
 
 .TreeElement.smaller{
-    height: 1.5vw;
-    width: 1.5vw;
-    font-size: 1.5vh;
+    height: 2vw;
+    width: 2vw;
+    font-size: 2vh;
 }
 
-.TreeElement.totalavl::after {
-    display: none;
-    content: "0";
-    position: absolute;
-    /* display: inline; */
-    bottom: 100%;
-    /* left: calc(50%); */
-    /* transform: translateY(-100%); */
-    font-size: 0.8rem;
-    color: red;
-}
-
-.TreeElement.totalavl.active::after{
-    display: inline;
-}
-
-.TreeElement.totalavl.active span.avl.left::after,
-.TreeElement.totalavl.active span.avl.right::after {
-    display: inline;
-}
-
-
-span.avl{
+/*.TreeElement span.avl{
     position: absolute;
     width: 100%;
     height: 100%;
@@ -81,37 +59,80 @@ span.avl{
     color: red;
 }
 
-span.avl.left::after{
+.TreeElement span.avl.top::after,
+.TreeElement span.avl.left::after,
+.TreeElement span.avl.right::after {
     display: none;
+}
+
+.TreeElement.active span.avl.top::after,
+.TreeElement.active span.avl.left::after,
+.TreeElement.active span.avl.right::after {
+    display: inline!important;
+}
+
+.TreeElement span.avl.top::after {
     content: "0";
-    position: absolute;
-    /* display: inline; */
+    bottom: 100%;
+    font-size: 0.8rem;
+    color: red;
+}
+
+.TreeElement span.avl.left::after{
+    content: "0";
     top: 75%;
     right: 100%;
-    /* left: calc(50%); */
-    /* transform: translateY(-100%); */
 }
 
 span.avl.right::after{
-    display: none;
     content: "0";
-    position: absolute;
-    /* display: inline; */
     top: 75%;
     left: 100%;
-    /* transform: translateY(-100%); */
+}*/
+
+/* The overlay span that hosts the pseudo-labels */
+.TreeElement span.avl{
+    position: absolute;      /* sits over the node */
+    inset: 0;                /* fill the TreeElement */
+    font-weight: bolder;
+    font-size: 0.8rem;
+    color: red;
+    pointer-events: none;    /* labels don't block clicks */
 }
 
-.line > span.avl::after{
-    content: "0";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    /* display: inline; */
-    top: 0%;
+/* Hide all labels by default */
+.TreeElement .avl::after{
+    content: attr(data-val);
+    display: none;
+    position: absolute;      /* needed for offsets below */
+    color: red;
+}
+
+/* Show labels when active */
+.TreeElement.active .avl::after{
+    display: inline !important;
+}
+
+/* Top label: centered above the node */
+.TreeElement .avl.top::after{
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Left label: vertically centered to the left */
+.TreeElement .avl.left::after{
+    top: 100%;
+    right: 100%;
+    transform: translateY(-50%);
+}
+
+/* Right label: vertically centered to the right */
+.TreeElement .avl.right::after{
+    top: 100%;
     left: 100%;
+    transform: translateY(-50%);
 }
-
 
 .TreeElement.search{
     border: 2px solid rgb(71 173 199);;

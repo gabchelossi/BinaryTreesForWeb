@@ -444,13 +444,13 @@ const exec = async function (...parameters: any[]) {
                             const elements = Array.from(document.getElementsByClassName("TreeElement"));
 
                             if(params[2] == "on") {
-                                elements.forEach((e) => {e.classList.add("active")});
+                                binarysearchT.avlStatus = true;
                                 returnval = "AVL mode activated";
                             }
                             else {
-                                elements.forEach((e) => {e.classList.remove("active")});
+                                binarysearchT.avlStatus = false;
                                 returnval = "AVL mode deactivated";
-                        };
+                            }
                         }
                     break;
 
@@ -604,10 +604,10 @@ const exec = async function (...parameters: any[]) {
 
 document.addEventListener("DOMContentLoaded",async function() { 
     await exec(["set", "animation", "off"]);
-    await exec(["insert", 5,3,10,9,11,6,0,1]);
-    /*await exec(["set", "animation", "speed", "5"]);
-    await sleep(500);
-    await exec(["set", "animation", "automatic"]);*/
+    await exec(["insert", 1]);
+    await exec(["set", "animation", "speed", "2"]);
+    await exec(["set", "animation", "automatic"]);
+    await exec(["insert", 2]);
     
 });
 

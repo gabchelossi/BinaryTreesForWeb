@@ -8,12 +8,30 @@ export class BinarySearchTree {
     connections: InstanceType<typeof BinarySearchTree.Connection>[];
     s: number;
     width: number;
+    avl: boolean;
 
     constructor() {
         this.arr = [];
         this.connections = [];
         this.s = 0;
         this.width = 85;
+        this.avl = false;
+    }
+
+    set avlStatus(state:boolean){
+        this.avl = state;
+        const activeElements = this.arr!.filter((e) => {return Boolean(e)});
+        console.log(activeElements);
+        if(state){
+            activeElements.forEach((e) => {e.dom.classList.add("active")});
+        }
+        else{
+            activeElements.forEach((e) => {e.dom.classList.remove("active")});
+        }
+    }
+
+    get avlStatus(){
+        return this.avl;
     }
 
     get size() {
@@ -102,7 +120,6 @@ export class BinarySearchTree {
 
     addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add('no-animation');
-        e.dom.classList.add("totalavl");
         //console.log(`Adding new element ${e.key} with no amination`);
         if (this.rankOf(e.key) > -1) {
             return false;
@@ -121,11 +138,11 @@ export class BinarySearchTree {
                 let nodes = this.arr;
                 while (this.arr![rank]) {
                     if (e.key < this.arr![rank].key) {
-                        this.arr![rank].leftWeight ++;
+                        //this.arr![rank].leftWeight ++;
                         rank = rank * 2 + 1;
                     }
                     else {
-                        this.arr![rank].rightWeight ++;
+                        //this.arr![rank].rightWeight ++;
                         rank = rank * 2 + 2;
                     }
                 }
@@ -166,7 +183,6 @@ export class BinarySearchTree {
 
     async addNewTransform(e: InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add("transform");
-        e.dom.classList.add("totalavl");
         e.dom.offsetHeight; //important for reflow
         return new Promise(async (resolve, reject) => {
             if (this.rankOf(e.key) > -1) {
@@ -178,7 +194,7 @@ export class BinarySearchTree {
                     this.assign(e, 0);
                     await e.opac(1, true);
                     this.arr!.push(e);
-                    //e.removeClass("transform");
+                    e.removeClass("transform");
                 }
                 else {
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
@@ -270,7 +286,7 @@ export class BinarySearchTree {
         });
     }
 
-    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true) {
+    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true, avl: boolean = this.avlStatus) {
         return new Promise(async (resolve) => {
             // console.log(`assign Promise Opened`);
             if(animation) {
@@ -308,16 +324,36 @@ export class BinarySearchTree {
                 translateInfo.y = "2vh";
             }
             
-            e.dom.onanimationend = function(){
-                e.dom.ontransitionend = null;
-
-            }
             await e.translate(translateInfo.x, translateInfo.y, true, true);
             await e.borderCol("rgb(37, 201, 37)", true);
+            if(avl)
+                e.addClass("active");
             if(!reassign){
                 await this.connectTransform(rank, parentRank, animation);
             }
             // console.log(`assign Promise Resolved`);
+            //AVL Weight Calculation
+            let traverseRank = Math.floor((rank-1)/2);
+            let comingFromLeft = Boolean(rank%2); //if rank is even -> Right child. Left otherwise
+            let weight = 1;
+            while(traverseRank>=0){
+                console.log(`Checking rank: ${traverseRank}`);
+                const element = this.arr![traverseRank];
+                if(comingFromLeft){
+                    if(element.leftWeight<weight){
+                        element.leftWeight = weight;
+                    }
+                }
+                else{
+                    if(element.rightWeight<weight){
+                        element.rightWeight = weight;
+                    }
+                }
+                element.updateBalance();
+                weight++;
+                comingFromLeft = Boolean(traverseRank%2);
+                traverseRank = Math.floor((traverseRank-1)/2);
+            }
             resolve(true);
         });
     }
@@ -344,18 +380,15 @@ export class BinarySearchTree {
     async removeKey(key: number, animation: boolean = true): Promise<number | string> { 
     return new Promise(async (resolve, reject) => {
         let rank = this.rankOf(key);
-        //console.log(rank);
         if (rank > -1) {
             if(animation) await this.arr![rank].borderCol("red", animation);
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 if(animation){
                     await this.traversal(rank, "in-order", true).then(async (result) =>{
-                        //this.arr![rank].dom.innerHTML = result[0].toString();
                         await this.removeKey(result[0], animation); 
                         this.size++; //to counter the previous instruction side-effect
                         this.arr![rank].key = result[0];
-                        //await this.arr![rank].borderCol("rgb(37, 201, 37)", animation);
                     });
                 }
                 else{
@@ -704,6 +737,8 @@ export class BinarySearchTree {
                             //traverse = result;
                             
                             let target = nodes![root];
+                            const diameterVw = nodes![root].diameter;
+                            const diameterPx = diameterVw * vwToPx;
                             const centerXvw = target.xTransform + diameterVw / 2;
                             const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
 
@@ -894,7 +929,7 @@ export class BinarySearchTree {
             let angle = Math.atan2(dy, dx);
             let lengthInPx = Math.sqrt(dx ** 2 + dy ** 2);
             this.l = lengthInPx + "px";
-            console.log(child.diameter);
+            //console.log(child.diameter);
             let offsetXpx = (child.diameter * (window.innerWidth / 100)) / 2;
             let offsetYpx = (child.diameter * (window.innerHeight / 100)) / 2;
             let x = 100 * (parentXpx + offsetXpx) / window.innerWidth;
@@ -991,6 +1026,7 @@ export class BinarySearchTree {
         comparator: InstanceType<typeof BinarySearchTree.TreeElement.Comparator>;
         leftSpan: HTMLSpanElement;
         rightSpan: HTMLSpanElement;
+        upperSpan: HTMLSpanElement;
     
         constructor(key: number) {
             this.key = key;
@@ -1001,13 +1037,47 @@ export class BinarySearchTree {
             this.dom.style.zIndex = (1).toString(); //this is so cringe
             this.opacity = 0;
             this.comparator = new BinarySearchTree.TreeElement.Comparator();
+            this.upperSpan = document.createElement("span");
             this.leftSpan = document.createElement("span");
             this.rightSpan = document.createElement("span");
+            this.upperSpan.classList.add("avl", "top");
             this.leftSpan.classList.add("avl", "left");
             this.rightSpan.classList.add("avl", "right");
-            this.dom.append(this.comparator.dom, this.leftSpan, this.rightSpan);
+            this.rightSpan.setAttribute('data-val', '0');
+            this.leftSpan.setAttribute('data-val', '0');
+            this.upperSpan.setAttribute('data-val', '0');
+            this.dom.append(this.comparator.dom, this.upperSpan, this.leftSpan, this.rightSpan);
             document.body.append(this.dom);
         }
+
+        get leftWeight() : number{
+            return parseInt(this.leftSpan.getAttribute('data-val')!);
+        }
+
+        get rightWeight() : number{
+            return parseInt(this.rightSpan.getAttribute('data-val')!);
+        }
+
+        get balance(): number{
+            return parseInt(this.upperSpan.getAttribute('data-val')!);
+        }
+
+        set leftWeight(weight: number){
+            this.leftSpan.setAttribute('data-val', weight.toString());
+        }
+
+        set rightWeight(weight: number){
+            this.rightSpan.setAttribute('data-val', weight.toString());
+        }
+
+        set balance(balance: number){
+            this.upperSpan.setAttribute('data-val', balance.toString());
+        }
+
+        updateBalance(){
+            this.balance = this.leftWeight - this.rightWeight;
+        }
+
     
         get xTransform() : number {
             let transform = this.transform;
