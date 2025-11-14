@@ -135,11 +135,29 @@ export class BinarySearchTree {
             const rh = right ? 1 + Math.max(right.leftWeight || 0, right.rightWeight || 0) : 0;
             node.leftWeight  = lh;
             node.rightWeight = rh;
-            await node.updateBalance(); // e.g., node.balance = rh - lh; may also add rotation triggers
+            try{
+                await node.updateBalance(); // e.g., node.balance = rh - lh; may also add rotation triggers
+            }
+            catch(e){
+                this.balanceAVL(i);
+            }
             // climb
             i = Math.floor((i - 1) / 2);
         }
         return;
+    }
+
+    async balanceAVL(wRank: number, afterInsertion = true){
+        const xRank = Math.floor((wRank-1)/2);
+        const yRank = Math.floor((xRank-1)/2);
+        const zRank = Math.floor((yRank-1)/2);
+        const x = this.arr![xRank];
+        const y = this.arr![yRank];
+        const z = this.arr![zRank];
+        x.label = "x";
+        y.label = "y";
+        z.label = "z";
+        
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
@@ -1129,10 +1147,10 @@ export class BinarySearchTree {
         }
 
         updateBalance(){
-            return new Promise(async (resolve) => {
+            return new Promise(async (resolve, reject) => {
                 this.balance = this.leftWeight - this.rightWeight;
                 if(Math.abs(this.balance)>1){
-                    console.log(`TIME TO BALANCE`);
+                    reject("The node is not balanced");
                 }
                 resolve(true);
             });
