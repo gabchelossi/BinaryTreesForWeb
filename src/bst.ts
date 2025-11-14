@@ -116,28 +116,30 @@ export class BinarySearchTree {
         returnArr.push(nodes![root].key);
 
         return returnArr;
-    }
+}
 
-    updateAVLFromRank(rank: number){
-        let i = Math.floor((rank-1)/2);
-        let comingFromLeft = Boolean(rank%2); //if rank is even -> Right child. Left otherwise
-        let weight = 1;
-        //console.clear();
-        while(i>=0){
-            console.log(`Checking rank: ${i} with a weight of ${weight}`);
-            const element = this.arr![i];
-            comingFromLeft = Boolean(rank%2 == 1);
-            if(comingFromLeft){
-                //console.log(`Coming from left child!`);
-                element.leftWeight = Math.max(element.leftWeight || 0, weight);
+    async updateAVL(childRank: number): Promise<void> {
+    // start from the parent of the changed node
+        let i = Math.floor((childRank - 1) / 2);
+        while (i >= 0) {
+            const node = this.arr![i];
+            if (!node) {
+                i = Math.floor((i - 1) / 2);
+                continue;
             }
-            else{
-                element.rightWeight = Math.max(element.rightWeight || 0, weight);
-            }
-            element.updateBalance();
-            rank = i;
-            i = Math.floor((i-1)/2);
+            const li = i * 2 + 1;
+            const ri = i * 2 + 2;
+            const left  = this.arr![li];
+            const right = this.arr![ri];
+            const lh = left ? 1 + Math.max(left.leftWeight  || 0, left.rightWeight  || 0) : 0;
+            const rh = right ? 1 + Math.max(right.leftWeight || 0, right.rightWeight || 0) : 0;
+            node.leftWeight  = lh;
+            node.rightWeight = rh;
+            await node.updateBalance(); // e.g., node.balance = rh - lh; may also add rotation triggers
+            // climb
+            i = Math.floor((i - 1) / 2);
         }
+        return;
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
@@ -160,14 +162,9 @@ export class BinarySearchTree {
                 let rank = 0;
                 let nodes = this.arr;
                 while (this.arr![rank]) {
-                    if (e.key < this.arr![rank].key) {
-                        this.arr![rank].leftWeight ++;
+                    if (e.key < this.arr![rank].key)
                         rank = rank * 2 + 1;
-                    }
-                    else {
-                        this.arr![rank].rightWeight ++;
-                        rank = rank * 2 + 2;
-                    }
+                    else rank = rank * 2 + 2;
                 }
                 let parentRank = Math.floor((rank - 1) / 2);
                 let parent = nodes![parentRank];
@@ -196,7 +193,8 @@ export class BinarySearchTree {
                 e.dom.title = `Rank: ${rank}`;
                 this.arr![rank] = e;
                 this.connectTransform(rank, parentRank, false);
-                this.updateAVLFromRank(rank);
+                //console.log(`Calling updateAVLFromRank from addNew`);
+                this.updateAVL(rank);
                 e.removeClass("transform");
 
             }
@@ -361,7 +359,7 @@ export class BinarySearchTree {
             }
             // console.log(`assign Promise Resolved`);
             //AVL Weight Calculation
-            this.updateAVLFromRank(rank);
+            this.updateAVL(rank);
             resolve(true);
         });
     }
@@ -456,10 +454,29 @@ export class BinarySearchTree {
                 delete this.arr![rank]; //delete it NOW, not after the event is triggered.
 
                 
+                if(!(this.arr![rank*2+1] || this.arr![rank*2+2])){ //leaf node
+                    const parentRank = Math.floor((rank-1)/2);
+                    const parent = this.arr![parentRank];
+                    const comingFromLeft = rank%2 == 0?false:true;
+                    console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
 
+                    if(comingFromLeft) {
+                        parent.leftWeight = 0
+                    }
+                    else{
+                        parent.rightWeight = 0
+                    }
+
+                    parent.updateBalance();
+
+                    if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
+                        this.updateAVL(rank);
+                    }
+                }
                 let shiftUp: Function;
-
+                let leafNodes : number[] = [];
                 if(this.arr![rank*2+1]){ //if left child
+
                     console.log(`Left side version called`);
                     shiftUp = (from: number, to: number)  => {
                         return new Promise(async (resolve) => {
@@ -488,6 +505,10 @@ export class BinarySearchTree {
                             }
                             if(leftChild){
                                 await shiftUp!(from*2+1, to*2+1);
+                            }
+
+                            if(!(leftChild || rightChild)){
+                                leafNodes.push(to);
                             }
 
                             if(to>0){
@@ -529,6 +550,9 @@ export class BinarySearchTree {
                                     await shiftUp!(from*2+2, to*2+2);
                                 }
 
+                                if(!(leftChild || rightChild)){
+                                    leafNodes.push(to);
+                                }
                                 if(to>0){
                                     redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
                                     redrawLine!.draw(false);
@@ -541,6 +565,9 @@ export class BinarySearchTree {
                         await shiftUp(rank*2+2, rank);
                     }
                 }
+                leafNodes.forEach((index) => {
+                    this.updateAVL(index);
+                });
                 if((this.arr![rank*2+1] || this.arr![rank*2+2])){
                     if(Boolean(parent)){
                         const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});
@@ -548,9 +575,9 @@ export class BinarySearchTree {
                         this.connections[reassingLineIndex].draw(false);
                     }                    
                 }
+                
             }
             resolve(--this.size);
-            //this.updateAVLFromRank(rank);
             this.trim();
         } 
         else {
@@ -1028,10 +1055,11 @@ export class BinarySearchTree {
         key : number;
         keyContainer: HTMLParagraphElement;
         dom: HTMLDivElement;
-        comparator: InstanceType<typeof BinarySearchTree.TreeElement.Comparator>;
+        comparator: any;
         leftSpan: HTMLSpanElement;
         rightSpan: HTMLSpanElement;
         upperSpan: HTMLSpanElement;
+        bottomSpan: HTMLSpanElement;
     
         constructor(key: number) {
             this.key = key;
@@ -1046,14 +1074,17 @@ export class BinarySearchTree {
             this.upperSpan = document.createElement("span");
             this.leftSpan = document.createElement("span");
             this.rightSpan = document.createElement("span");
+            this.bottomSpan = document.createElement("span");
             this.upperSpan.classList.add("avl", "top");
             this.leftSpan.classList.add("avl", "left");
             this.rightSpan.classList.add("avl", "right");
+            this.bottomSpan.classList.add("avl", "bottom");
             this.rightSpan.setAttribute('data-val', '0');
             this.leftSpan.setAttribute('data-val', '0');
             this.upperSpan.setAttribute('data-val', '0');
+            this.bottomSpan.setAttribute('data-val', '');
             this.keyContainer.innerHTML = this.key.toString();
-            this.dom.append(this.keyContainer, this.comparator.dom, this.upperSpan, this.leftSpan, this.rightSpan);
+            this.dom.append(this.keyContainer, this.comparator.dom, this.upperSpan, this.leftSpan, this.rightSpan, this.bottomSpan);
             document.body.append(this.dom);
         }
 
@@ -1061,6 +1092,14 @@ export class BinarySearchTree {
             if(changeK)
                 this.key = value;
             this.keyContainer.innerHTML = value.toString();
+        }
+
+        get label() : string{
+            return this.bottomSpan.getAttribute('data-val')!;
+        }
+
+        set label(s:string){
+            this.bottomSpan.setAttribute('data-val', s);
         }
 
         get leftWeight() : number{
@@ -1076,12 +1115,12 @@ export class BinarySearchTree {
         }
 
         set leftWeight(weight: number){
-            console.log(`Setting rightWeight to ${weight}`);
+            //console.log(`Setting rightWeight to ${weight}`);
             this.leftSpan.setAttribute('data-val', weight.toString());
         }
 
         set rightWeight(weight: number){
-            console.log(`Setting rightWeight to ${weight}`);
+            //console.log(`Setting rightWeight to ${weight}`);
             this.rightSpan.setAttribute('data-val', weight.toString());
         }
 
@@ -1090,10 +1129,15 @@ export class BinarySearchTree {
         }
 
         updateBalance(){
-            this.balance = this.leftWeight - this.rightWeight;
+            return new Promise(async (resolve) => {
+                this.balance = this.leftWeight - this.rightWeight;
+                if(Math.abs(this.balance)>1){
+                    console.log(`TIME TO BALANCE`);
+                }
+                resolve(true);
+            });
+            
         }
-
-
     
         get xTransform() : number {
             let transform = this.transform;

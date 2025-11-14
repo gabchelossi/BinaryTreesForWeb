@@ -50,45 +50,6 @@ html, body{
     font-size: 2vh;
 }
 
-/*.TreeElement span.avl{
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    font-weight: bolder;
-    font-size: 0.8rem;
-    color: red;
-}
-
-.TreeElement span.avl.top::after,
-.TreeElement span.avl.left::after,
-.TreeElement span.avl.right::after {
-    display: none;
-}
-
-.TreeElement.active span.avl.top::after,
-.TreeElement.active span.avl.left::after,
-.TreeElement.active span.avl.right::after {
-    display: inline!important;
-}
-
-.TreeElement span.avl.top::after {
-    content: "0";
-    bottom: 100%;
-    font-size: 0.8rem;
-    color: red;
-}
-
-.TreeElement span.avl.left::after{
-    content: "0";
-    top: 75%;
-    right: 100%;
-}
-
-span.avl.right::after{
-    content: "0";
-    top: 75%;
-    left: 100%;
-}*/
 
 /* The overlay span that hosts the pseudo-labels */
 .TreeElement span.avl{
@@ -133,6 +94,17 @@ span.avl.right::after{
     left: 100%;
     transform: translateY(-50%);
 }
+
+/* Bottom label: centered above the node */
+.TreeElement .avl.bottom::after{
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    color: green;
+    font-weight: bolder;
+}
+
 
 .TreeElement.search{
     border: 2px solid rgb(71 173 199);;

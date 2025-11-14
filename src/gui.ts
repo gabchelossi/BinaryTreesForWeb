@@ -48,7 +48,7 @@ let resizeTimeout: string | number | NodeJS.Timeout | undefined;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-        binarysearchT.onResize(animation);
+        binarysearchT.onResize();
     }, 200); // only trigger after 200ms of no further resize events
 });
 
@@ -605,7 +605,7 @@ const exec = async function (...parameters: any[]) {
 document.addEventListener("DOMContentLoaded",async function() { 
     await exec(["set", "animation", "off"]);
     await exec(["set", "avl", "on"]);
-    await exec(["insert", 1, 10]);
+    await exec(["insert", "full"]);
     
 });
 
@@ -679,17 +679,17 @@ document.getElementById("search-button")!.addEventListener("click", function(){
     parseCommand();
 });
 document.getElementById("traverse-button")!.addEventListener("click", function(){
-    const selectedRadio = document.querySelector('input[name="trasversalselection"]:checked');
+    const selectedRadio = document.querySelector('input[name="trasversalselection"]:checked') as HTMLInputElement;
     command!.innerHTML = `traverse ${selectedRadio?.value}`;
     parseCommand();
 });
 
 document.querySelectorAll('input[name="animationselection"]')
     .forEach((element) => {
-        element.addEventListener("click", () => {
-            
+        const el = element as HTMLInputElement ;
+        el.addEventListener("click", () => {
             //console.log(element.value);
-            command!.innerHTML = `set animation ${element.value.toLowerCase()}`;
+            command!.innerHTML = `set animation ${el.value.toLowerCase()}`;
             parseCommand();
         });
     });
