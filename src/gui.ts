@@ -605,7 +605,7 @@ const exec = async function (...parameters: any[]) {
 document.addEventListener("DOMContentLoaded",async function() { 
     await exec(["set", "animation", "off"]);
     await exec(["set", "avl", "on"]);
-    await exec(["insert", "full"]);
+    await exec(["insert", 44, 17, 78, 32, 50, 88, 62, 48]);
     
 });
 

@@ -139,7 +139,7 @@ export class BinarySearchTree {
                 await node.updateBalance(); // e.g., node.balance = rh - lh; may also add rotation triggers
             }
             catch(e){
-                this.balanceAVL(i);
+                await this.balanceAVL(i, childRank);
             }
             // climb
             i = Math.floor((i - 1) / 2);
@@ -147,17 +147,19 @@ export class BinarySearchTree {
         return;
     }
 
-    async balanceAVL(wRank: number, afterInsertion = true){
+    async balanceAVL(zRank: number, wRank:number, afterInsertion = true){
+        console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
         const xRank = Math.floor((wRank-1)/2);
         const yRank = Math.floor((xRank-1)/2);
-        const zRank = Math.floor((yRank-1)/2);
-        const x = this.arr![xRank];
-        const y = this.arr![yRank];
-        const z = this.arr![zRank];
+        const nodes = this.arr!;
+        const x = nodes[xRank];
+        const y = nodes[yRank];
+        const z = nodes[zRank];
+        const w = nodes[wRank];
         x.label = "x";
         y.label = "y";
         z.label = "z";
-        
+        w.label = "w";
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
