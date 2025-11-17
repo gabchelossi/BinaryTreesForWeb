@@ -58,7 +58,7 @@ html, body{
     font-weight: bolder;
     font-size: 0.8rem;
     color: red;
-    pointer-events: none;    /* labels don't block clicks */
+    pointer-events: none;   /* labels don't block clicks */
 }
 
 /* Hide all labels by default */
@@ -97,10 +97,13 @@ html, body{
 
 /* Bottom label: centered above the node */
 .TreeElement .avl.bottom::after{
+    text-align: center;
+    width: 100%;
+    height: 100%;
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 1rem;
+    font-size: 1vw;
     color: green;
     font-weight: bolder;
 }

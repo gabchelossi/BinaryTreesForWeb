@@ -21,7 +21,6 @@ export class BinarySearchTree {
     set avlStatus(state:boolean){
         this.avl = state;
         const activeElements = this.arr!.filter((e) => {return Boolean(e)});
-        console.log(activeElements);
         if(state){
             activeElements.forEach((e) => {e.dom.classList.add("active")});
         }
@@ -50,9 +49,9 @@ export class BinarySearchTree {
 
     trim(): boolean{
         let size = this.size;
-        if(!this.arr![this.arr!.length-1]){
+        /*if(!this.arr![this.arr!.length-1]){
             console.log(`Truncating the arr`);
-        }
+        }*/
         let lastIndex, count: number;
         count = 0;
         for(let i = 0; i<this.arr!.length; i++){
@@ -140,6 +139,7 @@ export class BinarySearchTree {
             }
             catch(e){
                 await this.balanceAVL(i, childRank);
+                return; //Remove this once the implementation of this.balanceAVL is done
             }
             // climb
             i = Math.floor((i - 1) / 2);
@@ -149,17 +149,42 @@ export class BinarySearchTree {
 
     async balanceAVL(zRank: number, wRank:number, afterInsertion = true){
         console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
-        const xRank = Math.floor((wRank-1)/2);
-        const yRank = Math.floor((xRank-1)/2);
+        const depthW = Math.floor(Math.log2(wRank + 1));
+        let xRank: number;
+        let yRank: number;
+        let x: InstanceType<typeof BinarySearchTree.TreeElement>;
+        let y: InstanceType<typeof BinarySearchTree.TreeElement>;
+        let z: InstanceType<typeof BinarySearchTree.TreeElement>;
+        let w: InstanceType<typeof BinarySearchTree.TreeElement>;
+
         const nodes = this.arr!;
-        const x = nodes[xRank];
-        const y = nodes[yRank];
-        const z = nodes[zRank];
-        const w = nodes[wRank];
+        z = nodes[zRank]; //it will always be the 'z' node
+        if(zRank==0){
+            x = nodes[wRank];
+            yRank = Math.floor((wRank-1)/2);
+            y = nodes[yRank];
+        }
+        else{
+            xRank = Math.floor((wRank-1)/2);
+            yRank = Math.floor((xRank-1)/2);
+            x = nodes[xRank];
+            y = nodes[yRank];
+            w = nodes[wRank];
+            w.label = "w";
+        }
         x.label = "x";
         y.label = "y";
         z.label = "z";
-        w.label = "w";
+        x.borderCol("red", false);
+        y.borderCol("red", false);
+        z.borderCol("red", false);
+        const ranks = await this.traversal(zRank, "AVL") as number[]; //the traversal returns x y and z in in-order traversal
+        const elements = ranks.map(rank => {return nodes![rank]});
+        const lines = this.connections.filter((line) => { if (line) { return elements.includes(line.parent || line.child); } });
+        lines.forEach((line)=>{
+            line.dom.classList.add("transform");
+            line.changeLength('0', false, ()=>{});
+        });        
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
@@ -409,7 +434,7 @@ export class BinarySearchTree {
         if (rank > -1) {
             if(animation) await this.arr![rank].borderCol("red", animation);
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
-                console.log("Hardest case scenario"); //turned out to be the easiest one LOL
+                //console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 if(animation){
                     await this.traversal(rank, "in-order", true).then(async (result) =>{
                         await this.removeKey(result[0], animation); 
@@ -423,7 +448,7 @@ export class BinarySearchTree {
                     await this.removeKey(match, false);
                     this.arr![rank].changeKey(match, true);
                     //this.arr![rank].dom.innerHTML = match.toString();
-                    console.log(`this.removeKey(${match}, false)`);
+                    //console.log(`this.removeKey(${match}, false)`);
                     this.size++;
                     this.arr![rank].key = match;
                     
@@ -478,7 +503,7 @@ export class BinarySearchTree {
                     const parentRank = Math.floor((rank-1)/2);
                     const parent = this.arr![parentRank];
                     const comingFromLeft = rank%2 == 0?false:true;
-                    console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
+                    //console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
 
                     if(comingFromLeft) {
                         parent.leftWeight = 0
@@ -695,7 +720,7 @@ export class BinarySearchTree {
         });
     }
 
-    async traversal(root: number, mode: string, removing: boolean = false) : Promise<number[]> {
+    async traversal(root: number, mode: string, removing: boolean = false) : Promise<number[]|boolean> {
         let nodes = this.arr;
         let traverse = [];
         let arrow = document.createElement("span");
@@ -715,7 +740,7 @@ export class BinarySearchTree {
                 setuptraversal(root * 2 + 2);
             return;
         }
-        if(!removing) setuptraversal(root);
+        if(!removing && mode != "AVL") setuptraversal(root);
 
 
         let waitTransition = async function (dom : any, fn: Function) { //first class function
@@ -740,10 +765,10 @@ export class BinarySearchTree {
         const arrowOffsetVw = (arrowWidthPx / window.innerWidth) * 50;
         //const arrowOffsetVw = 0.75;     
 
-        return new Promise(async (resolve) => {
+        return new Promise<number[]|boolean>(async (resolve) => {
             switch (mode) {
                 case "in-order":
-                    let inOrder = async function (root: number) {
+                    const inOrder = async function (root: number) {
                         let target = nodes![root];
                         const diameterVw = nodes![root].diameter;
                         const diameterPx = diameterVw * vwToPx;
@@ -925,6 +950,61 @@ export class BinarySearchTree {
                         resolve(result);
                     });
                     break;
+                
+                case "AVL":
+                    const labels = ["c", "b", "a"];
+                    const AVL = async function (root: number) {
+                        let target = nodes![root];
+                        const diameterVw = nodes![root].diameter;
+                        const diameterPx = diameterVw * vwToPx;
+                        const centerXvw = target.xTransform + diameterVw / 2;
+                        const bottomYvh = target.yTransform + (diameterPx / vhToPx); // convert px to vh
+                        let returnArr:number[] = [];
+                        await waitTransition(arrow, () => {
+                            arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
+                        });
+
+                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
+                        if (nodes![root * 2 + 1]) {
+                            await AVL(root * 2 + 1).then(function (result) {
+                                returnArr = result;
+                            });
+                        }
+                        
+                        await nodes![root].borderCol("rgb(37, 201, 37)", !removing);
+
+                        //returnArr.push(nodes![root].key);
+                        if(nodes![root].label != "" && nodes![root].label != "w"){
+                            nodes![root].label = `${nodes![root].label} = ${labels.pop()}`;
+                            returnArr.push(root);
+                        }
+
+                        if (nodes![root * 2 + 2]) {
+                            await AVL(root * 2 + 2).then(function (result) {
+                                returnArr = [...returnArr, ...result];
+                            });
+                        }
+
+                        if (root > original) { //this is needed for the arrow to go back to the parent that called this instance of the stack
+                            //this is to emphasize that the parent will call another instance in case there is a right child to visit
+
+                            await waitTransition(arrow, () => {
+                                arrow.style.transform = `translate(${nodes![Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes![Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
+                            });
+                        }
+                        return returnArr;
+                    }
+                    AVL(root).then(function (result) { //call the function and handle the result
+                            //traverse = result;
+    
+                            arrow.ontransitionend = async function () {
+                                arrow.ontransitionend = null;
+                                arrow.remove();
+                            };
+                            arrow.style.opacity = (0).toString();
+                            resolve(result);
+                        });
+                break;
             }
         });
 

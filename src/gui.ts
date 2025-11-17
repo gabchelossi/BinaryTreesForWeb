@@ -43,10 +43,12 @@ function awaitInput() {
 export var binarysearchT = new BinarySearchTree();
 (window as any).binarysearchT = binarysearchT;
 
-let resizeTimeout: string | number | NodeJS.Timeout | undefined;
+let resizeTimeout: ReturnType<typeof setTimeout> | undefined;
 
 window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
+    if (resizeTimeout !== undefined) {
+        clearTimeout(resizeTimeout);
+    }
     resizeTimeout = setTimeout(() => {
         binarysearchT.onResize();
     }, 200); // only trigger after 200ms of no further resize events
@@ -392,7 +394,7 @@ const exec = async function (...parameters: any[]) {
                                 radiobtn.checked = true;
                                 let speedBar = document.getElementById("speed") as HTMLInputElement;
                                 speedBar.disabled = true;
-                                console.log(speedBar);
+                                //console.log(speedBar);
                                 
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
                                 noAnimationElements.forEach((e) => {
@@ -606,6 +608,13 @@ document.addEventListener("DOMContentLoaded",async function() {
     await exec(["set", "animation", "off"]);
     await exec(["set", "avl", "on"]);
     await exec(["insert", 44, 17, 78, 32, 50, 88, 62, 48]);
+
+    /*await exec(["set", "animation", "off"]);
+    await exec(["set", "avl", "on"]);
+    await exec(["insert", 1, 2]);
+    await exec(["set", "animation", "on"]);
+    await exec(["set", "animation", "speed", 4]);
+    await exec(["insert", 3]);    */
     
 });
 
