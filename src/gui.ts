@@ -305,18 +305,26 @@ const exec = async function (...parameters: any[]) {
                 switch (params[1]) {
                     case "animation":
                         if (params[2] == "speed") {
-                            let speed = parseInt(params[3]);
-                            if (isNaN(speed) || (speed < 1 || speed > 10)) {
-                                returnval = "The animation speed must be an integer between 1 and 10";
+                            const speed = parseInt(params[3]);
+                            if (isNaN(speed) || (speed < 1 || speed > 5)) {
+                                returnval = "The animation speed must be an integer between 1 and 5";
                             }
                             else {
-                                const style = document.createElement('style');
+                                /*const style = document.createElement('style');
                                 let oldStyle = document.head.getElementsByTagName('style')[0];
                                 if (oldStyle) {
                                     oldStyle.remove();
+                                }*/
+                               let style = document.getElementById("dynamic-animation-style") as HTMLStyleElement | null;
+                                if (!style) {
+                                    style = document.createElement("style");
+                                    style.id = "dynamic-animation-style";
+                                    document.head.appendChild(style);
                                 }
                                 let seconds = 1 / speed;
-                                let diameter = new BinarySearchTree.TreeElement(0).diameter;
+                                const temp = new BinarySearchTree.TreeElement(0);
+                                const diameter = temp.diameter;
+                                temp.dom.remove();
                                 style.innerHTML = `
                                     .TreeElement{
                                         cursor: help;
@@ -373,7 +381,7 @@ const exec = async function (...parameters: any[]) {
                                     }
 
                                     .line.transform{
-                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s, background-color ${seconds}s;!important;
+                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s, background-color ${seconds}s!important;
                                         will-change: transform;
                                     }
 
@@ -389,12 +397,13 @@ const exec = async function (...parameters: any[]) {
                         }
                         else {
                             if (params[2] == "off") {
+                                console.log(`Animation are being turned off`);
                                 animation = false;
-                                let radiobtn = document.getElementById("Off") as HTMLInputElement;
+                                const radiobtn = document.getElementById("Off") as HTMLInputElement;
                                 radiobtn.checked = true;
-                                let speedBar = document.getElementById("speed") as HTMLInputElement;
+                                const speedBar = document.getElementById("speed") as HTMLInputElement;
                                 speedBar.disabled = true;
-                                //console.log(speedBar);
+                                console.log(speedBar);
                                 
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
                                 noAnimationElements.forEach((e) => {
@@ -412,12 +421,13 @@ const exec = async function (...parameters: any[]) {
                             }
                             else {
                                 if (params[2] == "automatic") {
+                                    console.log(`Animation are being turned on`);
                                     animation = true;
-                                    let radiobtn = document.getElementById("Automatic") as HTMLInputElement;
+                                    const radiobtn = document.getElementById("Automatic") as HTMLInputElement;
                                     radiobtn.checked = true;
-                                    let speedBar = document.getElementById("speed") as HTMLInputElement;
+                                    const speedBar = document.getElementById("speed") as HTMLInputElement;
                                     speedBar.disabled = false;
-                                    let noAnimationElements = [...document.getElementsByClassName("no-animation")];
+                                    const noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     noAnimationElements.forEach((e) => {
                                         //console.log(typeof(e));
                                         e.classList.remove("no-animation");
@@ -430,27 +440,29 @@ const exec = async function (...parameters: any[]) {
                                 }
                             }
                         }
-
-                        break;
+                    break;
 
                     case "help":
                         returnval = `'set speed ([1-10])' sets the animation speed`;
                         break;
 
                     case "avl":
+                        const avlCheckbox = document.getElementById("AVL") as HTMLInputElement;
                         if((params[2] != "on" && params[2] != "off") || !params[2]){
                             returnval = "Wrong use of 'set avl' command. Type 'help' for instructions";
                         }
                         else{
                             
-                            const elements = Array.from(document.getElementsByClassName("TreeElement"));
+                            //const elements = Array.from(document.getElementsByClassName("TreeElement"));
 
                             if(params[2] == "on") {
                                 binarysearchT.avlStatus = true;
+                                avlCheckbox.checked = true;
                                 returnval = "AVL mode activated";
                             }
                             else {
                                 binarysearchT.avlStatus = false;
+                                avlCheckbox.checked = false;
                                 returnval = "AVL mode deactivated";
                             }
                         }
@@ -704,21 +716,20 @@ document.querySelectorAll('input[name="animationselection"]')
     });
 
 document.getElementById("speed")!.addEventListener("mouseup", function () {
-    let parsed = this as HTMLInputElement;
+    const parsed = this as HTMLInputElement;
     command!.innerHTML = `set animation speed ${parsed.value}`;
     document.getElementById("labelspeed")!.innerHTML = `x${parsed.value} Speed`;
     parseCommand();
 });
 
-document.getElementById("AVL")!.addEventListener("mouseup", function () {
+document.getElementById("AVL")!.addEventListener("change", function () {
     const el = this as HTMLInputElement;
-    if(el.checked){
+    if (el.checked) {
+        command!.innerHTML = `set avl on`;
+    } else {
         command!.innerHTML = `set avl off`;
     }
-    else{
-        command!.innerHTML = `set avl on`;
-    }
-    
+
     parseCommand();
 });
 

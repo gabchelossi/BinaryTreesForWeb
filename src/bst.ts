@@ -183,7 +183,7 @@ export class BinarySearchTree {
         const lines = this.connections.filter((line) => { if (line) { return elements.includes(line.parent || line.child); } });
         lines.forEach((line)=>{
             line.dom.classList.add("transform");
-            line.changeLength('0', false, ()=>{});
+            line.changeLength('0', false);
         });        
     }
 
@@ -1103,7 +1103,7 @@ export class BinarySearchTree {
             
         }
 
-        changeLength = (length: string, synchronous:boolean, onTransitionEnd:Function|null) => {
+        changeLength = (length: string, synchronous:boolean, onTransitionEnd:Function|null = () => {}) => {
             this.l = length;
             return new Promise((resolve) => {
                 let transformProperty = this.transform.substring(0, this.transform.indexOf("scaleX"));
