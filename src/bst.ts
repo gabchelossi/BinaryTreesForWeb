@@ -198,10 +198,7 @@ export class BinarySearchTree {
         let t2: number[] = nodes[rankB*2+2] != c ? this.inOrder(rankB*2+2, false, true):  this.inOrder(rankC*2+1, false, true); // if b's right child is not c (no need to check if it is not a, due to the in-order traversal), then t2 is b's right child, else it will always be c's left child
         let t3: number[] = this.inOrder(rankC*2+2, false, true); // because of in-order traversal, t3 will always be c's right child
 
-        /*if(!(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c)) // if a right child is neither b or c
-            t1 = this.inOrder(rankA*2+2, false, true);
-        else t1 = this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child*/
-        /*if(nodes[rankB*2+2] != c) // if a right child is not c (no need to check if it is not a, due to the in-order traversal)
+
             t2 = this.inOrder(rankB*2+2, false, true);
         else t2 = this.inOrder(rankC*2+1, false, true);*/
         

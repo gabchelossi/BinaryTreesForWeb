@@ -50,6 +50,9 @@ html, body{
     font-size: 2vh;
 }
 
+.TreeElement.smaller .avl.bottom::after{
+    font-size: 0.7vw;
+}
 
 /* The overlay span that hosts the pseudo-labels */
 .TreeElement span.avl{
