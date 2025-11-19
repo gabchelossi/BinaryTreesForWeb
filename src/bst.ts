@@ -69,14 +69,14 @@ export class BinarySearchTree {
         return true;
     }
 
-    inOrder(root: number = 0, removing: boolean=false): number[] {
+    inOrder(root: number = 0, removing: boolean=false, returnRanks=false): number[] {
         let returnArr : number[] = [];
         let nodes = this.arr;
         if (nodes![root * 2 + 1]) {
             returnArr = this.inOrder(root * 2 + 1);
         }
-        returnArr.push(nodes!![root].key);
-
+        if(returnRanks) returnArr.push(root);
+        else returnArr.push(nodes![root].key);
         if(removing)
             return returnArr;
 
@@ -150,6 +150,7 @@ export class BinarySearchTree {
     async balanceAVL(zRank: number, wRank:number, afterInsertion = true){
         console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
         const depthW = Math.floor(Math.log2(wRank + 1));
+        const depthZ = Math.floor(Math.log2(zRank+1));
         let xRank: number;
         let yRank: number;
         let x: InstanceType<typeof BinarySearchTree.TreeElement>;
@@ -159,7 +160,8 @@ export class BinarySearchTree {
 
         const nodes = this.arr!;
         z = nodes[zRank]; //it will always be the 'z' node
-        if(zRank==0){
+        console.log(depthZ, depthW);
+        if(depthW-depthZ==2){
             x = nodes[wRank];
             yRank = Math.floor((wRank-1)/2);
             y = nodes[yRank];
@@ -180,11 +182,30 @@ export class BinarySearchTree {
         z.borderCol("red", false);
         const ranks = await this.traversal(zRank, "AVL") as number[]; //the traversal returns x y and z in in-order traversal
         const elements = ranks.map(rank => {return nodes![rank]});
-        const lines = this.connections.filter((line) => { if (line) { return elements.includes(line.parent || line.child); } });
+        const lines = this.connections.filter((line) => { if (line) { return elements.includes(line.parent) || elements.includes(line.child); } });
         lines.forEach((line)=>{
             line.dom.classList.add("transform");
             line.changeLength('0', false);
-        });        
+        });
+        const rankA = ranks[0];
+        const rankB = ranks[1];
+        const rankC = ranks[2];
+        let a = nodes[rankA];
+        let b = nodes[rankB];
+        let c = nodes[rankC];
+        let t0: number[] = this.inOrder(rankA*2+1, false, true); // because of in-order traversal, b and c will never be the a's left child
+        let t1: number[] = !(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c) ? this.inOrder(rankA*2+2, false, true): this.inOrder(rankB*2+1, false, true);
+        let t2: number[] = nodes[rankB*2+2] != c ? this.inOrder(rankB*2+2, false, true):  this.inOrder(rankC*2+1, false, true);
+        let t3: number[] = this.inOrder(rankC*2+2, false, true);
+
+        /*if(!(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c)) // if a right child is neither b or c
+            t1 = this.inOrder(rankA*2+2, false, true);
+        else t1 = this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child*/
+        /*if(nodes[rankB*2+2] != c) // if a right child is not c (no need to check if it is not a, due to the in-order traversal)
+            t2 = this.inOrder(rankB*2+2, false, true);
+        else t2 = this.inOrder(rankC*2+1, false, true);*/
+        
+        console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
@@ -263,6 +284,7 @@ export class BinarySearchTree {
                 // console.log(`addNew Promise Opened`);
                 if (this.arr!.length == 0) {
                     this.assign(e, 0);
+                    if(this.avlStatus) e.addClass("active");
                     await e.opac(1, true);
                     this.arr!.push(e);
                     e.removeClass("transform");
