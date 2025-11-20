@@ -1,5 +1,7 @@
 //@ts-check
 
+import { create } from "domain";
+
 //reverted instance
 
 export class BinarySearchTree {
@@ -199,25 +201,38 @@ export class BinarySearchTree {
         let t3: number[] = this.inOrder(rankC*2+2, false, true); // because of in-order traversal, t3 will always be c's right child
         console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
         
-        const t0SVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        const t0Poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
-        t0SVG.appendChild(t0Poly);
-        t0SVG.classList.add("triangle-svg");
-        t0Poly.id = "T0";
+        const createSubTreeSVG = function(label:string):HTMLDivElement{
+            const t0SVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            const t0Poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+            const t0Label = document.createElement(`div`);
+            t0Label.classList.add("subtreelabel");
+            t0SVG.appendChild(t0Poly);
+            t0Label.appendChild(t0SVG);
+            t0SVG.classList.add("triangle-svg");
+            t0Poly.id = "T0";
 
-        t0SVG.setAttribute("viewBox", "0 0 100 100");
-        t0Poly.setAttribute("points", "50 0, 0 100, 100 100");
+            t0SVG.setAttribute("viewBox", "0 0 100 100");
+            t0Poly.setAttribute("points", "50 0, 0 100, 100 100");
+            t0Label.setAttribute("label", label);
+            return t0Label;
+        }
+
+        const t0Container = createSubTreeSVG("T₀");
         
         const radius = nodes![t0[0]].diameter/2;
         const xCoord = nodes![t0[0]].xTransform;
         const yCoord = nodes![t0[0]].yTransform;
-        //t0SVG.style.transform = `translate(${xCoord}vw, calc(${yCoord}vh-100px)px)`;
-        /*t0Poly.setAttribute("stroke", "black");
-        t0Poly.setAttribute("fill", "none");*/
+        t0Container.style.transform = `translate(${xCoord-2.75}vw, ${yCoord-6}vh)`;
+
+        /*const t0RootInfo = nodes[t0[0]].dom.getBoundingClientRect();
+        const xT0 = t0RootInfo.x;
+        const yT0 = t0RootInfo.y;
+        console.log(xT0, yT0)
+        t0SVG.style.transform = `translate(${xT0}px, ${yT0}px)`;*/
         
         
 
-        document.body.appendChild(t0SVG);
+        document.body.appendChild(t0Container);
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
@@ -282,6 +297,45 @@ export class BinarySearchTree {
             e.opac(1, false);
             return ++this.size;
         }
+    }
+
+    toggleEmptyNodes(on:boolean = true):boolean{
+        let emptyNodes = new Set<number>();
+        for(let i=0; i<this.arr!.length; i++){
+            if(!Boolean(this.arr![i])) emptyNodes.add(i);
+        }
+        //console.log(emptyNodes);
+        const emptyNotOrphan = new Set<number>();
+        emptyNodes.forEach(e =>{
+            const parent = this.arr![Math.floor(((e as number)-1)/2)];
+            if(parent) emptyNotOrphan.add(e);
+        });
+        const emptyOrphan = emptyNodes.difference(emptyNotOrphan);
+        
+        emptyNotOrphan.forEach((e)=>{
+            const parentRank : number =  Math.floor((e-1)/2);
+            const parent = this.arr![parentRank]
+            const parentKey = parent.key;
+            let targetKey: number = e%2 == 1? parentKey-0.5:parentKey+1.5;
+            const element = new BinarySearchTree.TreeElement(targetKey);
+            element.addClass("empty");
+            this.assign(element, e, true, false);
+            element.dom.innerHTML = "X";
+
+            //console.log(`calling connect transform with animation ${animation}`) Work in progress
+            const newConnection = new BinarySearchTree.Connection(element, parent, false);
+            const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
+            if(emptyIndex >= 0){
+                this.connections[emptyIndex] = newConnection;
+            }
+            else{
+                this.connections.push(newConnection);
+            }
+            //throw {};
+        });
+        //this.assign(element, emptyOrphan[0])
+        //console.log(emptyNodes, emptyNotOrphan, emptyOrphan);
+        return true;
     }
 
     addNewTransform(e: InstanceType<typeof BinarySearchTree.TreeElement>) {
@@ -433,9 +487,7 @@ export class BinarySearchTree {
             await e.borderCol("rgb(37, 201, 37)", true);
             if(avl)
                 e.addClass("active");
-            if(!reassign){
-                await this.connectTransform(rank, parentRank, animation);
-            }
+            if(!reassign) await this.connectTransform(e, parentRank, false);
             // console.log(`assign Promise Resolved`);
             //AVL Weight Calculation
             this.updateAVL(rank);
@@ -443,11 +495,11 @@ export class BinarySearchTree {
         });
     }
 
-    async connectTransform(rank: number, parentRank: number, animation: boolean = true) {
+    async connectTransform(rank: number|InstanceType<typeof BinarySearchTree.TreeElement>, parentRank: number|InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
         // console.log(`connectTransform Promise Opened`);
         return new Promise((resolve) => {
-            let e = this.arr![rank];
-            let parent = this.arr![parentRank];
+            let e = this.arr![(rank as number)];
+            let parent = this.arr![(parentRank as number)];
             //console.log(`calling connect transform with animation ${animation}`)
             const newConnection = new BinarySearchTree.Connection(e, parent, animation);
             const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
@@ -1074,7 +1126,7 @@ export class BinarySearchTree {
                 };
             }
             //console.log(`${child} and ${parent}`)
-            this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`;
+            this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`; 
             this.child = child;
             this.parent = parent;
             this.draw(true);
@@ -1194,7 +1246,7 @@ export class BinarySearchTree {
         rightSpan: HTMLSpanElement;
         upperSpan: HTMLSpanElement;
         bottomSpan: HTMLSpanElement;
-    
+        tree = this; //reference to the methods of the tree
         constructor(key: number) {
             this.key = key;
             this.dom = document.createElement("div");
@@ -1265,7 +1317,7 @@ export class BinarySearchTree {
         updateBalance(){
             return new Promise(async (resolve, reject) => {
                 this.balance = this.leftWeight - this.rightWeight;
-                if(Math.abs(this.balance)>1){
+                if(Math.abs(this.balance)>1 && this.tree.avlStatus){
                     reject("The node is not balanced");
                 }
                 resolve(true);

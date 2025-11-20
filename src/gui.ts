@@ -620,6 +620,9 @@ document.addEventListener("DOMContentLoaded",async function() {
     await exec(["set", "animation", "off"]);
     await exec(["set", "avl", "on"]);
     await exec(["insert", 44, 17, 78, 32, 50, 88, 62, 48]);
+    await exec(["set", "animation", "on"]);
+    await exec(["set", "animation", "speed", 5]);
+    //await exec(["insert", 54]);
 
     /*await exec(["set", "animation", "off"]);
     await exec(["set", "avl", "on"]);

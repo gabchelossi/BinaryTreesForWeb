@@ -40,6 +40,20 @@ html, body{
     transition: border 1s, opacity 1s, background-color 1s;
 }
 
+.TreeElement.empty{
+    opacity: 1!important;
+    border-radius: 0;
+    border: 2px solid grey;
+    height: 2vw;
+    width: 2vw
+}
+
+.TreeElement.empty.smaller{
+    height: 1.75vw;
+    width: 1.75vw;
+    font-size: 1.75vh;
+}
+
 .TreeElement.transform{
     transition: border 1s, opacity 1s, transform 1s ease-in-out, width 1s, height 1s, font-size 1s!important;
 }
@@ -117,16 +131,38 @@ html, body{
 }
 
 .triangle-svg{
-    width: 100px;
-    height: 100px;
+    width: 7vw;
+    height: 7vw;
     will-change: transform;
     z-index: 10;
+    position: relative;
+}
+
+.subtreelabel {
+    display: block;
+    position: relative;
+    width: fit-content;
+}
+
+.subtreelabel::after {
+    content: attr(label);
+    position: absolute;
+    top: 100%;               /* just below the bottom of the triangle */
+    left: 50%;               /* horizontally centered relative to parent */
+    transform: translateX(-50%); /* adjust so center aligns, not left edge */
+    
+    /* Optional styling: */
+    margin-top: 4px;
+    font-size: 1.1vw;
+    font-weight: bolder;
+    text-align: center;
+    width: max-content;      /* or 100% if you want it full-width */
 }
 
 .triangle-svg polygon{
     stroke: black;
     fill: none;
-    stroke-width: 5px;
+    stroke-width: 3px;
 }
 
 .no-animation{
