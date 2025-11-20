@@ -194,15 +194,30 @@ export class BinarySearchTree {
         let b = nodes[rankB];
         let c = nodes[rankC];
         let t0: number[] = this.inOrder(rankA*2+1, false, true); // because of in-order traversal, b and c will never be the a's left child
-        let t1: number[] = !(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c) ? this.inOrder(rankA*2+2, false, true): this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child*/
+        let t1: number[] = !(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c) ? this.inOrder(rankA*2+2, false, true): this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child
         let t2: number[] = nodes[rankB*2+2] != c ? this.inOrder(rankB*2+2, false, true):  this.inOrder(rankC*2+1, false, true); // if b's right child is not c (no need to check if it is not a, due to the in-order traversal), then t2 is b's right child, else it will always be c's left child
         let t3: number[] = this.inOrder(rankC*2+2, false, true); // because of in-order traversal, t3 will always be c's right child
-
-
-            t2 = this.inOrder(rankB*2+2, false, true);
-        else t2 = this.inOrder(rankC*2+1, false, true);*/
-        
         console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
+        
+        const t0SVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const t0Poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+        t0SVG.appendChild(t0Poly);
+        t0SVG.classList.add("triangle-svg");
+        t0Poly.id = "T0";
+
+        t0SVG.setAttribute("viewBox", "0 0 100 100");
+        t0Poly.setAttribute("points", "50 0, 0 100, 100 100");
+        
+        const radius = nodes![t0[0]].diameter/2;
+        const xCoord = nodes![t0[0]].xTransform;
+        const yCoord = nodes![t0[0]].yTransform;
+        //t0SVG.style.transform = `translate(${xCoord}vw, calc(${yCoord}vh-100px)px)`;
+        /*t0Poly.setAttribute("stroke", "black");
+        t0Poly.setAttribute("fill", "none");*/
+        
+        
+
+        document.body.appendChild(t0SVG);
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
@@ -456,7 +471,7 @@ export class BinarySearchTree {
                 //console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 if(animation){
                     await this.traversal(rank, "in-order", true).then(async (result) =>{
-                        await this.removeKey(result[0], animation); 
+                        await this.removeKey(result[0] as number, animation); 
                         this.size++; //to counter the previous instruction side-effect
                         this.arr![rank].key = result[0];
                     });
@@ -739,7 +754,7 @@ export class BinarySearchTree {
         });
     }
 
-    async traversal(root: number, mode: string, removing: boolean = false) : Promise<number[]|boolean> {
+    async traversal(root: number, mode: string, removing: boolean = false) : Promise<number[]> {
         let nodes = this.arr;
         let traverse = [];
         let arrow = document.createElement("span");
@@ -784,7 +799,7 @@ export class BinarySearchTree {
         const arrowOffsetVw = (arrowWidthPx / window.innerWidth) * 50;
         //const arrowOffsetVw = 0.75;     
 
-        return new Promise<number[]|boolean>(async (resolve) => {
+        return new Promise<number[]>(async (resolve) => {
             switch (mode) {
                 case "in-order":
                     const inOrder = async function (root: number) {

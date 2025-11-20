@@ -116,6 +116,19 @@ html, body{
     border: 2px solid rgb(71 173 199);;
 }
 
+.triangle-svg{
+    width: 100px;
+    height: 100px;
+    will-change: transform;
+    z-index: 10;
+}
+
+.triangle-svg polygon{
+    stroke: black;
+    fill: none;
+    stroke-width: 5px;
+}
+
 .no-animation{
     transition: none!important; 
 }
