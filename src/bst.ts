@@ -137,7 +137,7 @@ export class BinarySearchTree {
             node.leftWeight  = lh;
             node.rightWeight = rh;
             try{
-                await node.updateBalance(); // e.g., node.balance = rh - lh; may also add rotation triggers
+                await node.updateBalance(this.avlStatus); // e.g., node.balance = rh - lh; may also add rotation triggers
             }
             catch(e){
                 await this.balanceAVL(i, childRank);
@@ -1246,7 +1246,6 @@ export class BinarySearchTree {
         rightSpan: HTMLSpanElement;
         upperSpan: HTMLSpanElement;
         bottomSpan: HTMLSpanElement;
-        tree = this; //reference to the methods of the tree
         constructor(key: number) {
             this.key = key;
             this.dom = document.createElement("div");
@@ -1314,10 +1313,10 @@ export class BinarySearchTree {
             this.upperSpan.setAttribute('data-val', balance.toString());
         }
 
-        updateBalance(){
+        updateBalance(avlOn:boolean){
             return new Promise(async (resolve, reject) => {
                 this.balance = this.leftWeight - this.rightWeight;
-                if(Math.abs(this.balance)>1 && this.tree.avlStatus){
+                if(Math.abs(this.balance)>1 && avlOn){
                     reject("The node is not balanced");
                 }
                 resolve(true);
