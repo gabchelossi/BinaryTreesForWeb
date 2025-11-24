@@ -283,7 +283,7 @@ const exec = async function (...parameters: any[]) {
             case 'su':
             case 'cd':
             case 'echo':
-                returnval = "You know, this is not really a linux terminal although I made it look like one :)";
+                returnval = "You know, this is not really a linux shell although I made it look like one :)";
                 break;
 
             case "reset":
