@@ -41,14 +41,14 @@ html, body{
 }
 
 .TreeElement.empty{
-    opacity: 1!important;
+    opacity: 1;
     border-radius: 0;
-    border: 2px solid grey;
+    border: 2px solid grey!important;
     height: 2vw;
     width: 2vw
 }
 
-.TreeElement.empty.smaller{
+.TreeElement.empty.small{
     height: 1.75vw;
     width: 1.75vw;
     font-size: 1.75vh;
@@ -58,13 +58,15 @@ html, body{
     transition: border 1s, opacity 1s, transform 1s ease-in-out, width 1s, height 1s, font-size 1s!important;
 }
 
-.TreeElement.smaller{
+
+.TreeElement.small{
     height: 2vw;
     width: 2vw;
     font-size: 2vh;
 }
 
-.TreeElement.smaller .avl.bottom::after{
+
+.TreeElement.small .avl.bottom::after{
     font-size: 0.7vw;
 }
 

@@ -254,7 +254,7 @@ export class BinarySearchTree {
                 //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
                 let rank = 0;
                 let nodes = this.arr;
-                while (this.arr![rank]) {
+                while (this.arr![rank] && Number.isInteger(this.arr![rank].key)) {
                     if (e.key < this.arr![rank].key)
                         rank = rank * 2 + 1;
                     else rank = rank * 2 + 2;
@@ -268,7 +268,7 @@ export class BinarySearchTree {
                 const depth = Math.floor(Math.log2(rank + 1));
                 let offset = (98) / 2 ** (depth + 1);
                 if(depth>3){
-                    e.addClass("smaller");
+                    e.addClass("small");
                 }
                 if(depth==4){
                     offset += Math.sin(Math.PI / 4);
@@ -299,40 +299,66 @@ export class BinarySearchTree {
         }
     }
 
-    toggleEmptyNodes(on:boolean = true):boolean{
+    toggleEmptyNodes(on:boolean = true, temp:boolean=false):boolean{
         let emptyNodes = new Set<number>();
         for(let i=0; i<this.arr!.length; i++){
-            if(!Boolean(this.arr![i])) emptyNodes.add(i);
+            if(!Boolean(this.arr![i]) || !Number.isInteger(this.arr![i].key)) emptyNodes.add(i);
         }
         //console.log(emptyNodes);
-        const emptyNotOrphan = new Set<number>();
-        emptyNodes.forEach(e =>{
-            const parent = this.arr![Math.floor(((e as number)-1)/2)];
-            if(parent) emptyNotOrphan.add(e);
-        });
+       
+        if(on){
+             const emptyNotOrphan = new Set<number>();
+            emptyNodes.forEach(e =>{
+                const parent = this.arr![Math.floor(((e as number)-1)/2)];
+                if(parent) emptyNotOrphan.add(e);
+            });
         const emptyOrphan = emptyNodes.difference(emptyNotOrphan);
-        
-        emptyNotOrphan.forEach((e)=>{
-            const parentRank : number =  Math.floor((e-1)/2);
-            const parent = this.arr![parentRank]
-            const parentKey = parent.key;
-            let targetKey: number = e%2 == 1? parentKey-0.5:parentKey+1.5;
-            const element = new BinarySearchTree.TreeElement(targetKey);
-            element.addClass("empty");
-            this.assign(element, e, true, false);
-            element.dom.innerHTML = "X";
+            const assignEmptyElement = async (rank:number) =>{
+                const parentRank : number =  Math.floor((rank-1)/2);
+                const parent = this.arr![parentRank]
+                const parentKey = parent.key;
+                let targetKey: number = rank%2 == 1? parentKey-0.001:parentKey+0.001;
+                const element = new BinarySearchTree.TreeElement(targetKey);
+                element.addClass("empty");
+                
+                this.assign(element, rank, true, false);
+                this.arr![rank] = element;
+                element.dom.innerHTML = "X";
+                element.opac(1, false);
+                const leftChild = rank*2+1;
+                const rightChild = rank*2+2;
+                if(emptyOrphan.has(leftChild)) assignEmptyElement(leftChild);
+                if(emptyOrphan.has(rightChild)) assignEmptyElement(rightChild);
 
-            //console.log(`calling connect transform with animation ${animation}`) Work in progress
-            const newConnection = new BinarySearchTree.Connection(element, parent, false);
-            const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
-            if(emptyIndex >= 0){
-                this.connections[emptyIndex] = newConnection;
+                //console.log(`calling connect transform with animation ${animation}`) Work in progress
+                const newConnection = new BinarySearchTree.Connection(element, parent, false);
+                const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
+                if(emptyIndex >= 0){
+                    this.connections[emptyIndex] = newConnection;
+                }
+                else{
+                    this.connections.push(newConnection);
+                }
             }
-            else{
-                this.connections.push(newConnection);
-            }
-            //throw {};
-        });
+
+            emptyNotOrphan.forEach((e)=>{
+                assignEmptyElement(e);
+            });
+        }
+        else{
+            emptyNodes.forEach((index)=>{
+                const connection = this.connections!.findIndex((c) => {
+                    if(c && (c.child == this.arr![index] || c.parent == this.arr![index]))
+                        return true;
+                });
+                console.log(connection);
+                this.arr![connection]!.dom.remove();
+                this.arr![index].dom.remove();
+                delete this.arr![index];
+                delete this.connections![connection];
+            });
+        }
+        
         //this.assign(element, emptyOrphan[0])
         //console.log(emptyNodes, emptyNotOrphan, emptyOrphan);
         return true;
@@ -357,11 +383,10 @@ export class BinarySearchTree {
                 }
                 else {
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
-                    let rank = 0;
                     await e.translate((50 + (this.arr![0].diameter)) + "vw", `2vh`, true, false);
                     await e.opac(1, true);
                     await e.borderCol("orange", true);
-                    await this.compareTransform(e, rank);
+                    await this.compareTransform(e, 0);
                 }
                 resolve(++this.size);
             }
@@ -408,9 +433,9 @@ export class BinarySearchTree {
             });
 
             await pointer.borderCol("rgb(37, 201, 37)", true);
-            if (this.arr![rank] == undefined) {
-                this.arr![rank] = e;
+            if (this.arr![rank] == undefined || !Number.isInteger(this.arr![rank].key)){
                 await this.assign(e, rank);
+                this.arr![rank] = e;
             }
             else {
                 //console.log(`Going to prepareNextCompare(${rank})`);
@@ -432,7 +457,7 @@ export class BinarySearchTree {
             };
             const depth = Math.floor(Math.log2(rank + 1));
             if(depth>3)
-                e.addClass("smaller");
+                e.addClass("small");
             //await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
             coordinates.x = (parent.xTransform+e.diameter/2) + e.diameter + "vw";
             coordinates.y = parent.yTransform + "vh";
@@ -456,10 +481,10 @@ export class BinarySearchTree {
             e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
             if(depth>3){
-                e.addClass("smaller");
+                e.addClass("small");
             }
             else
-                e.removeClass("smaller"); //in case it is getting shifted up
+                e.removeClass("small"); //in case it is getting shifted up
             let parentRank = Math.floor((rank - 1) / 2);
             let parent = nodes![parentRank];
             let translateInfo : {x: string, y: string} = {
@@ -482,15 +507,31 @@ export class BinarySearchTree {
                 translateInfo.x = 50 - e.diameter / 2 + "vw";
                 translateInfo.y = "2vh";
             }
-            
+            if(nodes![rank] && !Number.isInteger(nodes![rank].key)){
+                nodes![rank].opac(0, false);
+                this.connections.forEach((c) => {
+                    if(c.child == nodes![rank]){
+                        c.child = e;
+                    }
+                    if(c.parent == nodes![rank]){
+                        c.parent = e;
+                    }
+                });
+            }
             await e.translate(translateInfo.x, translateInfo.y, true, true);
             await e.borderCol("rgb(37, 201, 37)", true);
-            if(avl)
-                e.addClass("active");
-            if(!reassign) await this.connectTransform(e, parentRank, false);
+            
+            if(!(reassign || nodes![rank])){
+                await this.connectTransform(e, parentRank, false);
+            }
+            if(!e.dom.classList.contains("empty")){
+                this.updateAVL(rank);
+                if(avl)
+                    e.addClass("active");
+            }
             // console.log(`assign Promise Resolved`);
             //AVL Weight Calculation
-            this.updateAVL(rank);
+            
             resolve(true);
         });
     }

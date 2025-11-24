@@ -54,7 +54,7 @@ window.addEventListener('resize', () => {
     }, 200); // only trigger after 200ms of no further resize events
 });
 
-let type = async function (e: { key: string; preventDefault: () => void; }) {
+const type = async function (e: { key: string; preventDefault: () => void; }) {
     //console.log(focused);
     if (focused) {
         switch (e.key) {
@@ -482,7 +482,7 @@ const exec = async function (...parameters: any[]) {
                             if (params[2] == 'true') {
                                 let s = "[";
                                 for (let i = 0; i < binarysearchT.arr!.length; i++) {
-                                    let val = binarysearchT.arr![i] == undefined ? '<span style="color: grey">[empty]</span>' : binarysearchT.arr![i].key;
+                                    let val = binarysearchT.arr![i]||Number.isInteger(binarysearchT.arr![i].key) == undefined ? '<span style="color: grey">[empty]</span>' : binarysearchT.arr![i].key;
                                     s += `<span style='color: orange'>${i}</span>: ${val}${(i < binarysearchT.arr!.length - 1) ? ", " : "]"}`;
                                 };
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
@@ -490,8 +490,9 @@ const exec = async function (...parameters: any[]) {
                             }
                             else {
                                 let s = "[";
-                                binarysearchT.arr!.forEach((val: { key: any; }, index: number, arr: string | any[]) => {
-                                    s += `<span style='color: orange'>${index}</span>: ${val.key}${(index < arr.length - 1) ? ", " : "]"}`;
+                                binarysearchT.arr!.forEach((val: { key: number; }, index: number, arr: string | any[]) => {
+                                    if(Number.isInteger(val.key))
+                                        s += `<span style='color: orange'>${index}</span>: ${val.key}${(index < arr.length - 1) ? ", " : "]"}`;
                                 });
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
                                 returnval = s;
@@ -622,6 +623,7 @@ document.addEventListener("DOMContentLoaded",async function() {
     await exec(["insert", 44, 17, 78, 32, 50, 88, 62, 48]);
     await exec(["set", "animation", "on"]);
     await exec(["set", "animation", "speed", 5]);
+    //await exec([""])
     //await exec(["insert", 54]);
 
     /*await exec(["set", "animation", "off"]);
@@ -633,16 +635,16 @@ document.addEventListener("DOMContentLoaded",async function() {
     
 });
 
-let focus = function () {
+const focus = function () {
     focused = true;
     cursorAnimation();
 }
 
-let leave = function () {
+const leave = function () {
     focused = false;
 }
 
-let paste = async function (e: { preventDefault: () => void; }) {
+const paste = async function (e: { preventDefault: () => void; }) {
     e.preventDefault();
     let clip = await navigator.clipboard.readText();
     cursor!.remove();
@@ -658,7 +660,7 @@ setInterval(function () {
     cursorAnimation();
 }, 1000);
 
-let cursorAnimation = function () {
+const cursorAnimation = function () {
 
     if (focused) {
         if (displayed) {
