@@ -47,8 +47,6 @@ export class BinarySearchTree {
         }
     }
 
-
-
     trim(): boolean{
         let size = this.size;
         /*if(!this.arr![this.arr!.length-1]){
@@ -74,7 +72,7 @@ export class BinarySearchTree {
     inOrder(root: number = 0, removing: boolean=false, returnRanks=false): number[] {
         let returnArr : number[] = [];
         let nodes = this.arr;
-        if (nodes![root * 2 + 1]) {
+        if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 +1].key)) {
             returnArr = this.inOrder(root * 2 + 1);
         }
         if(returnRanks) returnArr.push(root);
@@ -82,7 +80,7 @@ export class BinarySearchTree {
         if(removing)
             return returnArr;
 
-        if (nodes![root * 2 + 2])
+        if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 +2].key))
             returnArr = [...returnArr, ...this.inOrder(root * 2 + 2)];
 
         return returnArr;
@@ -94,12 +92,12 @@ export class BinarySearchTree {
 
         returnArr.push(nodes![root].key);
 
-        if (nodes![root * 2 + 1]) {
+        if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
             returnArr = [...returnArr, ...this.preOrder(root * 2 + 1)];
         }
 
 
-        if (nodes![root * 2 + 2])
+        if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 + 2].key))
             returnArr = [...returnArr, ...this.preOrder(root * 2 + 2)];
 
         return returnArr;
@@ -108,10 +106,10 @@ export class BinarySearchTree {
     postOrder(root: number = 0) : number[] {
         let nodes = this.arr;
         let returnArr: number[] = [];
-        if (nodes![root * 2 + 1])
+        if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 +1].key))
             returnArr = [...this.postOrder(root * 2 + 1)];
 
-        if (nodes![root * 2 + 2])
+        if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 + 2].key))
             returnArr = [...returnArr, ...this.postOrder(root * 2 + 2)];
 
         returnArr.push(nodes![root].key);
@@ -280,12 +278,22 @@ export class BinarySearchTree {
                 else {
                     translateInfo.x = parent.xTransform + offset + "vw";
                 }
+                
                 translateInfo.y = parent.yTransform + Math.sin(Math.PI / 4) * 10 + "vh";
                 e.translate(translateInfo.x, translateInfo.y, false);
                 e.borderCol("rgb(37, 201, 37)", false);
                 e.dom.title = `Rank: ${rank}`;
-                this.arr![rank] = e;
-                this.connectTransform(rank, parentRank, false);
+                if(this.arr![rank]){ //placeholder dom (empty node illustration) exists
+                    const connection = this.connections.find((c) => c.child == this.arr![rank]);
+                    connection!.child = e;
+                    this.arr![rank].opac(0, false);
+                    this.arr![rank] = e;
+                }
+                else{
+                    this.arr![rank] = e;
+                    this.connectTransform(rank, parentRank, false);
+                }
+                
                 //console.log(`Calling updateAVLFromRank from addNew`);
                 this.updateAVL(rank);
                 e.removeClass("transform");
@@ -299,70 +307,111 @@ export class BinarySearchTree {
         }
     }
 
-    toggleEmptyNodes(on:boolean = true, temp:boolean=false):boolean{
-        let emptyNodes = new Set<number>();
-        for(let i=0; i<this.arr!.length; i++){
-            if(!Boolean(this.arr![i]) || !Number.isInteger(this.arr![i].key)) emptyNodes.add(i);
-        }
-        //console.log(emptyNodes);
-       
-        if(on){
-             const emptyNotOrphan = new Set<number>();
-            emptyNodes.forEach(e =>{
-                const parent = this.arr![Math.floor(((e as number)-1)/2)];
-                if(parent) emptyNotOrphan.add(e);
+    toggleEmptyNodes(on: boolean = true): Promise<boolean> {
+    return new Promise(async (resolve) => {
+
+        const emptyNodes = new Set<number>();
+
+        if (on) {
+            // -------------------------------
+            // BUILD emptyNodes
+            // -------------------------------
+            for (let i = 0; i < this.arr!.length; i++) {
+                if (!Boolean(this.arr![i])) emptyNodes.add(i);
+            }
+
+            const emptyNotOrphan = new Set<number>();
+            emptyNodes.forEach(e => {
+                const parent = this.arr![Math.floor((e - 1) / 2)];
+                if (parent) emptyNotOrphan.add(e);
             });
-        const emptyOrphan = emptyNodes.difference(emptyNotOrphan);
-            const assignEmptyElement = async (rank:number) =>{
-                const parentRank : number =  Math.floor((rank-1)/2);
-                const parent = this.arr![parentRank]
+
+            const emptyOrphan = emptyNodes.difference(emptyNotOrphan);
+
+            // -------------------------------
+            // assignEmptyElement (recursive)
+            // -------------------------------
+            const assignEmptyElement = async (rank: number) => {
+                const parentRank = Math.floor((rank - 1) / 2);
+                const parent = this.arr![parentRank];
                 const parentKey = parent.key;
-                let targetKey: number = rank%2 == 1? parentKey-0.001:parentKey+0.001;
+
+                const depth = Math.floor(Math.log2(rank + 1));
+
+                let targetKey =
+                    (rank % 2 === 1
+                        ? parentKey - 0.5 ** depth
+                        : parentKey + 0.5 ** depth);
+
                 const element = new BinarySearchTree.TreeElement(targetKey);
                 element.addClass("empty");
-                
+
                 this.assign(element, rank, true, false);
                 this.arr![rank] = element;
                 element.dom.innerHTML = "X";
                 element.opac(1, false);
-                const leftChild = rank*2+1;
-                const rightChild = rank*2+2;
-                if(emptyOrphan.has(leftChild)) assignEmptyElement(leftChild);
-                if(emptyOrphan.has(rightChild)) assignEmptyElement(rightChild);
 
-                //console.log(`calling connect transform with animation ${animation}`) Work in progress
+                const leftChild = rank * 2 + 1;
+                const rightChild = rank * 2 + 2;
+
+                if (emptyOrphan.has(leftChild)) assignEmptyElement(leftChild);
+                if (emptyOrphan.has(rightChild)) assignEmptyElement(rightChild);
+
                 const newConnection = new BinarySearchTree.Connection(element, parent, false);
-                const emptyIndex = this.connections.findIndex((c) => {if(!c) return true});
-                if(emptyIndex >= 0){
+                const emptyIndex = this.connections.findIndex(c => !c);
+                if (emptyIndex >= 0) {
                     this.connections[emptyIndex] = newConnection;
-                }
-                else{
+                } else {
                     this.connections.push(newConnection);
                 }
-            }
+            };
 
-            emptyNotOrphan.forEach((e)=>{
-                assignEmptyElement(e);
-            });
+            // -------------------------------
+            // START filling empty nodes
+            // -------------------------------
+            for (const e of emptyNotOrphan) {
+                await assignEmptyElement(e);
+            }
         }
-        else{
-            emptyNodes.forEach((index)=>{
-                const connection = this.connections!.findIndex((c) => {
-                    if(c && (c.child == this.arr![index] || c.parent == this.arr![index]))
-                        return true;
+
+        else {
+            // -------------------------------
+            // DELETE EMPTY NODES
+            // -------------------------------
+            for (let i = 0; i < this.arr!.length; i++) {
+                if (!Boolean(this.arr![i]) || !Number.isInteger(this.arr![i].key))
+                    emptyNodes.add(i);
+            }
+            if(emptyNodes.size == 0)
+                resolve(false); // this is to communicate the method caller that there were no empty nodes displayed at all.
+            else{
+                emptyNodes.forEach((index) => {
+                const node = this.arr![index];
+                if (!node) return;
+
+                const connectionIndex = this.connections!.findIndex(c => {
+                    return c && c.child === node;
                 });
-                console.log(connection);
-                this.arr![connection]!.dom.remove();
-                this.arr![index].dom.remove();
-                delete this.arr![index];
-                delete this.connections![connection];
+
+                if (connectionIndex > -1) {
+                    const connection = this.connections![connectionIndex]!;
+                    connection.dom.remove();
+                    node.dom.remove();
+
+                    delete this.arr![index];
+                    delete this.connections![connectionIndex];
+                } else {
+                    node.dom.remove();
+                    delete this.arr![index];
+                }
             });
+            }
+            
         }
-        
-        //this.assign(element, emptyOrphan[0])
-        //console.log(emptyNodes, emptyNotOrphan, emptyOrphan);
-        return true;
-    }
+
+        resolve(true);
+    });
+}
 
     addNewTransform(e: InstanceType<typeof BinarySearchTree.TreeElement>) {
         e.dom.classList.add("transform");
@@ -522,7 +571,7 @@ export class BinarySearchTree {
             await e.borderCol("rgb(37, 201, 37)", true);
             
             if(!(reassign || nodes![rank])){
-                await this.connectTransform(e, parentRank, false);
+                await this.connectTransform(e, parentRank, true);
             }
             if(!e.dom.classList.contains("empty")){
                 this.updateAVL(rank);
@@ -539,7 +588,12 @@ export class BinarySearchTree {
     async connectTransform(rank: number|InstanceType<typeof BinarySearchTree.TreeElement>, parentRank: number|InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
         // console.log(`connectTransform Promise Opened`);
         return new Promise((resolve) => {
-            let e = this.arr![(rank as number)];
+            let e: InstanceType<typeof BinarySearchTree.TreeElement>;
+            if (typeof rank === "number") {
+                e = this.arr![rank] as InstanceType<typeof BinarySearchTree.TreeElement>;
+            } else {
+                e = rank as InstanceType<typeof BinarySearchTree.TreeElement>;
+            }
             let parent = this.arr![(parentRank as number)];
             //console.log(`calling connect transform with animation ${animation}`)
             const newConnection = new BinarySearchTree.Connection(e, parent, animation);
@@ -580,7 +634,6 @@ export class BinarySearchTree {
                     this.arr![rank].key = match;
                     
                 }
-                
             } 
             else {
                 await this.arr![rank].opac(0, animation);
@@ -632,23 +685,26 @@ export class BinarySearchTree {
                     const comingFromLeft = rank%2 == 0?false:true;
                     //console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
 
-                    if(comingFromLeft) {
-                        parent.leftWeight = 0
-                    }
-                    else{
-                        parent.rightWeight = 0
-                    }
+                    if(this.size>1){
+                        if(comingFromLeft) {
+                            parent.leftWeight = 0
+                        }
+                        else{
+                            parent.rightWeight = 0
+                        }
+                        parent.updateBalance(this.avlStatus);
 
-                    parent.updateBalance();
-
-                    if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
-                        this.updateAVL(rank);
+                        if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
+                            this.updateAVL(rank);
+                        }
                     }
+                    
+
+                    
                 }
                 let shiftUp: Function;
                 let leafNodes : number[] = [];
                 if(this.arr![rank*2+1]){ //if left child
-
                     console.log(`Left side version called`);
                     shiftUp = (from: number, to: number)  => {
                         return new Promise(async (resolve) => {
@@ -804,7 +860,20 @@ export class BinarySearchTree {
         return new Promise(async (resolve, reject) => {
             let rank = 0;
             let nodes = this.arr;
-            while(nodes![rank]){
+            const clean = () => {
+                rank = -1;
+                const resetElements = nodes?.filter((n) => {if(n) return n.dom.style.borderColor == "rgb(71, 173, 199)";});
+                const resetLines = this.connections.filter((c) => {if(c) return c.dom.style.backgroundColor == "rgb(71, 173, 199)";});
+                console.log(resetElements, resetLines);
+                resetElements?.forEach((n) => {
+                    n.borderCol("rgb(37, 201, 37)", false);
+                n.backgroundCol("white", false);
+                });
+                resetLines?.forEach((c) => {
+                    c.changeColor("black", false);
+                });
+            }
+            while(nodes![rank] && Number.isInteger(nodes![rank].key)){
                 if(rank>0){
                     const line = this.connections.find((c) => { if(c) return c.child.key == nodes![rank].key});
                     await line!.changeColor("rgb(71, 173, 199)", true);
@@ -822,28 +891,14 @@ export class BinarySearchTree {
                     }
                     else{
                         if(key == nodes![rank].key){
+                            clean();
                             resolve(rank);
                         }
-                        else{
-                            reject(new Error(`The key '${key}' is not in the binary search Tree`));
-                        }
-                        rank = -1;
-                        const resetElements = nodes?.filter((n) => {if(n) return n.dom.style.borderColor == "rgb(71, 173, 199)";});
-                        const resetLines = this.connections.filter((c) => {if(c) return c.dom.style.backgroundColor == "rgb(71, 173, 199)";});
-                        console.log(resetElements, resetLines);
-                        resetElements?.forEach((n) => {
-                            n.borderCol("rgb(37, 201, 37)", false);
-                            n.backgroundCol("white", false);
-                        });
-                        resetLines?.forEach((c) => {
-                            c.changeColor("black", false);
-                        });
-
                     }
                 }
             }
-            
-            
+            clean();
+            reject(new Error(`The key '${key}' is not in the binary search Tree`));
         });
     }
 
@@ -909,7 +964,7 @@ export class BinarySearchTree {
 
                         let returnArr: number[] = [];
 
-                        if (nodes![root * 2 + 1]) {
+                        if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
                             await inOrder(root * 2 + 1).then(function (result) {
                                 returnArr = result;
                             });
@@ -923,7 +978,7 @@ export class BinarySearchTree {
                             return returnArr;
                         }
 
-                        if (nodes![root * 2 + 2]) {
+                        if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 +2].key)) {
                             await inOrder(root * 2 + 2).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
@@ -999,12 +1054,12 @@ export class BinarySearchTree {
                         await nodes![root].borderCol("orange", true); //visited but not added into the return value
                         await nodes![root].borderCol("rgb(37, 201, 37)", true);
                         let returnArr = [nodes![root].key];
-                        if (nodes![root * 2 + 1]) {
+                        if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
                             await preOrder(root * 2 + 1).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
                         }
-                        if (nodes![root * 2 + 2]) {
+                        if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 + 2].key)) {
                             await preOrder(root * 2 + 2).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
@@ -1043,12 +1098,12 @@ export class BinarySearchTree {
                             arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
                         await nodes![root].borderCol("orange", true); //visited but not added into the return value
-                        if (nodes![root * 2 + 1]) {
+                        if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
                             await postOrder(root * 2 + 1).then(function (result) {
                                 returnArr = [...result];
                             });
                         }
-                        if (nodes![root * 2 + 2]) {
+                        if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 + 2].key)) {
                             await postOrder(root * 2 + 2).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });
@@ -1092,7 +1147,7 @@ export class BinarySearchTree {
                         });
 
                         await nodes![root].borderCol("orange", true); //visited but not added into the return value
-                        if (nodes![root * 2 + 1]) {
+                        if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
                             await AVL(root * 2 + 1).then(function (result) {
                                 returnArr = result;
                             });
@@ -1106,7 +1161,7 @@ export class BinarySearchTree {
                             returnArr.push(root);
                         }
 
-                        if (nodes![root * 2 + 2]) {
+                        if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 + 2].key)) {
                             await AVL(root * 2 + 2).then(function (result) {
                                 returnArr = [...returnArr, ...result];
                             });

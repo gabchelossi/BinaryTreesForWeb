@@ -136,11 +136,13 @@ const exec = async function (...parameters: any[]) {
         let returnval: string | number[] = "Command succesfully executed";
         let params = parameters[0];
         //console.log(parameters);
+        const emptyNodes : boolean = (document.getElementById("empty") as HTMLInputElement).checked?true:false;
         switch (params[0]) {
             case 'insert':
+                
                 if (params[1] == "full") {
                     let arr = [25, 10, 40, 5, 15, 30, 50, 3, 7, 13, 20, 27, 35, 45, 55, 1, 4, 6, 8, 11, 14, 17, 24, 26, 29, 33, 37, 43, 47, 53, 60];
-                    let insertFull = function () {
+                    const insertFull = function () {
                         return new Promise(async function (res) {
                             returnval = `Succesfully inserted ${arr} into the binary search tree`;
                             for (let i = 0; i < arr.length; i++) {
@@ -153,6 +155,7 @@ const exec = async function (...parameters: any[]) {
                         });
                     };
                     await insertFull();
+                    if(emptyNodes) binarysearchT.toggleEmptyNodes(); //in case you are using this command in a non-empty binary tree
                 }
                 else {
                     if (params.length > 2) {
@@ -182,13 +185,14 @@ const exec = async function (...parameters: any[]) {
                                     //console.log(vals);
                                     alert(e);
                                     i--;
-                                    if (vals.length > 0)
+                                    if (vals.length > 0){
                                         returnval = `Succesfully inserted ${vals} into the binary search tree`;
-                                    else
-                                        returnval = `None of the values have been inserted`;
+                                    }
+                                    else returnval = `None of the values have been inserted`;
                                 }
                             }
                         })();
+                        if(emptyNodes) binarysearchT.toggleEmptyNodes();
                     }
                     else {
                         if(isNaN(parseInt(params[1]))){
@@ -211,6 +215,7 @@ const exec = async function (...parameters: any[]) {
                                         returnval = String(e);
                                     }
                                 })();
+                                if(emptyNodes) binarysearchT.toggleEmptyNodes();
                             }
                             
                         }
@@ -257,8 +262,14 @@ const exec = async function (...parameters: any[]) {
                     reject("The passed parameter is not a number.");
                 }
                 else{
+                    if(emptyNodes) await binarysearchT.toggleEmptyNodes(false);
                     try{
                         await binarysearchT.removeKey(element, animation);
+                        if(animation){
+                            await sleep(1000/animationSpeed);
+                        }
+                        if(emptyNodes) await binarysearchT.toggleEmptyNodes();
+                        
                         resolve(`The key '${params[1]}' has been deleted.`);
                     }
                     catch(e){
@@ -507,7 +518,24 @@ const exec = async function (...parameters: any[]) {
                     case "help":
                         returnval = "'show' has the following options:<br>\t-array (?boolean:show empty slots): shows the array representation of the binary search tree";
                         break;
-
+                    
+                    case "empty":
+                        if(params[2]){
+                            if(params[2] == "on"){
+                                binarysearchT.toggleEmptyNodes();
+                                returnval = `All unitialized nodes are now shown.`;
+                            }
+                            else{
+                                if(params[2] == "off"){
+                                    binarysearchT.toggleEmptyNodes(false);
+                                    returnval = `All unitialized nodes have been hidden.`;
+                                }
+                                else{
+                                    returnval = `The parameter ${params[2]} is not valid. Please type 'help empty' for instructions`;
+                                }
+                            }
+                        }
+                        break;
                     default:
                         returnval = `'show' command has an invalid parameter. try 'show help' for help`;
                         break;
@@ -533,6 +561,8 @@ const exec = async function (...parameters: any[]) {
                     }
                     
                 })();
+                (document.getElementById("empty") as HTMLInputElement).checked?binarysearchT.toggleEmptyNodes():binarysearchT.toggleEmptyNodes(false);
+
 
                 break;
 
@@ -617,21 +647,11 @@ const exec = async function (...parameters: any[]) {
 
 
 
-document.addEventListener("DOMContentLoaded",async function() { 
-    await exec(["set", "animation", "off"]);
-    await exec(["set", "avl", "on"]);
-    await exec(["insert", 44, 17, 78, 32, 50, 88, 62, 48]);
+document.addEventListener("DOMContentLoaded",async function() {
+    await exec(["insert", 44,17,78,32,50,88,48,62]);
     await exec(["set", "animation", "on"]);
+    await exec(["set", "avl", "on"]);
     await exec(["set", "animation", "speed", 5]);
-    //await exec([""])
-    //await exec(["insert", 54]);
-
-    /*await exec(["set", "animation", "off"]);
-    await exec(["set", "avl", "on"]);
-    await exec(["insert", 1, 2]);
-    await exec(["set", "animation", "on"]);
-    await exec(["set", "animation", "speed", 4]);
-    await exec(["insert", 3]);    */
     
 });
 
@@ -733,6 +753,17 @@ document.getElementById("AVL")!.addEventListener("change", function () {
         command!.innerHTML = `set avl on`;
     } else {
         command!.innerHTML = `set avl off`;
+    }
+
+    parseCommand();
+});
+
+document.getElementById("empty")!.addEventListener("change", function(){
+    const el = this as HTMLInputElement;
+    if (el.checked) {
+        command!.innerHTML = `show empty on`;
+    } else {
+        command!.innerHTML = `show empty off`;
     }
 
     parseCommand();

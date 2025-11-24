@@ -38,6 +38,7 @@ html, body{
     font-size: 2.5vh;
     border: 2px solid rgb(37, 201, 37);
     transition: border 1s, opacity 1s, background-color 1s;
+    z-index: 10;
 }
 
 .TreeElement.empty{
@@ -45,7 +46,9 @@ html, body{
     border-radius: 0;
     border: 2px solid grey!important;
     height: 2vw;
-    width: 2vw
+    width: 2vw;
+    z-index: 9;
+    transition: 0;
 }
 
 .TreeElement.empty.small{
