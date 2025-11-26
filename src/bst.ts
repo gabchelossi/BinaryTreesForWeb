@@ -120,6 +120,7 @@ export class BinarySearchTree {
     async updateAVL(childRank: number): Promise<void> {
     // start from the parent of the changed node
         let i = Math.floor((childRank - 1) / 2);
+        //console.log(`Called updateAVl from rank ${childRank}`);
         while (i >= 0) {
             const node = this.arr![i];
             if (!node) {
@@ -147,7 +148,7 @@ export class BinarySearchTree {
         return;
     }
 
-    async balanceAVL(zRank: number, wRank:number, afterInsertion = true){
+    async balanceAVL(zRank: number, wRank:number){
         console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
         const depthW = Math.floor(Math.log2(wRank + 1));
         const depthZ = Math.floor(Math.log2(zRank+1));
@@ -233,12 +234,12 @@ export class BinarySearchTree {
         document.body.appendChild(t0Container);
     }
 
-    async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>) {
+    async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>):Promise<number> {
         e.dom.classList.add('no-animation');
         //console.log(`Adding new element ${e.key} with no amination`);
         if (this.rankOf(e.key) > -1) {
             document.removeChild(e.dom);
-            return false;
+            return this.size;
         }
         else {
             if (this.arr!.length == 0) {
@@ -485,6 +486,7 @@ export class BinarySearchTree {
             if (this.arr![rank] == undefined || !Number.isInteger(this.arr![rank].key)){
                 await this.assign(e, rank);
                 this.arr![rank] = e;
+                this.updateAVL(rank);
             }
             else {
                 //console.log(`Going to prepareNextCompare(${rank})`);
@@ -559,12 +561,8 @@ export class BinarySearchTree {
             if(nodes![rank] && !Number.isInteger(nodes![rank].key)){
                 nodes![rank].opac(0, false);
                 this.connections.forEach((c) => {
-                    if(c.child == nodes![rank]){
-                        c.child = e;
-                    }
-                    if(c.parent == nodes![rank]){
-                        c.parent = e;
-                    }
+                    if(c.child == nodes![rank]) c.child = e;
+                    if(c.parent == nodes![rank]) c.parent = e; 
                 });
             }
             await e.translate(translateInfo.x, translateInfo.y, true, true);
@@ -573,11 +571,8 @@ export class BinarySearchTree {
             if(!(reassign || nodes![rank])){
                 await this.connectTransform(e, parentRank, true);
             }
-            if(!e.dom.classList.contains("empty")){
-                this.updateAVL(rank);
-                if(avl)
-                    e.addClass("active");
-            }
+            if(avl)
+                e.addClass("active");
             // console.log(`assign Promise Resolved`);
             //AVL Weight Calculation
             
@@ -834,8 +829,21 @@ export class BinarySearchTree {
 
     rankOf(key:number) : number{
         let rank = 0;
-        let max = (2 ** (2 + Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
-        while (rank < max) {
+        //const max = (2 ** (2 + Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
+        const nodes = this.arr!;
+        while(nodes[rank] && Number.isInteger(nodes[rank].key)){
+            const nodeKey = nodes[rank].key;
+            if(key < nodeKey)
+                rank = rank*2+1;
+            else{
+                if(key > nodeKey){
+                    rank = rank*2+2;
+                }
+                else return rank;
+            }
+        }
+        return -1;
+        /*while (rank < max) {
             try {
                 if (key == this.arr![rank].key) {
                     return rank;
@@ -852,8 +860,8 @@ export class BinarySearchTree {
             catch (e) {
                 return -1;
             };
-        }
-        return -1;
+        }*/
+       
     }
 
     search(key: number): Promise<number> {
@@ -880,25 +888,25 @@ export class BinarySearchTree {
                 }
                 nodes![rank].backgroundCol(`rgb(131 255 255)`, false);
                 await nodes![rank].borderCol("rgb(71, 173, 199)", true);
-                let leftKey = nodes![rank*2+1];
-                let rightKey = nodes![rank*2+2];
-                if(leftKey && key < nodes![rank].key){
+                let left = nodes![rank*2+1];
+                let right = nodes![rank*2+2];
+                if(left && key < nodes![rank].key){
                     rank = rank*2+1;
                 }
                 else{
-                    if(rightKey && key > nodes![rank].key){
+                    if(right && key > nodes![rank].key){
                         rank = rank*2+2;
                     }
                     else{
-                        if(key == nodes![rank].key){
-                            clean();
-                            resolve(rank);
-                        }
+                        if(key == nodes![rank].key) resolve(rank);
+                        else {
+                            reject(new Error(`The key '${key}' is not in the binary search Tree`));
+                            break;
+                        }                        
                     }
                 }
             }
             clean();
-            reject(new Error(`The key '${key}' is not in the binary search Tree`));
         });
     }
 

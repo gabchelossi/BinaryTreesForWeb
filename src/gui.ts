@@ -175,6 +175,7 @@ const exec = async function (...parameters: any[]) {
                                     else {
                                         binarysearchT.addNew(new BinarySearchTree.TreeElement(vals[i]));
                                     }
+                                    if(emptyNodes) binarysearchT.toggleEmptyNodes();
                                 }
                                 catch (e) {
                                     let index = -1;
@@ -192,7 +193,7 @@ const exec = async function (...parameters: any[]) {
                                 }
                             }
                         })();
-                        if(emptyNodes) binarysearchT.toggleEmptyNodes();
+                        
                     }
                     else {
                         if(isNaN(parseInt(params[1]))){
@@ -431,7 +432,7 @@ const exec = async function (...parameters: any[]) {
                                 returnval = `Animations have been turned off.`;
                             }
                             else {
-                                if (params[2] == "automatic") {
+                                if (params[2] == "on") {
                                     console.log(`Animation are being turned on`);
                                     animation = true;
                                     const radiobtn = document.getElementById("Automatic") as HTMLInputElement;
