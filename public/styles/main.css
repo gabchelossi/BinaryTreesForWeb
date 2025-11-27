@@ -136,8 +136,8 @@ html, body{
 }
 
 .triangle-svg{
-    width: 7vw;
-    height: 7vw;
+    width: 100px; /* let the transform scale property handle its final size */
+    height: 100px;
     will-change: transform;
     z-index: 10;
     position: relative;

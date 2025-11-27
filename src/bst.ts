@@ -1,6 +1,7 @@
 //@ts-check
 
 import { create } from "domain";
+import { truncate } from "fs/promises";
 
 //reverted instance
 
@@ -194,13 +195,16 @@ export class BinarySearchTree {
         let a = nodes[rankA];
         let b = nodes[rankB];
         let c = nodes[rankC];
+        a.addClass("transform");
+        b.addClass("transform");
+        c.addClass("transform");
         let t0: number[] = this.inOrder(rankA*2+1, false, true); // because of in-order traversal, b and c will never be the a's left child
         let t1: number[] = !(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c) ? this.inOrder(rankA*2+2, false, true): this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child
         let t2: number[] = nodes[rankB*2+2] != c ? this.inOrder(rankB*2+2, false, true):  this.inOrder(rankC*2+1, false, true); // if b's right child is not c (no need to check if it is not a, due to the in-order traversal), then t2 is b's right child, else it will always be c's left child
         let t3: number[] = this.inOrder(rankC*2+2, false, true); // because of in-order traversal, t3 will always be c's right child
         console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
         
-        const createSubTreeSVG = function(label:string):HTMLDivElement{
+        /*const createSubTreeSVG = function(label:string):HTMLDivElement{
             const t0SVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             const t0Poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
             const t0Label = document.createElement(`div`);
@@ -227,11 +231,38 @@ export class BinarySearchTree {
         const xT0 = t0RootInfo.x;
         const yT0 = t0RootInfo.y;
         console.log(xT0, yT0)
-        t0SVG.style.transform = `translate(${xT0}px, ${yT0}px)`;*/
+        t0SVG.style.transform = `translate(${xT0}px, ${yT0}px)`;
         
         
 
-        document.body.appendChild(t0Container);
+        document.body.appendChild(t0Container);*/
+        
+        const moveDown = function(arr:number[]) {
+            return new Promise (async (resolve) => {
+                arr.forEach(async (rank) => {
+                    if(nodes[rank]){
+                        nodes[rank].addClass("transform");
+                        console.log(`Translating rank ${rank} down using params ${nodes[rank].xTransform}, ${nodes[rank].yTransform +20}, true, false`);
+                        await nodes[rank].translate(`${nodes[rank].xTransform}vw`, `${nodes[rank].yTransform +20}vh`, true, false);
+                    }
+                });
+                resolve(true);
+            });
+            
+        }
+        moveDown(t0);
+        moveDown(t1);
+        moveDown(t2);
+        await moveDown(t3);
+        await c.translate(`${c.xTransform}vw`, `${c.yTransform+20}vh`, true, false);
+        await this.assign(b, zRank, true, true, false);
+        const temp = nodes[zRank];
+        console.log(temp);
+        nodes[zRank] = b;
+        console.log(temp);
+        this.assign(a, zRank*2+1, true, true, false);
+        this.assign(c, zRank*2+2, true, true, false);
+        
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>):Promise<number> {
@@ -528,7 +559,7 @@ export class BinarySearchTree {
                 e.addClass("transform");
             }
             let nodes = this.arr;
-            //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
+            console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
             if(depth>3){
@@ -566,7 +597,7 @@ export class BinarySearchTree {
                 });
             }
             await e.translate(translateInfo.x, translateInfo.y, true, true);
-            await e.borderCol("rgb(37, 201, 37)", true);
+            if(!reassign) await e.borderCol("rgb(37, 201, 37)", true);
             
             if(!(reassign || nodes![rank])){
                 await this.connectTransform(e, parentRank, true);
