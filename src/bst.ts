@@ -184,7 +184,10 @@ export class BinarySearchTree {
         z.borderCol("red", false);
         const ranks = await this.traversal(zRank, "AVL") as number[]; //the traversal returns x y and z in in-order traversal
         const elements = ranks.map(rank => {return nodes![rank]});
-        const lines = this.connections.filter((line) => { if (line) { return elements.includes(line.parent) || elements.includes(line.child); } });
+        console.log(elements);
+        const lines = this.connections.filter((line) => { if (line) { 
+            return (elements.includes(line.parent) || elements.includes(line.child));//TO-DO  //need to keep the lines between a,b,c for the rotation animation 
+        } });
         lines.forEach((line)=>{
             line.dom.classList.add("transform");
             line.changeLength('0', false);
@@ -261,7 +264,7 @@ export class BinarySearchTree {
         nodes[zRank] = b;
         console.log(temp);
         this.assign(a, zRank*2+1, true, true, false);
-        this.assign(c, zRank*2+2, true, true, false);
+        ~this.assign(c, zRank*2+2, true, true, false);
         
     }
 
