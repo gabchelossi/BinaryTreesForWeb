@@ -182,11 +182,18 @@ export class BinarySearchTree {
         x.borderCol("red", false);
         y.borderCol("red", false);
         z.borderCol("red", false);
+        const z_y_line = this.connections.filter((line) => {
+            return line.parent == z && line.child == y;
+        })[0];
+        const y_x_line = this.connections.filter((line) => {
+            return line.parent == y && line.child == x;
+        })[0];
+        
         const ranks = await this.traversal(zRank, "AVL") as number[]; //the traversal returns x y and z in in-order traversal
         const elements = ranks.map(rank => {return nodes![rank]});
-        console.log(elements);
+        
         const lines = this.connections.filter((line) => { if (line) { 
-            return (elements.includes(line.parent) || elements.includes(line.child));//TO-DO  //need to keep the lines between a,b,c for the rotation animation 
+            return ((elements.includes(line.parent) || elements.includes(line.child)) && line != z_y_line && line != y_x_line);//TO-DO  //need to keep the lines between a,b,c for the rotation animation 
         } });
         lines.forEach((line)=>{
             line.dom.classList.add("transform");
@@ -257,14 +264,45 @@ export class BinarySearchTree {
         moveDown(t1);
         moveDown(t2);
         await moveDown(t3);
-        await c.translate(`${c.xTransform}vw`, `${c.yTransform+20}vh`, true, false);
+        if(x == b){ //double rotation happening
+            console.log(`Double rotation time!`);
+            const radius = parseInt(y_x_line.length); // radius of rotation
+            y.addClass("doubleRotation");
+            x.addClass("doubleRotation");
+            let angle = 0; // degrees
+            const offsetX = x.xTransform;
+            const offsetY = x.yTransform;
+            x.dom.style.setProperty('--radius', radius + 'px');
+            x.dom.style.setProperty('--offsetX', offsetX + 'vw');
+            x.dom.style.setProperty('--offsetY', offsetY + 'vh');
+			function animate() {
+			    angle = (angle + 1) % 360;             // speed = 1deg per frame
+			    x.dom.style.setProperty('--angle', angle + 'deg');
+			    /*if(angle<90)*/ requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
+
+            if(y == a){ //L-R Rotation
+                
+            }
+            else{ //R-L Rotation
+
+            }
+        }
+        else{
+            if(x == a){ //L-L Rotation
+
+            }
+            else{ //R-R Rotation
+
+            }
+        }
+        /*await c.translate(`${c.xTransform}vw`, `${c.yTransform+20}vh`, true, false);
         await this.assign(b, zRank, true, true, false);
         const temp = nodes[zRank];
-        console.log(temp);
         nodes[zRank] = b;
-        console.log(temp);
         this.assign(a, zRank*2+1, true, true, false);
-        ~this.assign(c, zRank*2+2, true, true, false);
+        this.assign(c, zRank*2+2, true, true, false);*/
         
     }
 

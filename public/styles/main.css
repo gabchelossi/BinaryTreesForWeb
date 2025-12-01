@@ -41,6 +41,14 @@ html, body{
     z-index: 10;
 }
 
+.TreeElement.doubleRotation{
+    --angle: 0deg!important;
+    --radius: 140px!important;
+    --offsetX: 0vw!important;
+    --offsetY: 0vh!important;
+    transform: translate(-50%, -50%) translateX(calc(var(--offsetX) + cos(var(--angle)) * var(--radius))) translateY(calc(var(--offsetY) + sin(var(--angle)) * -1 * var(--radius)))!important;
+}
+
 .TreeElement.empty{
     opacity: 1;
     border-radius: 0;
@@ -129,6 +137,7 @@ html, body{
     color: green;
     font-weight: bolder;
 }
+
 
 
 .TreeElement.search{
