@@ -404,3 +404,6 @@ html, body{
     color: cyan;
 }
 
+#play-button, #pause-button{
+    width: 100%;
+}

@@ -15,13 +15,12 @@
         <fieldset id = "control-panel">
             <legend>Control Panel</legend>
             <table style = "height: 100%; width: 90%;">
-                
-                
                 <tr>
                     <th colspan="1">Key</th>
                     <th colspan="3">Operations</th>
                     <th colspan="3">Animation</th>
-                    <th colspan = "6">Terminal</th>
+                    <th colspan = "2">Controls</th>
+                    <th colspan = "4">Terminal</th>
                 </tr>
                 <tr>
                     <td rowspan="3" id = "inputtd">
@@ -44,7 +43,18 @@
                         <input type="radio" id="Off" name="animationselection" value="Off" />
                             <label for="Off">Off</label>
                     </td>
-                    <td id="console-container" colspan="3" rowspan = "3">
+                    <td colspan="2">
+                        <input
+                            type="range"
+                            id="speed"
+                            name="speedBar"
+                            min="1"
+                            max="5"
+                            value="1"
+                            step="1" />
+                        <label id = "labelspeed" for="speed">x1 Speed</label>
+                    </td>
+                    <td id="console-container" colspan="4" rowspan = "3">
                         <div id="console">
                             <div id="console-content">
                                 <p>
@@ -60,17 +70,14 @@
                     <td colspan="3">
                         <input id = "traverse-button" type = "button" value = "Traverse" style = "width: 100%">
                     </td>
-                    <td colspan="3">
-                        <input
-                            type="range"
-                            id="speed"
-                            name="speedBar"
-                            min="1"
-                            max="5"
-                            value="1"
-                            step="1" />
-                        <label id = "labelspeed" for="speed">x1 Speed</label>
+                    <th colspan="3">Options</th>
+                    <td>
+                        <input id = "play-button" type = "button" value = "&#x23F5;">
                     </td>
+                    <td>
+                        <input id = "pause-button" type = "button" value = "&#x23F8;">
+                    </td>
+                    
                 </tr>
                 <tr>
                     <td>
