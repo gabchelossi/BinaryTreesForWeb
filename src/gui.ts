@@ -115,9 +115,13 @@ const parseCommand = async function () {
     command!.id = "";
     //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
     let allInputs = Array.from(document.getElementsByTagName('input'));
-    allInputs.forEach((i)=>{i.disabled = true})
+    allInputs.forEach((i)=>{
+        if(i.id != "play-button" && i.id != "pause-button" && i.id != "next-button") i.disabled = true;
+    });
     try{
-        command!.innerHTML += "<br><br>" + await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
+        const parsedCommand = await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
+        if(parsedCommand != "go next")
+            command!.innerHTML += "<br><br>" + parsedCommand;
     }
     catch(e){
         command!.innerHTML += `<br><br>${e}`;
@@ -312,7 +316,6 @@ const exec = async function (...parameters: any[]) {
                 }
                 break;
                 
-
             case "set":
                 switch (params[1]) {
                     case "animation":
@@ -415,7 +418,13 @@ const exec = async function (...parameters: any[]) {
                                 radiobtn.checked = true;
                                 const speedBar = document.getElementById("speed") as HTMLInputElement;
                                 speedBar.disabled = true;
-                                console.log(speedBar);
+                                const playButton = document.getElementById("play-button") as HTMLInputElement;
+                                const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
+                                const nextButton = document.getElementById("next-button") as HTMLInputElement;
+                                playButton.disabled = true;
+                                pauseButton.disabled = true;
+                                nextButton.disabled = true;
+
                                 
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
                                 noAnimationElements.forEach((e) => {
@@ -439,6 +448,13 @@ const exec = async function (...parameters: any[]) {
                                     radiobtn.checked = true;
                                     const speedBar = document.getElementById("speed") as HTMLInputElement;
                                     speedBar.disabled = false;
+
+                                    const playButton = document.getElementById("play-button") as HTMLInputElement;
+                                    const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
+                                    const nextButton = document.getElementById("next-button") as HTMLInputElement;
+                                    playButton.disabled = false;
+                                    pauseButton.disabled = false;
+                                    nextButton.disabled = false;
                                     const noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     noAnimationElements.forEach((e) => {
                                         //console.log(typeof(e));
@@ -637,6 +653,24 @@ const exec = async function (...parameters: any[]) {
                 }
                 break;
 
+            case "play":
+                binarysearchT.paused = false;
+                const ev = new Event("play");
+                document.dispatchEvent(ev);
+                returnval = "Animation are resumed.";
+            break;
+
+            case "pause":
+                binarysearchT.paused = true;
+                returnval = "Animation are paused.";
+            break;
+
+            case "next":
+                const goNext = new Event("play");
+                document.dispatchEvent(goNext);
+                returnval = "go next";
+            break;
+
             default:
                 returnval = `Command '${params[0]}' is not a recognized command. Type 'help' for all the available commands`;
                 break;
@@ -769,6 +803,23 @@ document.getElementById("empty")!.addEventListener("change", function(){
 
     parseCommand();
 });
+
+document.getElementById("play-button")?.addEventListener("click", function(){
+    command!.innerHTML = `play`;
+    parseCommand();
+});
+
+document.getElementById("pause-button")?.addEventListener("click", function(){
+    command!.innerHTML = `pause`;
+    parseCommand();
+});
+
+document.getElementById("next-button")?.addEventListener("click", function(){
+    command!.innerHTML = `next`;
+    parseCommand();
+});
+
+
 
 document.addEventListener("click", function () { focused = false; }, true);
 document.addEventListener("click", leave, true);

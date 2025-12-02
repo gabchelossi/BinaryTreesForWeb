@@ -12,6 +12,7 @@ export class BinarySearchTree {
     s: number;
     width: number;
     avl: boolean;
+    paused: boolean;
 
     constructor() {
         this.arr = [];
@@ -19,6 +20,7 @@ export class BinarySearchTree {
         this.s = 0;
         this.width = 85;
         this.avl = false;
+        this.paused = false;
     }
 
     set avlStatus(state:boolean){
@@ -118,191 +120,225 @@ export class BinarySearchTree {
         return returnArr;
 }
 
-    async updateAVL(childRank: number): Promise<void> {
-    // start from the parent of the changed node
-        let i = Math.floor((childRank - 1) / 2);
-        //console.log(`Called updateAVl from rank ${childRank}`);
-        while (i >= 0) {
-            const node = this.arr![i];
-            if (!node) {
-                i = Math.floor((i - 1) / 2);
-                continue;
-            }
-            const li = i * 2 + 1;
-            const ri = i * 2 + 2;
-            const left  = this.arr![li];
-            const right = this.arr![ri];
-            const lh = left ? 1 + Math.max(left.leftWeight  || 0, left.rightWeight  || 0) : 0;
-            const rh = right ? 1 + Math.max(right.leftWeight || 0, right.rightWeight || 0) : 0;
-            node.leftWeight  = lh;
-            node.rightWeight = rh;
+    breakPoint(fn: Promise<any>, goNext:boolean = false){
+        return new Promise(async (resolve, reject) =>{
+            let returnVal: any;
             try{
-                await node.updateBalance(this.avlStatus); // e.g., node.balance = rh - lh; may also add rotation triggers
+                returnVal = await fn;
+                if (this.paused) {
+                    console.log(`PAUSED!`);
+                    const handler = () => {
+                        resolve(returnVal);
+                        document.removeEventListener("play", handler); // remove the SAME function
+                    };
+                    document.addEventListener("play", handler);
+                }
+                else {
+                    console.log(`Resolving as usual`);
+                    resolve(returnVal);
+                }
             }
             catch(e){
-                await this.balanceAVL(i, childRank);
-                return; //Remove this once the implementation of this.balanceAVL is done
+                reject(e);
             }
-            // climb
-            i = Math.floor((i - 1) / 2);
-        }
-        return;
+            
+        });
+    }
+
+    async updateAVL(childRank: number): Promise<void> {
+    // start from the parent of the changed node
+        return new Promise(async (resolve) => {
+            let i = Math.floor((childRank - 1) / 2);
+            //console.log(`Called updateAVl from rank ${childRank}`);
+            while (i >= 0) {
+                const node = this.arr![i];
+                if (!node) {
+                    i = Math.floor((i - 1) / 2);
+                    continue;
+                }
+                const li = i * 2 + 1;
+                const ri = i * 2 + 2;
+                const left  = this.arr![li];
+                const right = this.arr![ri];
+                const lh = left ? 1 + Math.max(left.leftWeight  || 0, left.rightWeight  || 0) : 0;
+                const rh = right ? 1 + Math.max(right.leftWeight || 0, right.rightWeight || 0) : 0;
+                node.leftWeight  = lh;
+                node.rightWeight = rh;
+                try{
+                    await this.breakPoint(node.updateBalance(this.avlStatus)); // e.g., node.balance = rh - lh; may also add rotation triggers
+                }
+                catch(e){
+                    await this.breakPoint(this.balanceAVL(i, childRank));
+                    resolve(); //Remove this once the implementation of this.balanceAVL is done
+                    return; //remove too
+                }
+                // climb
+                i = Math.floor((i - 1) / 2);
+            }
+            resolve();
+        });
+
+        
     }
 
     async balanceAVL(zRank: number, wRank:number){
-        console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
-        const depthW = Math.floor(Math.log2(wRank + 1));
-        const depthZ = Math.floor(Math.log2(zRank+1));
-        let xRank: number;
-        let yRank: number;
-        let x: InstanceType<typeof BinarySearchTree.TreeElement>;
-        let y: InstanceType<typeof BinarySearchTree.TreeElement>;
-        let z: InstanceType<typeof BinarySearchTree.TreeElement>;
-        let w: InstanceType<typeof BinarySearchTree.TreeElement>;
+        return new Promise(async (resolve) =>{
+            console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
+            const depthW = Math.floor(Math.log2(wRank + 1));
+            const depthZ = Math.floor(Math.log2(zRank+1));
+            let xRank: number;
+            let yRank: number;
+            let x: InstanceType<typeof BinarySearchTree.TreeElement>;
+            let y: InstanceType<typeof BinarySearchTree.TreeElement>;
+            let z: InstanceType<typeof BinarySearchTree.TreeElement>;
+            let w: InstanceType<typeof BinarySearchTree.TreeElement>;
 
-        const nodes = this.arr!;
-        z = nodes[zRank]; //it will always be the 'z' node
-        console.log(depthZ, depthW);
-        if(depthW-depthZ==2){
-            x = nodes[wRank];
-            yRank = Math.floor((wRank-1)/2);
-            y = nodes[yRank];
-        }
-        else{
-            xRank = Math.floor((wRank-1)/2);
-            yRank = Math.floor((xRank-1)/2);
-            x = nodes[xRank];
-            y = nodes[yRank];
-            w = nodes[wRank];
-            w.label = "w";
-        }
-        x.label = "x";
-        y.label = "y";
-        z.label = "z";
-        x.borderCol("red", false);
-        y.borderCol("red", false);
-        z.borderCol("red", false);
-        const z_y_line = this.connections.filter((line) => {
-            return line.parent == z && line.child == y;
-        })[0];
-        const y_x_line = this.connections.filter((line) => {
-            return line.parent == y && line.child == x;
-        })[0];
-        
-        const ranks = await this.traversal(zRank, "AVL") as number[]; //the traversal returns x y and z in in-order traversal
-        const elements = ranks.map(rank => {return nodes![rank]});
-        
-        const lines = this.connections.filter((line) => { if (line) { 
-            return ((elements.includes(line.parent) || elements.includes(line.child)) && line != z_y_line && line != y_x_line);//TO-DO  //need to keep the lines between a,b,c for the rotation animation 
-        } });
-        lines.forEach((line)=>{
-            line.dom.classList.add("transform");
-            line.changeLength('0', false);
-        });
-        const rankA = ranks[0];
-        const rankB = ranks[1];
-        const rankC = ranks[2];
-        let a = nodes[rankA];
-        let b = nodes[rankB];
-        let c = nodes[rankC];
-        a.addClass("transform");
-        b.addClass("transform");
-        c.addClass("transform");
-        let t0: number[] = this.inOrder(rankA*2+1, false, true); // because of in-order traversal, b and c will never be the a's left child
-        let t1: number[] = !(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c) ? this.inOrder(rankA*2+2, false, true): this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child
-        let t2: number[] = nodes[rankB*2+2] != c ? this.inOrder(rankB*2+2, false, true):  this.inOrder(rankC*2+1, false, true); // if b's right child is not c (no need to check if it is not a, due to the in-order traversal), then t2 is b's right child, else it will always be c's left child
-        let t3: number[] = this.inOrder(rankC*2+2, false, true); // because of in-order traversal, t3 will always be c's right child
-        console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
-        
-        /*const createSubTreeSVG = function(label:string):HTMLDivElement{
-            const t0SVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            const t0Poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
-            const t0Label = document.createElement(`div`);
-            t0Label.classList.add("subtreelabel");
-            t0SVG.appendChild(t0Poly);
-            t0Label.appendChild(t0SVG);
-            t0SVG.classList.add("triangle-svg");
-            t0Poly.id = "T0";
-
-            t0SVG.setAttribute("viewBox", "0 0 100 100");
-            t0Poly.setAttribute("points", "50 0, 0 100, 100 100");
-            t0Label.setAttribute("label", label);
-            return t0Label;
-        }
-
-        const t0Container = createSubTreeSVG("T₀");
-        
-        const radius = nodes![t0[0]].diameter/2;
-        const xCoord = nodes![t0[0]].xTransform;
-        const yCoord = nodes![t0[0]].yTransform;
-        t0Container.style.transform = `translate(${xCoord-2.75}vw, ${yCoord-6}vh)`;
-
-        /*const t0RootInfo = nodes[t0[0]].dom.getBoundingClientRect();
-        const xT0 = t0RootInfo.x;
-        const yT0 = t0RootInfo.y;
-        console.log(xT0, yT0)
-        t0SVG.style.transform = `translate(${xT0}px, ${yT0}px)`;
-        
-        
-
-        document.body.appendChild(t0Container);*/
-        
-        const moveDown = function(arr:number[]) {
-            return new Promise (async (resolve) => {
-                arr.forEach(async (rank) => {
-                    if(nodes[rank]){
-                        nodes[rank].addClass("transform");
-                        console.log(`Translating rank ${rank} down using params ${nodes[rank].xTransform}, ${nodes[rank].yTransform +20}, true, false`);
-                        await nodes[rank].translate(`${nodes[rank].xTransform}vw`, `${nodes[rank].yTransform +20}vh`, true, false);
-                    }
-                });
-                resolve(true);
-            });
+            const nodes = this.arr!;
+            z = nodes[zRank]; //it will always be the 'z' node
+            console.log(depthZ, depthW);
+            if(depthW-depthZ==2){
+                x = nodes[wRank];
+                yRank = Math.floor((wRank-1)/2);
+                y = nodes[yRank];
+            }
+            else{
+                xRank = Math.floor((wRank-1)/2);
+                yRank = Math.floor((xRank-1)/2);
+                x = nodes[xRank];
+                y = nodes[yRank];
+                w = nodes[wRank];
+                w.label = "w";
+            }
+            x.label = "x";
+            y.label = "y";
+            z.label = "z";
+            x.borderCol("red", false);
+            y.borderCol("red", false);
+            z.borderCol("red", false);
+            const z_y_line = this.connections.filter((line) => {
+                return line.parent == z && line.child == y;
+            })[0];
+            const y_x_line = this.connections.filter((line) => {
+                return line.parent == y && line.child == x;
+            })[0];
             
-        }
-        moveDown(t0);
-        moveDown(t1);
-        moveDown(t2);
-        await moveDown(t3);
-        if(x == b){ //double rotation happening
-            console.log(`Double rotation time!`);
-            const radius = parseInt(y_x_line.length); // radius of rotation
-            y.addClass("doubleRotation");
-            x.addClass("doubleRotation");
-            let angle = 0; // degrees
-            const offsetX = x.xTransform;
-            const offsetY = x.yTransform;
-            x.dom.style.setProperty('--radius', radius + 'px');
-            x.dom.style.setProperty('--offsetX', offsetX + 'vw');
-            x.dom.style.setProperty('--offsetY', offsetY + 'vh');
-			function animate() {
-			    angle = (angle + 1) % 360;             // speed = 1deg per frame
-			    x.dom.style.setProperty('--angle', angle + 'deg');
-			    /*if(angle<90)*/ requestAnimationFrame(animate);
-			}
-			requestAnimationFrame(animate);
+            const ranks = await this.breakPoint(this.traversal(zRank, "AVL")) as number[]; //the traversal returns x y and z in in-order traversal
+            const elements = ranks.map(rank => {return nodes![rank]});
+            
+            const lines = this.connections.filter((line) => { if (line) { 
+                return ((elements.includes(line.parent) || elements.includes(line.child)) && line != z_y_line && line != y_x_line);//TO-DO  //need to keep the lines between a,b,c for the rotation animation 
+            } });
+            lines.forEach((line)=>{
+                line.dom.classList.add("transform");
+                line.changeLength('0', false);
+            });
+            const rankA = ranks[0];
+            const rankB = ranks[1];
+            const rankC = ranks[2];
+            let a = nodes[rankA];
+            let b = nodes[rankB];
+            let c = nodes[rankC];
+            a.addClass("transform");
+            b.addClass("transform");
+            c.addClass("transform");
+            let t0: number[] = this.inOrder(rankA*2+1, false, true); // because of in-order traversal, b and c will never be the a's left child
+            let t1: number[] = !(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c) ? this.inOrder(rankA*2+2, false, true): this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child
+            let t2: number[] = nodes[rankB*2+2] != c ? this.inOrder(rankB*2+2, false, true):  this.inOrder(rankC*2+1, false, true); // if b's right child is not c (no need to check if it is not a, due to the in-order traversal), then t2 is b's right child, else it will always be c's left child
+            let t3: number[] = this.inOrder(rankC*2+2, false, true); // because of in-order traversal, t3 will always be c's right child
+            console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
+            
+            /*const createSubTreeSVG = function(label:string):HTMLDivElement{
+                const t0SVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                const t0Poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+                const t0Label = document.createElement(`div`);
+                t0Label.classList.add("subtreelabel");
+                t0SVG.appendChild(t0Poly);
+                t0Label.appendChild(t0SVG);
+                t0SVG.classList.add("triangle-svg");
+                t0Poly.id = "T0";
 
-            if(y == a){ //L-R Rotation
+                t0SVG.setAttribute("viewBox", "0 0 100 100");
+                t0Poly.setAttribute("points", "50 0, 0 100, 100 100");
+                t0Label.setAttribute("label", label);
+                return t0Label;
+            }
+
+            const t0Container = createSubTreeSVG("T₀");
+            
+            const radius = nodes![t0[0]].diameter/2;
+            const xCoord = nodes![t0[0]].xTransform;
+            const yCoord = nodes![t0[0]].yTransform;
+            t0Container.style.transform = `translate(${xCoord-2.75}vw, ${yCoord-6}vh)`;
+
+            /*const t0RootInfo = nodes[t0[0]].dom.getBoundingClientRect();
+            const xT0 = t0RootInfo.x;
+            const yT0 = t0RootInfo.y;
+            console.log(xT0, yT0)
+            t0SVG.style.transform = `translate(${xT0}px, ${yT0}px)`;
+            
+            
+
+            document.body.appendChild(t0Container);*/
+            
+            const moveDown = function(arr:number[]) {
+                return new Promise (async (resolve) => {
+                    arr.forEach(async (rank) => {
+                        if(nodes[rank]){
+                            nodes[rank].addClass("transform");
+                            console.log(`Translating rank ${rank} down using params ${nodes[rank].xTransform}, ${nodes[rank].yTransform +20}, true, false`);
+                            await nodes[rank].translate(`${nodes[rank].xTransform}vw`, `${nodes[rank].yTransform +20}vh`, true, false);
+                        }
+                    });
+                    resolve(true);
+                });
                 
             }
-            else{ //R-L Rotation
+            moveDown(t0);
+            moveDown(t1);
+            moveDown(t2);
+            await this.breakPoint(moveDown(t3));
+            if(x == b){ //double rotation happening
+                console.log(`Double rotation time!`);
+                const radius = parseInt(y_x_line.length); // radius of rotation
+                y.addClass("doubleRotation");
+                x.addClass("doubleRotation");
+                let angle = 0; // degrees
+                const offsetX = x.xTransform;
+                const offsetY = x.yTransform;
+                x.dom.style.setProperty('--radius', radius + 'px');
+                x.dom.style.setProperty('--offsetX', offsetX + 'vw');
+                x.dom.style.setProperty('--offsetY', offsetY + 'vh');
+                function animate() {
+                    angle = (angle + 1) % 360;             // speed = 1deg per frame
+                    x.dom.style.setProperty('--angle', angle + 'deg');
+                    if(angle<90)  requestAnimationFrame(animate);
+                }
+                requestAnimationFrame(animate);
 
-            }
-        }
-        else{
-            if(x == a){ //L-L Rotation
+                if(y == a){ //L-R Rotation
+                    
+                }
+                else{ //R-L Rotation
 
+                }
             }
-            else{ //R-R Rotation
+            else{
+                if(x == a){ //L-L Rotation
 
+                }
+                else{ //R-R Rotation
+
+                }
             }
-        }
-        /*await c.translate(`${c.xTransform}vw`, `${c.yTransform+20}vh`, true, false);
-        await this.assign(b, zRank, true, true, false);
-        const temp = nodes[zRank];
-        nodes[zRank] = b;
-        this.assign(a, zRank*2+1, true, true, false);
-        this.assign(c, zRank*2+2, true, true, false);*/
+            /*await c.translate(`${c.xTransform}vw`, `${c.yTransform+20}vh`, true, false);
+            await this.assign(b, zRank, true, true, false);
+            const temp = nodes[zRank];
+            nodes[zRank] = b;
+            this.assign(a, zRank*2+1, true, true, false);
+            this.assign(c, zRank*2+2, true, true, false);*/
+            resolve(true);
+        });
+            
         
     }
 
@@ -368,7 +404,7 @@ export class BinarySearchTree {
                 }
                 
                 //console.log(`Calling updateAVLFromRank from addNew`);
-                this.updateAVL(rank);
+                await this.updateAVL(rank);
                 e.removeClass("transform");
 
             }
@@ -506,9 +542,9 @@ export class BinarySearchTree {
                 else {
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
                     await e.translate((50 + (this.arr![0].diameter)) + "vw", `2vh`, true, false);
-                    await e.opac(1, true);
-                    await e.borderCol("orange", true);
-                    await this.compareTransform(e, 0);
+                    await this.breakPoint(e.opac(1, true));
+                    await this.breakPoint(e.borderCol("orange", true));
+                    await this.breakPoint(this.compareTransform(e, 0));
                 }
                 resolve(++this.size);
             }
@@ -519,7 +555,7 @@ export class BinarySearchTree {
         return new Promise(async (resolve) => {
             // console.log(`compare Promise Opened`);
             let pointer = this.arr![rank];
-            await pointer.borderCol("orange", true);
+            await this.breakPoint(pointer.borderCol("orange", true));
             let aft = false;
             if (e.xTransform < pointer.xTransform) {
                 e.comparator.addClass("aft");
@@ -545,24 +581,24 @@ export class BinarySearchTree {
                     e.comparat.inner = ">";
                 rank = (rank * 2) + 1; //left child
             }
-            await e.comparat.opac(1, true).then(async () => {
+            await this.breakPoint(e.comparat.opac(1, true)).then(async () => {
                 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-                await sleep(1000);
+                await this.breakPoint(sleep(1000));
             }).then(async () => {
-                await e.comparat.opac(0, true);
+                await this.breakPoint(e.comparat.opac(0, true));
                 e.comparat.inner = "";
                 e.comparat.removeClass(["bef", "aft"]);
             });
 
-            await pointer.borderCol("rgb(37, 201, 37)", true);
+            await this.breakPoint(pointer.borderCol("rgb(37, 201, 37)", true));
             if (this.arr![rank] == undefined || !Number.isInteger(this.arr![rank].key)){
-                await this.assign(e, rank);
+                await this.breakPoint(this.assign(e, rank));
                 this.arr![rank] = e;
-                this.updateAVL(rank);
+                await this.breakPoint(this.updateAVL(rank));
             }
             else {
                 //console.log(`Going to prepareNextCompare(${rank})`);
-                await this.prepareNextCompare(e, rank);
+                await this.breakPoint(this.prepareNextCompare(e, rank));
             }
             // console.log(`compare Promise Resolved`);
             resolve(true);
@@ -584,9 +620,9 @@ export class BinarySearchTree {
             //await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
             coordinates.x = (parent.xTransform+e.diameter/2) + e.diameter + "vw";
             coordinates.y = parent.yTransform + "vh";
-            await e.translate(coordinates.x, coordinates.y, true, false);
-            //await pause(); //for debugging purposes 
-            await this.compareTransform(e, rank);
+            await this.breakPoint(e.translate(coordinates.x, coordinates.y, true, false));
+            //await this.breakPoint(pause()); //for debugging purposes 
+            await this.breakPoint(this.compareTransform(e, rank));
             //console.log(`prepareNextCompare Promise Resolved`);
             resolve(true);
 
@@ -637,11 +673,11 @@ export class BinarySearchTree {
                     if(c.parent == nodes![rank]) c.parent = e; 
                 });
             }
-            await e.translate(translateInfo.x, translateInfo.y, true, true);
-            if(!reassign) await e.borderCol("rgb(37, 201, 37)", true);
+            await this.breakPoint(e.translate(translateInfo.x, translateInfo.y, true, true));
+            if(!reassign) await this.breakPoint(e.borderCol("rgb(37, 201, 37)", true));
             
             if(!(reassign || nodes![rank])){
-                await this.connectTransform(e, parentRank, true);
+                await this.breakPoint(this.connectTransform(e, parentRank, true));
             }
             if(avl)
                 e.addClass("active");
@@ -762,7 +798,7 @@ export class BinarySearchTree {
                         parent.updateBalance(this.avlStatus);
 
                         if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
-                            this.updateAVL(rank);
+                            await this.updateAVL(rank);
                         }
                     }
                     
