@@ -535,15 +535,15 @@ export class BinarySearchTree {
                 if (this.arr!.length == 0) {
                     this.assign(e, 0);
                     if(this.avlStatus) e.addClass("active");
-                    await e.opac(1, true);
+                    await this.breakPoint(e.opac(1, true));
                     this.arr!.push(e);
                     e.removeClass("transform");
                 }
                 else {
                     //let max= (2 ** (2+Math.floor(Math.log2(this.arr!.length)))); //where the exponent corresponds to the depth
                     await e.translate((50 + (this.arr![0].diameter)) + "vw", `2vh`, true, false);
-                    await this.breakPoint(e.opac(1, true));
-                    await this.breakPoint(e.borderCol("orange", true));
+                    await e.opac(1, true);
+                    await e.borderCol("orange", true);
                     await this.breakPoint(this.compareTransform(e, 0));
                 }
                 resolve(++this.size);
@@ -555,7 +555,7 @@ export class BinarySearchTree {
         return new Promise(async (resolve) => {
             // console.log(`compare Promise Opened`);
             let pointer = this.arr![rank];
-            await this.breakPoint(pointer.borderCol("orange", true));
+            await pointer.borderCol("orange", true);
             let aft = false;
             if (e.xTransform < pointer.xTransform) {
                 e.comparator.addClass("aft");
@@ -581,24 +581,24 @@ export class BinarySearchTree {
                     e.comparat.inner = ">";
                 rank = (rank * 2) + 1; //left child
             }
-            await this.breakPoint(e.comparat.opac(1, true)).then(async () => {
+            await e.comparat.opac(1, true).then(async () => {
                 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
                 await this.breakPoint(sleep(1000));
             }).then(async () => {
-                await this.breakPoint(e.comparat.opac(0, true));
+                await e.comparat.opac(0, true);
                 e.comparat.inner = "";
                 e.comparat.removeClass(["bef", "aft"]);
             });
 
-            await this.breakPoint(pointer.borderCol("rgb(37, 201, 37)", true));
+            await pointer.borderCol("rgb(37, 201, 37)", true);
             if (this.arr![rank] == undefined || !Number.isInteger(this.arr![rank].key)){
-                await this.breakPoint(this.assign(e, rank));
+                await this.assign(e, rank);
                 this.arr![rank] = e;
                 await this.breakPoint(this.updateAVL(rank));
             }
             else {
                 //console.log(`Going to prepareNextCompare(${rank})`);
-                await this.breakPoint(this.prepareNextCompare(e, rank));
+                await this.prepareNextCompare(e, rank);
             }
             // console.log(`compare Promise Resolved`);
             resolve(true);
@@ -620,9 +620,9 @@ export class BinarySearchTree {
             //await e.translate((50 + (this.arr![0].diameter)) + "vw", `1vh`, true);
             coordinates.x = (parent.xTransform+e.diameter/2) + e.diameter + "vw";
             coordinates.y = parent.yTransform + "vh";
-            await this.breakPoint(e.translate(coordinates.x, coordinates.y, true, false));
+            await e.translate(coordinates.x, coordinates.y, true, false);
             //await this.breakPoint(pause()); //for debugging purposes 
-            await this.breakPoint(this.compareTransform(e, rank));
+            await this.compareTransform(e, rank);
             //console.log(`prepareNextCompare Promise Resolved`);
             resolve(true);
 
@@ -673,11 +673,11 @@ export class BinarySearchTree {
                     if(c.parent == nodes![rank]) c.parent = e; 
                 });
             }
-            await this.breakPoint(e.translate(translateInfo.x, translateInfo.y, true, true));
-            if(!reassign) await this.breakPoint(e.borderCol("rgb(37, 201, 37)", true));
+            await e.translate(translateInfo.x, translateInfo.y, true, true);
+            if(!reassign) await e.borderCol("rgb(37, 201, 37)", true);
             
             if(!(reassign || nodes![rank])){
-                await this.breakPoint(this.connectTransform(e, parentRank, true));
+                await this.connectTransform(e, parentRank, true);
             }
             if(avl)
                 e.addClass("active");
@@ -951,25 +951,6 @@ export class BinarySearchTree {
             }
         }
         return -1;
-        /*while (rank < max) {
-            try {
-                if (key == this.arr![rank].key) {
-                    return rank;
-                }
-                else {
-                    if (key < this.arr![rank].key) {
-                        rank = rank * 2 + 1;
-                    }
-                    else {
-                        rank = rank * 2 + 2;
-                    }
-                }
-            }
-            catch (e) {
-                return -1;
-            };
-        }*/
-       
     }
 
     search(key: number): Promise<number> {
@@ -983,7 +964,7 @@ export class BinarySearchTree {
                 console.log(resetElements, resetLines);
                 resetElements?.forEach((n) => {
                     n.borderCol("rgb(37, 201, 37)", false);
-                n.backgroundCol("white", false);
+                    n.backgroundCol("white", false);
                 });
                 resetLines?.forEach((c) => {
                     c.changeColor("black", false);
@@ -995,7 +976,7 @@ export class BinarySearchTree {
                     await line!.changeColor("rgb(71, 173, 199)", true);
                 }
                 nodes![rank].backgroundCol(`rgb(131 255 255)`, false);
-                await nodes![rank].borderCol("rgb(71, 173, 199)", true);
+                await this.breakPoint(nodes![rank].borderCol("rgb(71, 173, 199)", true));
                 let left = nodes![rank*2+1];
                 let right = nodes![rank*2+2];
                 if(left && key < nodes![rank].key){
@@ -1009,12 +990,12 @@ export class BinarySearchTree {
                         if(key == nodes![rank].key) resolve(rank);
                         else {
                             reject(new Error(`The key '${key}' is not in the binary search Tree`));
-                            break;
-                        }                        
+                            //break;
+                        }
+                        clean();                     
                     }
                 }
             }
-            clean();
         });
     }
 
@@ -1066,7 +1047,7 @@ export class BinarySearchTree {
         return new Promise<number[]>(async (resolve) => {
             switch (mode) {
                 case "in-order":
-                    const inOrder = async function (root: number) {
+                    const inOrder = async (root: number) => {
                         let target = nodes![root];
                         const diameterVw = nodes![root].diameter;
                         const diameterPx = diameterVw * vwToPx;
@@ -1076,7 +1057,7 @@ export class BinarySearchTree {
                         await waitTransition(arrow, () => {
                             arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
-                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
+                        await this.breakPoint(nodes![root].borderCol("orange", true)); //visited but not added into the return value
 
                         let returnArr: number[] = [];
 
@@ -1086,7 +1067,7 @@ export class BinarySearchTree {
                             });
                         }
                         
-                        await nodes![root].borderCol("rgb(37, 201, 37)", !removing);
+                        await this.breakPoint(nodes![root].borderCol("rgb(37, 201, 37)", !removing));
 
                         returnArr.push(nodes![root].key);
 
@@ -1103,16 +1084,16 @@ export class BinarySearchTree {
                         if (root > original) { //this is needed for the arrow to go back to the parent that called this instance of the stack
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
 
-                            await waitTransition(arrow, () => {
+                            await this.breakPoint(waitTransition(arrow, () => {
                                 arrow.style.transform = `translate(${nodes![Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes![Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
-                            });
+                            }));
                         }
 
                         return returnArr;
                     }
 
                     if(removing){ //find the first key in an in-order traversal after the key we want to delete
-                        inOrder(root*2+2).then(async function (result) { //call the function and handle the result
+                        inOrder(root*2+2).then(async (result) => { //call the function and handle the result
                             //traverse = result;
                             
                             let target = nodes![root];
@@ -1155,7 +1136,7 @@ export class BinarySearchTree {
                     break;
 
                 case "pre-order":
-                    let preOrder = async function (root:number) {
+                    const preOrder = async (root:number) => {
                         let target = nodes![root];
                         const diameterVw = nodes![root].diameter;
                         const diameterPx = diameterVw * vwToPx;
@@ -1167,8 +1148,8 @@ export class BinarySearchTree {
                             //arrow.style.transform = `translate(${target.xTransform + diameterVw/2 - 1.5}vw, ${target.yTransform + diameter}vh)`;
                         });
 
-                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
-                        await nodes![root].borderCol("rgb(37, 201, 37)", true);
+                        await this.breakPoint(nodes![root].borderCol("orange", true)); //visited but not added into the return value
+                        await this.breakPoint(nodes![root].borderCol("rgb(37, 201, 37)", true));
                         let returnArr = [nodes![root].key];
                         if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
                             await preOrder(root * 2 + 1).then(function (result) {
@@ -1183,9 +1164,9 @@ export class BinarySearchTree {
                         if (root > original) { //this is needed for the arrow to go back to the parent that called this instance of the stack
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
 
-                            await waitTransition(arrow, () => {
+                            await this.breakPoint(waitTransition(arrow, () => {
                                 arrow.style.transform = `translate(${nodes![Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes![Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
-                            });
+                            }));
                         }
 
                         return returnArr;
@@ -1203,7 +1184,7 @@ export class BinarySearchTree {
                     break;
 
                 case "post-order":
-                    let postOrder = async function (root:number) {
+                    let postOrder = async (root:number) => {
                         let returnArr: number[] = [];
                         let target = nodes![root];
                         const diameterVw = nodes![root].diameter;
@@ -1213,7 +1194,7 @@ export class BinarySearchTree {
                         await waitTransition(arrow, () => {
                             arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
-                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
+                        await this.breakPoint(nodes![root].borderCol("orange", true)); //visited but not added into the return value
                         if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
                             await postOrder(root * 2 + 1).then(function (result) {
                                 returnArr = [...result];
@@ -1224,14 +1205,14 @@ export class BinarySearchTree {
                                 returnArr = [...returnArr, ...result];
                             });
                         }
-                        await nodes![root].borderCol("rgb(37, 201, 37)", true);
+                        await this.breakPoint(nodes![root].borderCol("rgb(37, 201, 37)", true));
                         returnArr.push(nodes![root].key);
 
                         if (root > original) { //this is needed for the arrow to go back to the parent that called this instance of the stack
                             //this is to emphasize that the parent will call another instance in case there is a right child to visit
-                            await waitTransition(arrow, () => {
+                            await this.breakPoint(waitTransition(arrow, () => {
                                 arrow.style.transform = `translate(${nodes![Math.floor((root - 1) / 2)].xTransform + diameterVw / 2 - arrowOffsetVw}vw, ${nodes![Math.floor((root - 1) / 2)].yTransform + (diameterPx / vhToPx)}vh)`;
-                            });
+                            }));
                         }
 
                         return returnArr;
@@ -1251,7 +1232,7 @@ export class BinarySearchTree {
                 
                 case "AVL":
                     const labels = ["c", "b", "a"];
-                    const AVL = async function (root: number) {
+                    const AVL = async (root: number) => {
                         let target = nodes![root];
                         const diameterVw = nodes![root].diameter;
                         const diameterPx = diameterVw * vwToPx;
@@ -1262,20 +1243,19 @@ export class BinarySearchTree {
                             arrow.style.transform = `translate(${centerXvw - arrowOffsetVw}vw, ${bottomYvh}vh)`;
                         });
 
-                        await nodes![root].borderCol("orange", true); //visited but not added into the return value
+                        await this.breakPoint(nodes![root].borderCol("orange", true)); //visited but not added into the return value
                         if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
                             await AVL(root * 2 + 1).then(function (result) {
                                 returnArr = result;
                             });
                         }
                         
-                        await nodes![root].borderCol("rgb(37, 201, 37)", !removing);
-
                         //returnArr.push(nodes![root].key);
                         if(nodes![root].label != "" && nodes![root].label != "w"){
                             nodes![root].label = `${nodes![root].label} = ${labels.pop()}`;
                             returnArr.push(root);
                         }
+                        await this.breakPoint(nodes![root].borderCol("rgb(37, 201, 37)", !removing));
 
                         if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 + 2].key)) {
                             await AVL(root * 2 + 2).then(function (result) {
