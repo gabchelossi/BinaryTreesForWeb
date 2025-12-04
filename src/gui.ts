@@ -418,12 +418,13 @@ const exec = async function (...parameters: any[]) {
                                 radiobtn.checked = true;
                                 const speedBar = document.getElementById("speed") as HTMLInputElement;
                                 speedBar.disabled = true;
-                                const playButton = document.getElementById("play-button") as HTMLInputElement;
-                                const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
+                                const toggleButton = document.getElementById("toggle-animation-button") as HTMLInputElement;
+                                toggleButton.disabled = true;
+                                /*const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
                                 const nextButton = document.getElementById("next-button") as HTMLInputElement;
-                                playButton.disabled = true;
+                                
                                 pauseButton.disabled = true;
-                                nextButton.disabled = true;
+                                nextButton.disabled = true;*/
 
                                 
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
@@ -449,12 +450,9 @@ const exec = async function (...parameters: any[]) {
                                     const speedBar = document.getElementById("speed") as HTMLInputElement;
                                     speedBar.disabled = false;
 
-                                    const playButton = document.getElementById("play-button") as HTMLInputElement;
-                                    const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
-                                    const nextButton = document.getElementById("next-button") as HTMLInputElement;
-                                    playButton.disabled = false;
-                                    pauseButton.disabled = false;
-                                    nextButton.disabled = false;
+                                    const toggleButton = document.getElementById("toggle-animation-button") as HTMLInputElement;
+                                    toggleButton.disabled = true;
+                                    console.log(toggleButton.disabled);
                                     const noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     noAnimationElements.forEach((e) => {
                                         //console.log(typeof(e));
