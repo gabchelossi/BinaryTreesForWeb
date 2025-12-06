@@ -116,7 +116,7 @@ const parseCommand = async function () {
     //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
     let allInputs = Array.from(document.getElementsByTagName('input'));
     allInputs.forEach((i)=>{
-        if(i.id != "play-button" && i.id != "pause-button" && i.id != "next-button") i.disabled = true;
+        if(binarysearchT.paused && i.id != "toggle-animation-button") i.disabled = true;
     });
     try{
         const parsedCommand = await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
@@ -126,13 +126,22 @@ const parseCommand = async function () {
     catch(e){
         command!.innerHTML += `<br><br>${e}`;
     }
-    allInputs.forEach((i) => {i.disabled = false});
-    let newLine = document.createElement("p");
-    newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
-    consoleOutput!.append(newLine);
-    command = document.getElementById("text");
-    (consoleOutput!.lastChild as Element).append(cursor!);
-    debconsole!.scrollTo(0, consoleOutput!.scrollHeight);
+    if(command!.innerHTML != "next"){
+        allInputs.forEach((i) => {i.disabled = false});
+        let newLine = document.createElement("p");
+        newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
+        consoleOutput!.append(newLine);
+        command = document.getElementById("text");
+        (consoleOutput!.lastChild as Element).append(cursor!);
+        debconsole!.scrollTo(0, consoleOutput!.scrollHeight);
+    }
+    else{
+        console.log(previousCommands);
+        previousCommands.pop();
+        command!.innerHTML = previousCommands[previousCommands.length-1];
+        point = previousCommands.length;
+    }
+    
 }
 
 const exec = async function (...parameters: any[]) {
@@ -420,6 +429,7 @@ const exec = async function (...parameters: any[]) {
                                 speedBar.disabled = true;
                                 const toggleButton = document.getElementById("toggle-animation-button") as HTMLInputElement;
                                 toggleButton.disabled = true;
+                                
                                 /*const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
                                 const nextButton = document.getElementById("next-button") as HTMLInputElement;
                                 
@@ -454,6 +464,7 @@ const exec = async function (...parameters: any[]) {
                                     toggleButton.disabled = true;
                                     console.log(toggleButton.disabled);
                                     const noAnimationElements = [...document.getElementsByClassName("no-animation")];
+                                    binarysearchT.paused = false;
                                     noAnimationElements.forEach((e) => {
                                         //console.log(typeof(e));
                                         e.classList.remove("no-animation");
@@ -462,7 +473,11 @@ const exec = async function (...parameters: any[]) {
                                     returnval = `Animations have been turned on.`;
                                 }
                                 else {
-                                    returnval = `Invalid animation parameter ${params[2]}`;
+                                    if(params[2] == "manual"){
+                                        binarysearchT.paused = true;
+                                        returnval = `Step-by-step animation has been turned on.`;
+                                    }
+                                    else returnval = `Invalid animation parameter ${params[2]}`;
                                 }
                             }
                         }
@@ -802,17 +817,7 @@ document.getElementById("empty")!.addEventListener("change", function(){
     parseCommand();
 });
 
-document.getElementById("play-button")?.addEventListener("click", function(){
-    command!.innerHTML = `play`;
-    parseCommand();
-});
-
-document.getElementById("pause-button")?.addEventListener("click", function(){
-    command!.innerHTML = `pause`;
-    parseCommand();
-});
-
-document.getElementById("next-button")?.addEventListener("click", function(){
+document.getElementById("toggle-animation-button")?.addEventListener("click", function(){
     command!.innerHTML = `next`;
     parseCommand();
 });

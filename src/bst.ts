@@ -959,8 +959,8 @@ export class BinarySearchTree {
             let nodes = this.arr;
             const clean = () => {
                 rank = -1;
-                const resetElements = nodes?.filter((n) => {if(n) return n.dom.style.borderColor == "rgb(71, 173, 199)";});
-                const resetLines = this.connections.filter((c) => {if(c) return c.dom.style.backgroundColor == "rgb(71, 173, 199)";});
+                const resetElements = nodes?.filter((n) => {if(n) return n.dom.style.borderColor == "rgb(223, 162, 30)";});
+                const resetLines = this.connections.filter((c) => {if(c) return c.dom.style.backgroundColor == "rgb(175, 125, 18)";});
                 console.log(resetElements, resetLines);
                 resetElements?.forEach((n) => {
                     n.borderCol("rgb(37, 201, 37)", false);
@@ -973,10 +973,10 @@ export class BinarySearchTree {
             while(nodes![rank] && Number.isInteger(nodes![rank].key)){
                 if(rank>0){
                     const line = this.connections.find((c) => { if(c) return c.child.key == nodes![rank].key});
-                    await line!.changeColor("rgb(71, 173, 199)", true);
+                    await line!.changeColor("rgb(175, 125, 18)", true);
                 }
-                nodes![rank].backgroundCol(`rgb(131 255 255)`, false);
-                await this.breakPoint(nodes![rank].borderCol("rgb(71, 173, 199)", true));
+                nodes![rank].backgroundCol(`rgb(243, 215, 154)`, false);
+                await this.breakPoint(nodes![rank].borderCol("rgb(223, 162, 30)", true));
                 let left = nodes![rank*2+1];
                 let right = nodes![rank*2+2];
                 if(left && key < nodes![rank].key){
@@ -987,7 +987,17 @@ export class BinarySearchTree {
                         rank = rank*2+2;
                     }
                     else{
-                        if(key == nodes![rank].key) resolve(rank);
+                        if(key == nodes![rank].key) {
+                            resolve(rank);
+                            nodes![rank].borderCol("rgba(71, 185, 252, 1)", true);
+                            nodes![rank].dom.style.color = "rgba(43, 128, 143, 1)";
+                            const result = rank;
+                            setTimeout(() => {
+                                nodes![result].borderCol("rgb(37, 201, 37)", false);
+                                nodes![result].backgroundCol("white", false);
+                                nodes![result].dom.style.color = "rgba(0,0,0,1)";
+                            }, 5000);
+                        }
                         else {
                             reject(new Error(`The key '${key}' is not in the binary search Tree`));
                             //break;
