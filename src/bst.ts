@@ -133,10 +133,7 @@ export class BinarySearchTree {
                     };
                     document.addEventListener("play", handler);
                 }
-                else {
-                    console.log(`Resolving as usual`);
-                    resolve(returnVal);
-                }
+                else resolve(returnVal);
             }
             catch(e){
                 reject(e);
@@ -638,7 +635,7 @@ export class BinarySearchTree {
                 e.addClass("transform");
             }
             let nodes = this.arr;
-            console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
+            //console.log(`Inside Move function. Trying to move key '${e.key}' to rank ${rank}`)
             e.dom.title = `Rank: ${rank}`;
             let depth = Math.floor(Math.log2(rank + 1));
             if(depth>3){
@@ -1338,7 +1335,7 @@ export class BinarySearchTree {
             
         }
 
-        draw(appendToBody: boolean, animation: boolean) {
+        async draw(appendToBody: boolean, animation: boolean) {
             //this.transform = ``;
             let parent = this.parent;
             let child = this.child;
@@ -1360,15 +1357,37 @@ export class BinarySearchTree {
             const baseLengthPx = 100; // Matches your CSS .line width
             const scale = lengthInPx / baseLengthPx;
             if(animation && !appendToBody){ //it means that we are re-calculating the length, position and angle of an already drawn line
+                const radToDegrees = (rad:number):number =>{
+                    return ((180*rad/Math.PI));
+                }
+                console.log(`Akward angle`);
                 const oldAngle = this.angle;
                 const difference = Math.abs(oldAngle-angle);
-                console.log(`The old Angle is: ${oldAngle} radiants`);
-                console.log(`The new angle is: ${angle} radiants`);
+                console.log(`The old Angle is: ${oldAngle} radiants -> ${radToDegrees(oldAngle)}deg`);
+                console.log(`The new angle is: ${angle} radiants -> ${radToDegrees(angle)}deg`);
                 console.log(`The difference between the two angles is ${difference}rads`); 
                 if(difference > Math.PI/2){ //Weird animations happens when new angle's difference from the old one is bigger than 90 degrees
-                    this.dom.classList.remove("transform");
+                    //this.dom.classList.remove("transform");
+                    const tempAngle = oldAngle + Math.PI; //Add 180 degrees to angle
                     const firstSegment = this.transform.substring(0, this.transform.indexOf(`rotate`));
-                    console.log(firstSegment);
+                    const secondSegment = this.transform.substring(this.transform.indexOf(`scaleX`));
+                    console.log(firstSegment, secondSegment);
+                    console.log(firstSegment + `rotate(${tempAngle}rad) ` + secondSegment);
+                    this.transform = firstSegment + `rotate(${Math.PI/2}rad) ` + secondSegment;
+                    await (async () =>{
+                        return new Promise((resolve) => {
+                            this.dom.ontransitionend = () =>{
+                                this.dom.ontransitionend = null;
+                                resolve(true);
+                            };
+                            requestAnimationFrame(() => {
+                                this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${scale})`;
+                            });
+                        });
+                    })();
+                    console.log(this.transform);
+                    this.dom.classList.add("transform");
+                    debugger;
                 }
                 
             }

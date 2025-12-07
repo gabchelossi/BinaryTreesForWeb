@@ -462,7 +462,6 @@ const exec = async function (...parameters: any[]) {
 
                                     const toggleButton = document.getElementById("toggle-animation-button") as HTMLInputElement;
                                     toggleButton.disabled = true;
-                                    console.log(toggleButton.disabled);
                                     const noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     binarysearchT.paused = false;
                                     noAnimationElements.forEach((e) => {
