@@ -120,7 +120,7 @@ export class BinarySearchTree {
         return returnArr;
 }
 
-    breakPoint(fn: Promise<any>, goNext:boolean = false){
+    breakPoint(fn: Promise<any>){
         return new Promise(async (resolve, reject) =>{
             let returnVal: any;
             try{
@@ -165,7 +165,8 @@ export class BinarySearchTree {
                 node.leftWeight  = lh;
                 node.rightWeight = rh;
                 try{
-                    await this.breakPoint(node.updateBalance(this.avlStatus)); // e.g., node.balance = rh - lh; may also add rotation triggers
+                    if(this.avlStatus) await this.breakPoint(node.updateBalance(this.avlStatus));
+                    else node.updateBalance(this.avlStatus); 
                 }
                 catch(e){
                     await this.breakPoint(this.balanceAVL(i, childRank));
@@ -544,7 +545,7 @@ export class BinarySearchTree {
                     await e.translate((50 + (this.arr![0].diameter)) + "vw", `2vh`, true, false);
                     await e.opac(1, true);
                     await e.borderCol("orange", true);
-                    await this.breakPoint(this.compareTransform(e, 0));
+                    await this.compareTransform(e, 0);
                 }
                 resolve(++this.size);
             }
@@ -594,7 +595,8 @@ export class BinarySearchTree {
             if (this.arr![rank] == undefined || !Number.isInteger(this.arr![rank].key)){
                 await this.assign(e, rank);
                 this.arr![rank] = e;
-                await this.breakPoint(this.updateAVL(rank));
+                if(this.avlStatus) await this.breakPoint(this.updateAVL(rank));
+                else this.updateAVL(rank);
             }
             else {
                 //console.log(`Going to prepareNextCompare(${rank})`);
@@ -716,7 +718,7 @@ export class BinarySearchTree {
     return new Promise(async (resolve, reject) => {
         const rank = this.rankOf(key);
         if (rank > -1) {
-            if(animation) await this.arr![rank].borderCol("red", animation);
+            if(animation) await this.breakPoint(this.arr![rank].borderCol("red", animation));
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 //console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 if(animation){
@@ -844,7 +846,7 @@ export class BinarySearchTree {
 
                             if(to>0){
                                 redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
-                                redrawLine!.draw(false);
+                                redrawLine!.draw(false, animation);
                             }
 
                             resolve(true);
@@ -886,7 +888,7 @@ export class BinarySearchTree {
                                 }
                                 if(to>0){
                                     redrawLine!.dom.id = `${Math.floor((to-1)/2)}-${to}`;
-                                    redrawLine!.draw(false);
+                                    redrawLine!.draw(false, animation);
                                 }
                                     
                                 resolve(true);
@@ -903,7 +905,7 @@ export class BinarySearchTree {
                     if(Boolean(parent)){
                         const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});
                         this.connections[reassingLineIndex]!.parent = parent;
-                        this.connections[reassingLineIndex].draw(false);
+                        this.connections[reassingLineIndex].draw(false, animation);
                     }                    
                 }
                 
@@ -1077,7 +1079,8 @@ export class BinarySearchTree {
                             });
                         }
                         
-                        await this.breakPoint(nodes![root].borderCol("rgb(37, 201, 37)", !removing));
+                        if(removing) nodes![root].borderCol("rgb(37, 201, 37)", !removing);
+                        else await this.breakPoint(nodes![root].borderCol("rgb(37, 201, 37)", !removing));
 
                         returnArr.push(nodes![root].key);
 
@@ -1298,10 +1301,10 @@ export class BinarySearchTree {
 
     }
 
-    async onResize() {
+    async onResize(animation: boolean) {
         this.connections.forEach((conn) => {
             try{
-                if(conn) conn.draw(false);
+                if(conn) conn.draw(false, animation);
             }
             catch(e: any){
                 console.error(e.toString());
@@ -1331,12 +1334,12 @@ export class BinarySearchTree {
             this.dom.id = `${parent.dom.title.slice(6)}-${child.dom.title.slice(6)}`; 
             this.child = child;
             this.parent = parent;
-            this.draw(true);
+            this.draw(true, animation);
             
         }
 
-        draw(appendToBody: boolean) {
-            this.transform = ``;
+        draw(appendToBody: boolean, animation: boolean) {
+            //this.transform = ``;
             let parent = this.parent;
             let child = this.child;
             let parentXpx = (parent.xTransform) * (window.innerWidth / 100);
@@ -1348,6 +1351,7 @@ export class BinarySearchTree {
             let angle = Math.atan2(dy, dx);
             let lengthInPx = Math.sqrt(dx ** 2 + dy ** 2);
             this.l = lengthInPx + "px";
+            
             //console.log(child.diameter);
             let offsetXpx = (child.diameter * (window.innerWidth / 100)) / 2;
             let offsetYpx = (child.diameter * (window.innerHeight / 100)) / 2;
@@ -1355,6 +1359,19 @@ export class BinarySearchTree {
             let y = 100 * (parentYpx + offsetYpx) / window.innerHeight;
             const baseLengthPx = 100; // Matches your CSS .line width
             const scale = lengthInPx / baseLengthPx;
+            if(animation && !appendToBody){ //it means that we are re-calculating the length, position and angle of an already drawn line
+                const oldAngle = this.angle;
+                const difference = Math.abs(oldAngle-angle);
+                console.log(`The old Angle is: ${oldAngle} radiants`);
+                console.log(`The new angle is: ${angle} radiants`);
+                console.log(`The difference between the two angles is ${difference}rads`); 
+                if(difference > Math.PI/2){ //Weird animations happens when new angle's difference from the old one is bigger than 90 degrees
+                    this.dom.classList.remove("transform");
+                    const firstSegment = this.transform.substring(0, this.transform.indexOf(`rotate`));
+                    console.log(firstSegment);
+                }
+                
+            }
             if (appendToBody) {
                 this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${0})`;
                 document.body.append(this.dom);
@@ -1367,12 +1384,18 @@ export class BinarySearchTree {
             });
         }
 
-        set transform(value) {
+        set transform(value:string) {
             this.dom.style.transform = value;
         }
 
-        get transform() {
+        get transform():string {
             return this.dom.style.transform;
+        }
+
+        get angle():number{
+            const transformInfo = this.transform;
+            const angle = transformInfo.match(/rotate\(\s*([^)]*)\s*\)/)![1];
+            return parseFloat(angle);
         }
 
         opac = (o:number, synchronous:boolean) => {
@@ -1518,7 +1541,7 @@ export class BinarySearchTree {
         updateBalance(avlOn:boolean){
             return new Promise(async (resolve, reject) => {
                 this.balance = this.leftWeight - this.rightWeight;
-                if(Math.abs(this.balance)>1 && avlOn){
+                if(avlOn && Math.abs(this.balance)>1){
                     reject("The node is not balanced");
                 }
                 resolve(true);

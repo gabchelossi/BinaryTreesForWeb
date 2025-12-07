@@ -50,7 +50,7 @@ window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
     }
     resizeTimeout = setTimeout(() => {
-        binarysearchT.onResize();
+        binarysearchT.onResize(animation);
     }, 200); // only trigger after 200ms of no further resize events
 });
 
@@ -136,7 +136,7 @@ const parseCommand = async function () {
         debconsole!.scrollTo(0, consoleOutput!.scrollHeight);
     }
     else{
-        console.log(previousCommands);
+        //console.log(previousCommands);
         previousCommands.pop();
         command!.innerHTML = previousCommands[previousCommands.length-1];
         point = previousCommands.length;
@@ -698,7 +698,7 @@ const exec = async function (...parameters: any[]) {
 document.addEventListener("DOMContentLoaded",async function() {
     await exec(["insert", 44,17,78,32,50,88,48,62]);
     await exec(["set", "animation", "on"]);
-    await exec(["set", "avl", "on"]);
+    //await exec(["set", "avl", "on"]);
     await exec(["set", "animation", "speed", 5]);
     
 });
