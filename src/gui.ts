@@ -252,7 +252,7 @@ const exec = async function (...parameters: any[]) {
                         
                     }
                     else {
-                        if(!Number.isInteger(params[1])){
+                        if(!Number.isInteger(Number.parseFloat(params[1]))){
                             reject(`The passed parameter is not an integer.`);
                         }
                         else{

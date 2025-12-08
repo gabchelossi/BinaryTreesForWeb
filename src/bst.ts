@@ -297,7 +297,7 @@ export class BinarySearchTree {
             await this.breakPoint(moveDown(t3));
             if(x == b){ //double rotation happening
                 console.log(`Double rotation time!`);
-                const radius = parseInt(y_x_line.length); // radius of rotation
+                const radius = parseFloat(y_x_line.l); // radius of rotation in px
                 y.addClass("doubleRotation");
                 x.addClass("doubleRotation");
                 let angle = 0; // degrees

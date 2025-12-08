@@ -41,13 +41,7 @@ html, body{
     z-index: 10;
 }
 
-.TreeElement.doubleRotation{
-    --angle: 0deg!important;
-    --radius: 140px!important;
-    --offsetX: 0vw!important;
-    --offsetY: 0vh!important;
-    transform: translate(-50%, -50%) translateX(calc(var(--offsetX) + cos(var(--angle)) * var(--radius))) translateY(calc(var(--offsetY) + sin(var(--angle)) * -1 * var(--radius)))!important;
-}
+
 
 .TreeElement.empty{
     opacity: 1;
@@ -142,6 +136,15 @@ html, body{
 
 .TreeElement.search{
     border: 2px solid rgb(71 173 199);;
+}
+
+.TreeElement.doubleRotation{
+    --angle: 0deg!important;
+    --radius: 140px!important;
+    --offsetX: 0vw!important;
+    --offsetY: 0vh!important;
+    /*transform: translateX(calc(var(--offsetX) + cos(var(--angle)) * var(--radius))) translateY(calc(var(--offsetY) + sin(var(--angle)) * -1 * var(--radius)))!important;*/
+    transform: translateX(calc(var(--offsetX) + cos(var(--angle)) * var(--radius))) translateY(calc(var(--offsetY)));
 }
 
 .triangle-svg{
