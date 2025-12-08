@@ -9,7 +9,7 @@ let previousCommands: string[] = [];
 let point = 0;
 let animationSpeed = 1;
 let animation = false;
-
+let awaiting: boolean = false;
 
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -97,49 +97,92 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
                 }
 
                 break;
-
-
+            
+            
             case "Enter":
                 
                 parseCommand();
                 break;
         }
     }
+    if(e.key == "ArrowRight"){
+        if(binarysearchT.paused && awaiting){
+            command!.innerHTML = `next`;
+            parseCommand(document.getElementById("toggle-animation-button"));
+        }
+        e.preventDefault();
+    }
 }
 
-const parseCommand = async function () {
-    let consoleOutput = document.getElementById("console-content");
-    cursor!.remove();
-    previousCommands.push(command!.innerHTML);
-    point = previousCommands.length;
-    command!.id = "";
-    //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
-    let allInputs = Array.from(document.getElementsByTagName('input'));
-    allInputs.forEach((i)=>{
-        if(binarysearchT.paused && i.id != "toggle-animation-button") i.disabled = true;
-    });
-    try{
-        const parsedCommand = await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
-        if(parsedCommand != "go next")
-            command!.innerHTML += "<br><br>" + parsedCommand;
+const parseCommand = async function (caller:HTMLElement|null=null) {
+    let next = false;
+    if(caller && caller.id == "toggle-animation-button"){
+        next = true;
     }
-    catch(e){
-        command!.innerHTML += `<br><br>${e}`;
+    else{
+        awaiting = true;
     }
-    if(command!.innerHTML != "next"){
-        allInputs.forEach((i) => {i.disabled = false});
+    if(!next){
+        let consoleOutput = document.getElementById("console-content");
+        cursor!.remove();
+        previousCommands.push(command!.innerHTML);
+        point = previousCommands.length;
+        command!.id = "";
+        //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
+        let allInputs = Array.from(document.getElementsByTagName('input'));
+        allInputs.forEach((i)=>{
+            if(binarysearchT.paused && i.id == "toggle-animation-button"){
+                 i.disabled = false;
+            }
+            else i.disabled = true;
+        });
+        try{
+            const parsedCommand = await exec(command!.innerHTML.replaceAll(" ", ",").split(",")).then((returnVal) => { return returnVal });
+            if(parsedCommand != "go next"){ //awaiting for a command to return its promise. This is in case a user presses next before executing anything
+                command!.innerHTML += "<br><br>" + parsedCommand;
+            }
+            else{
+                awaiting = false;
+            }
+        }
+        catch(e){
+            command!.innerHTML += `<br><br>${e}`;
+        }
+        allInputs.forEach((i) => {
+            if(animation){
+                console.log(`Animation on!`);
+                if(!binarysearchT.paused && i.id == "toggle-animation-button") i.disabled = true;
+                else{
+                    i.disabled = false;
+                }
+            }
+            else{
+                console.log(`Animation off!`);
+                if(i.id == "speed" || i.id == "toggle-animation-button") i.disabled = true;
+                else{
+                    i.disabled = false;
+                }
+            }
+        });
         let newLine = document.createElement("p");
         newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
         consoleOutput!.append(newLine);
         command = document.getElementById("text");
         (consoleOutput!.lastChild as Element).append(cursor!);
         debconsole!.scrollTo(0, consoleOutput!.scrollHeight);
+        awaiting = false;
     }
     else{
         //console.log(previousCommands);
-        previousCommands.pop();
-        command!.innerHTML = previousCommands[previousCommands.length-1];
-        point = previousCommands.length;
+        if(awaiting){
+            await exec(["next"]);
+            command!.innerHTML = previousCommands[previousCommands.length-1];
+        }
+        else {
+            command!.innerHTML = ``;
+            alert("No operations are running at the moment");
+        }
+        
     }
     
 }
@@ -209,8 +252,8 @@ const exec = async function (...parameters: any[]) {
                         
                     }
                     else {
-                        if(isNaN(parseInt(params[1]))){
-                            reject(`The passed parameter is not a number.`);
+                        if(!Number.isInteger(params[1])){
+                            reject(`The passed parameter is not an integer.`);
                         }
                         else{
                             if(binarysearchT.rankOf(parseInt(params[1]))>-1){
@@ -425,10 +468,6 @@ const exec = async function (...parameters: any[]) {
                                 animation = false;
                                 const radiobtn = document.getElementById("Off") as HTMLInputElement;
                                 radiobtn.checked = true;
-                                const speedBar = document.getElementById("speed") as HTMLInputElement;
-                                speedBar.disabled = true;
-                                const toggleButton = document.getElementById("toggle-animation-button") as HTMLInputElement;
-                                toggleButton.disabled = true;
                                 
                                 /*const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
                                 const nextButton = document.getElementById("next-button") as HTMLInputElement;
@@ -473,6 +512,7 @@ const exec = async function (...parameters: any[]) {
                                 }
                                 else {
                                     if(params[2] == "manual"){
+                                        animation = true;
                                         binarysearchT.paused = true;
                                         returnval = `Step-by-step animation has been turned on.`;
                                     }
@@ -818,7 +858,7 @@ document.getElementById("empty")!.addEventListener("change", function(){
 
 document.getElementById("toggle-animation-button")?.addEventListener("click", function(){
     command!.innerHTML = `next`;
-    parseCommand();
+    parseCommand(this);
 });
 
 
