@@ -259,6 +259,14 @@ html, body{
     will-change: transform;
 }
 
+.line.doubleRotation{
+    --t: 0;
+    --x: 0;
+    --y: 0;
+    transition: none;
+    transform: translate(var(--x), var(--y)) rotate(var(--t));
+}
+
 .comparatorTransform{
     position: absolute;
     opacity: 0;

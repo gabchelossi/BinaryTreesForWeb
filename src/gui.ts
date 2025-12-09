@@ -448,7 +448,7 @@ const exec = async function (...parameters: any[]) {
                                     }
 
                                     .line.transform{
-                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s, background-color ${seconds}s!important;
+                                        transition: transform ${seconds}s ease-in-out, opacity ${seconds}s, background-color ${seconds}s;
                                         will-change: transform;
                                     }
 

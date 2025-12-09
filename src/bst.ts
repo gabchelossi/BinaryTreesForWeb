@@ -326,8 +326,19 @@ export class BinarySearchTree {
                 y.dom.style.setProperty('--t', 0 + 'deg');
                 y.addClass("doubleRotation");
                 x.addClass("doubleRotation");
-                const angle1 = Math.atan2(offsetX.y-offsetY.y, offsetX.x-offsetY.x)*(180 / Math.PI);
+                const angle1 = Math.atan2(offsetX.y-offsetY.y, offsetX.x-offsetY.x)*(180 / Math.PI); //the angle x makes from a horizontal line
                 const angle2 = angle1+180;
+                const angleLine = y_x_line.angle * 180/Math.PI;
+                const lineOffset = {
+                    x: y_x_line.xTranslate,
+                    y: y_x_line.yTranslate
+                };
+                y_x_line.dom.style.setProperty('--t', angleLine+'deg');
+                y_x_line.dom.style.setProperty('--x', lineOffset.x+'vw');
+                y_x_line.dom.style.setProperty('--y', lineOffset.y+'vh');
+                y_x_line.transform = ``;
+                y_x_line.dom.classList.add('doubleRotation');
+                //console.log(angleLine);
                 x.dom.style.setProperty('--t', angle1 + 'deg');
                 y.dom.style.setProperty('--t', angle2 + 'deg');
                 //const offsetX = x.xTransform;
@@ -345,7 +356,8 @@ export class BinarySearchTree {
                             angleOffset = (angleOffset + 5);             // speed = 1deg per frame
                             x.dom.style.setProperty('--t', angle1+angleOffset + 'deg');
                             y.dom.style.setProperty('--t', angle2+angleOffset + 'deg');
-                            if(angleOffset<180)  requestAnimationFrame(animate);
+                            y_x_line.dom.style.setProperty(`--t`, angleLine+angleOffset + 'deg');
+                            if(angleOffset<178)  requestAnimationFrame(animate); //I dont let it finish the animation, I will have this.assign() assign its final coordinates
                             else resolve(true);
                         }
                         requestAnimationFrame(animate);
@@ -359,34 +371,29 @@ export class BinarySearchTree {
                 nodes[yRank] = x;
                 this.assign(y, xRank, true, true, false, true);
                 nodes[xRank] = y;
-                if(nodes[yRank*2+1]){ //Right Left Rotation
-
+                y_x_line.parent = x;
+                y_x_line.child = y;
+                //y_x_line.draw(false, true);
+                /*if(y == a) {
+                    a = x;
+                    a.label = `x = a`;
                 }
-                else{ //Left Right Rotation
-
-                }
-                
-                if(y == a){ //L-R Rotation
-                    
-                }
-                else{ //R-L Rotation
-
-                }
+                else {
+                    c = x;
+                    c.label = `x = c`;
+                };
+                b = y;
+                b.label = `y = b`;*/
             }
-            else{
-                if(x == a){ //L-L Rotation
-
-                }
-                else{ //R-R Rotation
-
-                }
-            }
-            /*await c.translate(`${c.xTransform}vw`, `${c.yTransform+20}vh`, true, false);
-            await this.assign(b, zRank, true, true, false);
-            const temp = nodes[zRank];
             nodes[zRank] = b;
-            this.assign(a, zRank*2+1, true, true, false);
-            this.assign(c, zRank*2+2, true, true, false);*/
+            z_y_line.parent = b;
+             
+            this.assign(b, zRank, true, true, false);
+            this.assign(c, zRank*2+2, true, true, false, true);
+            this.assign(a, zRank*2+1, true, true, false, true);
+            nodes[zRank*2+1] = a;
+            nodes[zRank*2+2] = c;
+    
             resolve(true);
         });
             
@@ -1474,6 +1481,20 @@ export class BinarySearchTree {
 
         get transform():string {
             return this.dom.style.transform;
+        }
+
+        get xTranslate(): string {
+            const transformInfo = this.transform;
+            const match = transformInfo.match(/translate\(\s*([0-9.]+)(?:vw|vh|px|rem)?/i);
+            return match ? match[1] : "";
+        }
+
+        get yTranslate(): string {
+            const transformInfo = this.transform;
+            const match = transformInfo.match(
+                /translate\(\s*[0-9.]+(?:vw|vh|px|rem)?\s*,\s*([0-9.]+)(?:vw|vh|px|rem)?/i
+            );
+            return match ? match[1] : "";
         }
 
         get angle():number{
