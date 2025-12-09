@@ -76,7 +76,7 @@ export class BinarySearchTree {
         let returnArr : number[] = [];
         let nodes = this.arr;
         if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 +1].key)) {
-            returnArr = this.inOrder(root * 2 + 1);
+            returnArr = this.inOrder(root * 2 + 1, removing, returnRanks);
         }
         if(returnRanks) returnArr.push(root);
         else returnArr.push(nodes![root].key);
@@ -84,7 +84,7 @@ export class BinarySearchTree {
             return returnArr;
 
         if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 +2].key))
-            returnArr = [...returnArr, ...this.inOrder(root * 2 + 2)];
+            returnArr = [...returnArr, ...this.inOrder(root * 2 + 2, removing, returnRanks)];
 
         return returnArr;
     }
@@ -198,6 +198,7 @@ export class BinarySearchTree {
                 x = nodes[wRank];
                 yRank = Math.floor((wRank-1)/2);
                 y = nodes[yRank];
+                xRank = wRank;
             }
             else{
                 xRank = Math.floor((wRank-1)/2);
@@ -223,9 +224,11 @@ export class BinarySearchTree {
             const ranks = await this.breakPoint(this.traversal(zRank, "AVL")) as number[]; //the traversal returns x y and z in in-order traversal
             const elements = ranks.map(rank => {return nodes![rank]});
             
-            const lines = this.connections.filter((line) => { if (line) { 
-                return ((elements.includes(line.parent) || elements.includes(line.child)) && line != z_y_line && line != y_x_line);//TO-DO  //need to keep the lines between a,b,c for the rotation animation 
-            } });
+            const lines = this.connections.filter((line) => { 
+                if (line) { 
+                    return ((elements.includes(line.parent) || elements.includes(line.child)) && line != z_y_line && line != y_x_line);//TO-DO  //need to keep the lines between a,b,c for the rotation animation 
+                } 
+            });
             lines.forEach((line)=>{
                 line.dom.classList.add("transform");
                 line.changeLength('0', false);
@@ -297,22 +300,72 @@ export class BinarySearchTree {
             await this.breakPoint(moveDown(t3));
             if(x == b){ //double rotation happening
                 console.log(`Double rotation time!`);
-                const radius = parseFloat(y_x_line.l); // radius of rotation in px
+                const radius = parseFloat(y_x_line.l)/2; // radius of rotation in px
+                console.log(y_x_line.l);
+                const offsetX = {
+                    x: x.xTransform,
+                    y: x.yTransform
+                };
+                const offsetY = {
+                    x: y.xTransform,
+                    y: y.yTransform
+                };
+                const midPoint = {
+                    x: (offsetX.x  + offsetY.x)/2,
+                    y: (offsetX.y + offsetY.y)/2
+                };
+                x.transform = '';
+                y.transform = ``;
+                x.dom.style.setProperty('--r', radius + 'px');
+                x.dom.style.setProperty('--x', midPoint.x + 'vw');
+                x.dom.style.setProperty('--y', midPoint.y + 'vh');
+                y.dom.style.setProperty('--r', radius + 'px');
+                y.dom.style.setProperty('--x', midPoint.x + 'vw');
+                y.dom.style.setProperty('--y', midPoint.y + 'vh');
+                x.dom.style.setProperty('--t', 0 + 'deg');
+                y.dom.style.setProperty('--t', 0 + 'deg');
                 y.addClass("doubleRotation");
                 x.addClass("doubleRotation");
-                let angle = 0; // degrees
-                const offsetX = x.xTransform;
-                const offsetY = x.yTransform;
-                x.dom.style.setProperty('--radius', radius + 'px');
-                x.dom.style.setProperty('--offsetX', offsetX + 'vw');
-                x.dom.style.setProperty('--offsetY', offsetY + 'vh');
-                function animate() {
-                    angle = (angle + 1) % 360;             // speed = 1deg per frame
-                    x.dom.style.setProperty('--angle', angle + 'deg');
-                    if(angle<90)  requestAnimationFrame(animate);
+                const angle1 = Math.atan2(offsetX.y-offsetY.y, offsetX.x-offsetY.x)*(180 / Math.PI);
+                const angle2 = angle1+180;
+                x.dom.style.setProperty('--t', angle1 + 'deg');
+                y.dom.style.setProperty('--t', angle2 + 'deg');
+                //const offsetX = x.xTransform;
+                console.log(offsetX, offsetY, `Midpoint: ${midPoint.x}vw,${midPoint.y}vh`);
+                
+                /*const dot = document.createElement("div");
+                dot.classList.add("dot");
+                dot.style.transform = `translate(${midPoint.x}vw, ${midPoint.y}vh)`;
+                document.body.appendChild(dot);
+                console.log();*/
+                let angleOffset = 0;
+                function animationWrapper(){
+                    return new Promise((resolve) =>{
+                        function animate() {
+                            angleOffset = (angleOffset + 5);             // speed = 1deg per frame
+                            x.dom.style.setProperty('--t', angle1+angleOffset + 'deg');
+                            y.dom.style.setProperty('--t', angle2+angleOffset + 'deg');
+                            if(angleOffset<180)  requestAnimationFrame(animate);
+                            else resolve(true);
+                        }
+                        requestAnimationFrame(animate);
+                    });
                 }
-                requestAnimationFrame(animate);
+                await animationWrapper();
+                
+                x.removeClass('doubleRotation');
+                y.removeClass('doubleRotation');
+                this.assign(x, yRank, true, true, false, true);
+                nodes[yRank] = x;
+                this.assign(y, xRank, true, true, false, true);
+                nodes[xRank] = y;
+                if(nodes[yRank*2+1]){ //Right Left Rotation
 
+                }
+                else{ //Left Right Rotation
+
+                }
+                
                 if(y == a){ //L-R Rotation
                     
                 }
@@ -628,7 +681,7 @@ export class BinarySearchTree {
         });
     }
 
-    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true, avl: boolean = this.avlStatus) {
+    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true, avl: boolean = this.avlStatus, forceRank: boolean = false) {
         return new Promise(async (resolve) => {
             // console.log(`assign Promise Opened`);
             if(animation) {
@@ -645,19 +698,31 @@ export class BinarySearchTree {
                 e.removeClass("small"); //in case it is getting shifted up
             let parentRank = Math.floor((rank - 1) / 2);
             let parent = nodes![parentRank];
+            console.log(parent);
             let translateInfo : {x: string, y: string} = {
                 x: "",
                 y: ""
             };
             let offset = (98) / 2 ** (depth + 1);
             if(parentRank >= 0){
-                if (parent.key > e.key) {
-                    //console.log(`${parent.key} > ${e.key}`);
-                    translateInfo.x = parent.xTransform - offset + "vw";
+                if(forceRank){
+                    if(rank == parentRank*2+1){
+                        translateInfo.x = parent.xTransform - offset + "vw";
+                    }
+                    else{
+                        translateInfo.x = parent.xTransform + offset + "vw";
+                    }
                 }
-                else {
+                else{
+                    if (parent.key > e.key) {
                     //console.log(`${parent.key} > ${e.key}`);
-                    translateInfo.x = parent.xTransform + offset + "vw";
+                        translateInfo.x = parent.xTransform - offset + "vw";
+                    }
+                    else {
+                        //console.log(`${parent.key} > ${e.key}`);
+                        translateInfo.x = parent.xTransform + offset + "vw";
+                    }
+                    
                 }
                 translateInfo.y = parent.yTransform + Math.sin(Math.PI / 4) * 10 + "vh";
             }

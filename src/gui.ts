@@ -409,11 +409,11 @@ const exec = async function (...parameters: any[]) {
                                         font-weight: bolder;
                                         font-size: 2.5vh;
                                         border: 2px solid rgb(37, 201, 37);
-                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s !important;
+                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s;
                                     }
 
                                     .TreeElement.transform{
-                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s, transform ${seconds}s ease-in-out, width ${seconds}s, height ${seconds}s, font-size ${seconds}s !important;
+                                        transition: border ${seconds}s, opacity ${seconds}s, background-color ${seconds}s, transform ${seconds}s ease-in-out, width ${seconds}s, height ${seconds}s, font-size ${seconds}s;
                                     }
 
 

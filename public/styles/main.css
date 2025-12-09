@@ -60,7 +60,7 @@ html, body{
 }
 
 .TreeElement.transform{
-    transition: border 1s, opacity 1s, transform 1s ease-in-out, width 1s, height 1s, font-size 1s!important;
+    transition: border 1s, opacity 1s, transform 1s ease-in-out, width 1s, height 1s, font-size 1s;
 }
 
 
@@ -139,12 +139,29 @@ html, body{
 }
 
 .TreeElement.doubleRotation{
-    --angle: 0deg!important;
-    --radius: 140px!important;
-    --offsetX: 0vw!important;
-    --offsetY: 0vh!important;
+    --t: 0deg;
+    --r: 0px;
+    /*--offsetX: 0vw;
+    --offsetY: 0vh;*/
+    --x: 0;
+    --y: 0;
     /*transform: translateX(calc(var(--offsetX) + cos(var(--angle)) * var(--radius))) translateY(calc(var(--offsetY) + sin(var(--angle)) * -1 * var(--radius)))!important;*/
-    transform: translateX(calc(var(--offsetX) + cos(var(--angle)) * var(--radius))) translateY(calc(var(--offsetY)));
+    /*transform: translateX(calc(var(--offsetX))) translateY(calc(var(--offsetY)));*/
+    /*transform: translateX(calc(var(--x) + var(--r)*cos(var(--t)))) translateY(calc(var(--y) + var(--r)*sin(var(--t))));*/
+    transform: translate(
+        calc(var(--x) + var(--r) * cos(var(--t))),
+        calc(var(--y) + var(--r) * sin(var(--t)))
+    );
+    transition: none!important;
+}
+
+
+.dot{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: black;
 }
 
 .triangle-svg{
