@@ -263,8 +263,9 @@ html, body{
     --t: 0;
     --x: 0;
     --y: 0;
+    --l: 0;
     transition: none;
-    transform: translate(var(--x), var(--y)) rotate(var(--t));
+    transform: translate(var(--x), var(--y)) rotate(var(--t)) scaleX(var(--l));
 }
 
 .comparatorTransform{

@@ -353,11 +353,27 @@ export class BinarySearchTree {
                 function animationWrapper(){
                     return new Promise((resolve) =>{
                         function animate() {
-                            angleOffset = (angleOffset + 5);             // speed = 1deg per frame
+                            angleOffset = (angleOffset + 1);             // speed = 1deg per frame
                             x.dom.style.setProperty('--t', angle1+angleOffset + 'deg');
                             y.dom.style.setProperty('--t', angle2+angleOffset + 'deg');
-                            y_x_line.dom.style.setProperty(`--t`, angleLine+angleOffset + 'deg');
-                            if(angleOffset<178)  requestAnimationFrame(animate); //I dont let it finish the animation, I will have this.assign() assign its final coordinates
+                            y_x_line.dom.style.setProperty(`--t`, (angle1+angleOffset) + 'deg');
+                            const styleY = getComputedStyle(y.dom);
+                            const styleX = getComputedStyle(x.dom);
+                            const matrixY = new DOMMatrixReadOnly(styleY.transform);
+                            const matrixX = new DOMMatrixReadOnly(styleX.transform);
+                            const yxVal = matrixY.m41;  // translateX
+                            const yyVal = matrixY.m42; // translateY
+                            const xxVal = matrixX.m41;  // translateX
+                            const xyVal = matrixX.m42; // translateY
+                            y_x_line.dom.style.setProperty(`--x`, yxVal+"px");
+                            y_x_line.dom.style.setProperty(`--y`, yyVal+"px");
+                            const length = Math.sqrt(Math.pow(yxVal-xxVal,2)+ Math.pow(yyVal-xyVal, 2));
+                            const factor = length/100;
+                            y_x_line.dom.style.setProperty(`--l`, factor.toString());
+                            y_x_line.l = factor*100 + "px";
+                            //console.log("x:", xVal, "y:", yVal);
+
+                            if(angleOffset<=180)  requestAnimationFrame(animate); //I dont let it finish the animation, I will have this.assign() assign its final coordinates
                             else resolve(true);
                         }
                         requestAnimationFrame(animate);
@@ -365,14 +381,19 @@ export class BinarySearchTree {
                 }
                 await animationWrapper();
                 
+                //y_x_line.dom.classList.remove('doubleRotation');
                 x.removeClass('doubleRotation');
                 y.removeClass('doubleRotation');
+                
                 this.assign(x, yRank, true, true, false, true);
                 nodes[yRank] = x;
                 this.assign(y, xRank, true, true, false, true);
                 nodes[xRank] = y;
                 y_x_line.parent = x;
                 y_x_line.child = y;
+                y_x_line.draw(false, true);
+                const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+                await sleep(1000);
                 //y_x_line.draw(false, true);
                 /*if(y == a) {
                     a = x;
@@ -1429,24 +1450,8 @@ export class BinarySearchTree {
             const baseLengthPx = 100; // Matches your CSS .line width
             const scale = lengthInPx / baseLengthPx;
             if(animation && !appendToBody){ //it means that we are re-calculating the length, position and angle of an already drawn line
-                const radToDegrees = (rad:number):number =>{
-                    return ((180*rad/Math.PI));
-                }
-                console.log(`Akward angle`);
-                const oldAngle = this.angle;
-                const difference = Math.abs(oldAngle-angle);
-                console.log(`The old Angle is: ${oldAngle} radiants -> ${radToDegrees(oldAngle)}deg`);
-                console.log(`The new angle is: ${angle} radiants -> ${radToDegrees(angle)}deg`);
-                console.log(`The difference between the two angles is ${difference}rads`); 
-                if(difference > Math.PI/2){ //Weird animations happens when new angle's difference from the old one is bigger than 90 degrees
-                    //this.dom.classList.remove("transform");
-                    const tempAngle = oldAngle + Math.PI; //Add 180 degrees to angle
-                    const firstSegment = this.transform.substring(0, this.transform.indexOf(`rotate`));
-                    const secondSegment = this.transform.substring(this.transform.indexOf(`scaleX`));
-                    console.log(firstSegment, secondSegment);
-                    console.log(firstSegment + `rotate(${tempAngle}rad) ` + secondSegment);
-                    this.transform = firstSegment + `rotate(${Math.PI/2}rad) ` + secondSegment;
-                    await (async () =>{
+                this.dom.classList.add("transform");
+                await (async () =>{
                         return new Promise((resolve) => {
                             this.dom.ontransitionend = () =>{
                                 this.dom.ontransitionend = null;
@@ -1456,12 +1461,7 @@ export class BinarySearchTree {
                                 this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${scale})`;
                             });
                         });
-                    })();
-                    console.log(this.transform);
-                    this.dom.classList.add("transform");
-                    debugger;
-                }
-                
+                    })();               
             }
             if (appendToBody) {
                 this.transform = `translate(${x}vw, ${y}vh) rotate(${angle}rad) scaleX(${0})`;
