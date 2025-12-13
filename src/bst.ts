@@ -373,7 +373,7 @@ export class BinarySearchTree {
                             y_x_line.l = factor*100 + "px";
                             //console.log("x:", xVal, "y:", yVal);
 
-                            if(angleOffset<=180)  requestAnimationFrame(animate); //I dont let it finish the animation, I will have this.assign() assign its final coordinates
+                            if(angleOffset<180)  requestAnimationFrame(animate); //I dont let it finish the animation, I will have this.assign() assign its final coordinates
                             else resolve(true);
                         }
                         requestAnimationFrame(animate);
@@ -391,7 +391,7 @@ export class BinarySearchTree {
                 nodes[xRank] = y;
                 y_x_line.parent = x;
                 y_x_line.child = y;
-                y_x_line.draw(false, true);
+                y_x_line.draw(false, false);
                 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
                 await sleep(1000);
                 //y_x_line.draw(false, true);
