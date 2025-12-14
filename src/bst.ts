@@ -383,17 +383,20 @@ export class BinarySearchTree {
                 
                 //y_x_line.dom.classList.remove('doubleRotation');
                 x.removeClass('doubleRotation');
+                x.removeClass('transform');
                 y.removeClass('doubleRotation');
+                y.removeClass('transform');
                 
-                this.assign(x, yRank, true, true, false, true);
+                
+                this.assign(x, yRank, true, false, false, true);
                 nodes[yRank] = x;
-                this.assign(y, xRank, true, true, false, true);
+                this.assign(y, xRank, true, false, false, true);
                 nodes[xRank] = y;
                 y_x_line.parent = x;
                 y_x_line.child = y;
                 y_x_line.draw(false, false);
                 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-                await sleep(1000);
+                await this.breakPoint( sleep(1000));
                 //y_x_line.draw(false, true);
                 /*if(y == a) {
                     a = x;
@@ -408,13 +411,19 @@ export class BinarySearchTree {
             }
             nodes[zRank] = b;
             z_y_line.parent = b;
-             
+            y_x_line.parent = b;
+            z_y_line.child = c;
+            y_x_line.child = a;
+
             this.assign(b, zRank, true, true, false);
             this.assign(c, zRank*2+2, true, true, false, true);
             this.assign(a, zRank*2+1, true, true, false, true);
             nodes[zRank*2+1] = a;
             nodes[zRank*2+2] = c;
-    
+            y_x_line.draw(false, true);
+            z_y_line.draw(false, true);
+
+            z_y_line.child = a;
             resolve(true);
         });
             
