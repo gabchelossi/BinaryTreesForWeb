@@ -150,7 +150,7 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
         }
         allInputs.forEach((i) => {
             if(animation){
-                console.log(`Animation on!`);
+                //console.log(`Animation on!`);
                 if(!binarysearchT.paused && i.id == "toggle-animation-button") i.disabled = true;
                 else{
                     i.disabled = false;
@@ -562,7 +562,7 @@ const exec = async function (...parameters: any[]) {
                             if (params[2] == 'true') {
                                 let s = "[";
                                 for (let i = 0; i < binarysearchT.arr!.length; i++) {
-                                    let val = binarysearchT.arr![i]||Number.isInteger(binarysearchT.arr![i].key) == undefined ? '<span style="color: grey">[empty]</span>' : binarysearchT.arr![i].key;
+                                    let val = binarysearchT.arr![i] || Number.isInteger(binarysearchT.arr![i].key) == undefined ? '<span style="color: grey">[empty]</span>' : binarysearchT.arr![i].key;
                                     s += `<span style='color: orange'>${i}</span>: ${val}${(i < binarysearchT.arr!.length - 1) ? ", " : "]"}`;
                                 };
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
@@ -735,7 +735,7 @@ const exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() {
-    //await exec(["insert", 44,17,78,32,50,88,48,62]);
+    await exec(["insert", 44,17,78,32,50,88,48,62]);
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
     await exec(["set", "animation", "speed", 5]);

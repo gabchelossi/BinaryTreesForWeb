@@ -148,10 +148,15 @@ export class BinarySearchTree {
             let i = Math.floor((childRank - 1) / 2);
             //console.log(`Called updateAVl from rank ${childRank}`);
             while (i >= 0) {
+                console.log(`DIO CANE0`);
                 const node = this.arr![i];
                 if (!node) {
                     i = Math.floor((i - 1) / 2);
+                    console.log(`Warning! Element at index ${i} is non-existant`);
                     continue;
+                }
+                else{
+                    console.log(`Updating AVL at node ${node.key} with rank ${i}`);
                 }
                 const li = i * 2 + 1;
                 const ri = i * 2 + 2;
@@ -167,8 +172,21 @@ export class BinarySearchTree {
                 }
                 catch(e){
                     await this.breakPoint(this.balanceAVL(i, childRank));
-                    resolve(); //Remove this once the implementation of this.balanceAVL is done
-                    return; //remove too
+                    const newNode = this.arr[i];
+                    if (newNode) {
+                        const newLi = i * 2 + 1;
+                        const newRi = i * 2 + 2;
+                        const newLeft = this.arr[newLi];
+                        const newRight = this.arr[newRi];
+
+                        newNode.leftWeight = newLeft
+                            ? 1 + Math.max(newLeft.leftWeight || 0, newLeft.rightWeight || 0)
+                            : 0;
+
+                        newNode.rightWeight = newRight
+                            ? 1 + Math.max(newRight.leftWeight || 0, newRight.rightWeight || 0)
+                            : 0;
+                    }
                 }
                 // climb
                 i = Math.floor((i - 1) / 2);
@@ -286,7 +304,7 @@ export class BinarySearchTree {
                     arr.forEach(async (rank) => {
                         if(nodes[rank]){
                             nodes[rank].addClass("transform");
-                            console.log(`Translating rank ${rank} down using params ${nodes[rank].xTransform}, ${nodes[rank].yTransform +20}, true, false`);
+                            //console.log(`Translating rank ${rank} down using params ${nodes[rank].xTransform}, ${nodes[rank].yTransform +20}, true, false`);
                             await nodes[rank].translate(`${nodes[rank].xTransform}vw`, `${nodes[rank].yTransform +20}vh`, true, false);
                         }
                     });
@@ -298,6 +316,17 @@ export class BinarySearchTree {
             moveDown(t1);
             moveDown(t2);
             await this.breakPoint(moveDown(t3));
+            const rootT0 = this.arr![t0[0]];
+            const rootT1 = this.arr![t1[0]];
+            const rootT2 = this.arr![t2[0]];
+            const rootT3 = this.arr![t3[0]];
+
+            delete nodes[t0[0]];
+            delete nodes[t1[0]];
+            delete nodes[t2[0]];
+            delete nodes[t3[0]];
+            delete nodes[xRank];
+
             if(x == b){ //double rotation happening
                 console.log(`Double rotation time!`);
                 const radius = parseFloat(y_x_line.l)/2; // radius of rotation in px
@@ -409,6 +438,12 @@ export class BinarySearchTree {
                 b = y;
                 b.label = `y = b`;*/
             }
+            const parentConnection = this.connections.find(connection => {
+                return connection.parent == nodes[Math.floor((zRank-1)/2)] && connection.child == nodes[zRank];
+            });
+            if(parentConnection) {
+                parentConnection.child = b;
+            }
             nodes[zRank] = b;
             z_y_line.parent = b;
             y_x_line.parent = b;
@@ -420,10 +455,68 @@ export class BinarySearchTree {
             this.assign(a, zRank*2+1, true, true, false, true);
             nodes[zRank*2+1] = a;
             nodes[zRank*2+2] = c;
+            //z_y_line.child = a; //why this line?
             y_x_line.draw(false, true);
             z_y_line.draw(false, true);
-
-            z_y_line.child = a;
+            
+            if(rootT0){
+                const parentLine = this.connections.find(connection =>{
+                    return connection.child == rootT0;
+                });
+                this.assign(rootT0, (zRank*2+1)*2+1, true, true, false, true);
+                this.arr[(zRank*2+1)*2+1] = rootT0;
+                parentLine!.parent = this.arr![zRank*2+1];
+                parentLine.dom.id = `${zRank*2+1}-${(zRank*2+1)*2+1}`; 
+                parentLine?.draw(false, true);
+            }
+            if(rootT1){
+                const parentLine = this.connections.find(connection =>{
+                    return connection.child == rootT1;
+                });
+                this.assign(rootT1, (zRank*2+1)*2+2, true, true, false, true);
+                this.arr[(zRank*2+1)*2+2] = rootT1;
+                parentLine!.parent = this.arr![zRank*2+1];
+                parentLine.dom.id = `${zRank*2+1}-${(zRank*2+1)*2+2}`;
+                parentLine?.draw(false, true);
+            } 
+            if(rootT2){
+                const parentLine = this.connections.find(connection =>{
+                    return connection.child == rootT2;
+                });
+                this.assign(rootT2, (zRank*2+2)*2+1, true, true, false, true);
+                this.arr[(zRank*2+2)*2+1] = rootT2;
+                parentLine!.parent = this.arr![zRank*2+2];
+                parentLine.dom.id = `${zRank*2+2}-${(zRank*2+2)*2+1}`;
+                parentLine?.draw(false, true);
+            } 
+            if(rootT3) {
+                const parentLine = this.connections.find(connection =>{
+                    return connection.child == rootT3;
+                });
+                this.assign(rootT3, (zRank*2+2)*2+2, true, true, false, true);
+                this.arr[(zRank*2+2)*2+2] = rootT3;
+                parentLine!.parent = this.arr![zRank*2+2];
+                parentLine.dom.id = `${zRank*2+2}-${(zRank*2+2)*2+2}`;
+                parentLine?.draw(false, true);
+            }
+            if(parentConnection) parentConnection.draw(false, true);
+            x.label = "";
+            y.label = "";
+            z.label = "";
+            if(w) w.label = "";
+            /*console.log(`TEST DIO CANE`);
+            const leafNodes = this.arr.filter((node, rank) => {
+                return !this.arr[rank * 2 + 1] && !this.arr[rank * 2 + 2];
+            });
+            console.log(leafNodes);
+            leafNodes.forEach(node => {
+                node.leftWeight = 0;
+                node.rightWeight = 0;
+            })
+            leafNodes.forEach(async (node) => {
+                console.log(`Updating avl from node ${node.key}, from rank ${this.rankOf(node.key)}`);
+                await this.updateAVL(this.rankOf(node));
+            });*/
             resolve(true);
         });
             
@@ -731,11 +824,10 @@ export class BinarySearchTree {
             if(depth>3){
                 e.addClass("small");
             }
-            else
-                e.removeClass("small"); //in case it is getting shifted up
+            else e.removeClass("small"); //in case it is getting shifted up
             let parentRank = Math.floor((rank - 1) / 2);
             let parent = nodes![parentRank];
-            console.log(parent);
+            //console.log(parent);
             let translateInfo : {x: string, y: string} = {
                 x: "",
                 y: ""
