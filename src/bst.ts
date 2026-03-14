@@ -142,13 +142,12 @@ export class BinarySearchTree {
         });
     }
 
-    async updateAVL(childRank: number): Promise<void> {
+    async updateAVL(childRank: number, justCalc:boolean = false): Promise<void> {
     // start from the parent of the changed node
         return new Promise(async (resolve) => {
             let i = Math.floor((childRank - 1) / 2);
             //console.log(`Called updateAVl from rank ${childRank}`);
             while (i >= 0) {
-                console.log(`DIO CANE0`);
                 const node = this.arr![i];
                 if (!node) {
                     i = Math.floor((i - 1) / 2);
@@ -158,6 +157,7 @@ export class BinarySearchTree {
                 else{
                     console.log(`Updating AVL at node ${node.key} with rank ${i}`);
                 }
+                
                 const li = i * 2 + 1;
                 const ri = i * 2 + 2;
                 const left  = this.arr![li];
@@ -171,25 +171,16 @@ export class BinarySearchTree {
                     else node.updateBalance(this.avlStatus); 
                 }
                 catch(e){
-                    await this.breakPoint(this.balanceAVL(i, childRank));
-                    const newNode = this.arr[i];
-                    if (newNode) {
-                        const newLi = i * 2 + 1;
-                        const newRi = i * 2 + 2;
-                        const newLeft = this.arr[newLi];
-                        const newRight = this.arr[newRi];
-
-                        newNode.leftWeight = newLeft
-                            ? 1 + Math.max(newLeft.leftWeight || 0, newLeft.rightWeight || 0)
-                            : 0;
-
-                        newNode.rightWeight = newRight
-                            ? 1 + Math.max(newRight.leftWeight || 0, newRight.rightWeight || 0)
-                            : 0;
+                    if(!justCalc) {
+                        await this.breakPoint(this.balanceAVL(i, childRank));
                     }
+                    console.log(e);                 
                 }
-                // climb
-                i = Math.floor((i - 1) / 2);
+                finally{
+                    // climb
+                    i = Math.floor((i - 1) / 2);
+                }
+                
             }
             resolve();
         });
@@ -504,23 +495,29 @@ export class BinarySearchTree {
             y.label = "";
             z.label = "";
             if(w) w.label = "";
-            /*console.log(`TEST DIO CANE`);
-            const leafNodes = this.arr.filter((node, rank) => {
-                return !this.arr[rank * 2 + 1] && !this.arr[rank * 2 + 2];
-            });
-            console.log(leafNodes);
-            leafNodes.forEach(node => {
-                node.leftWeight = 0;
-                node.rightWeight = 0;
-            })
-            leafNodes.forEach(async (node) => {
-                console.log(`Updating avl from node ${node.key}, from rank ${this.rankOf(node.key)}`);
-                await this.updateAVL(this.rankOf(node));
-            });*/
+            
             resolve(true);
         });
             
         
+    }
+
+    async updateAllNodesAVL(justCalculate:boolean=true){
+        console.log(`TEST DIO CANE`);
+        const leafNodes = this.arr.filter((node, rank) => {
+            return !this.arr[rank * 2 + 1] && !this.arr[rank * 2 + 2];
+        });
+        console.log(leafNodes);
+        leafNodes.forEach(node => {
+            node.leftWeight = 0;
+            node.rightWeight = 0;
+            node.balance = 0;
+        });
+        leafNodes.forEach(async (node) => {
+            console.log(`Updating avl from node ${node.key}, from rank ${this.rankOf(node.key)}`);
+            const rankofNode = this.rankOf(node);
+            await this.updateAVL(rankofNode*2+1, true);
+        });
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>):Promise<number> {
@@ -727,6 +724,7 @@ export class BinarySearchTree {
                     await e.borderCol("orange", true);
                     await this.compareTransform(e, 0);
                 }
+                this.updateAllNodesAVL();
                 resolve(++this.size);
             }
         });
