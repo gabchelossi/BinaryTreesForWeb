@@ -142,7 +142,7 @@ export class BinarySearchTree {
         });
     }
 
-    async updateAVL(childRank: number, justCalc:boolean = false): Promise<void> {
+    async updateAVL(childRank: number, justCalc:boolean = false): Promise<boolean> {
     // start from the parent of the changed node
         return new Promise(async (resolve) => {
             let i = Math.floor((childRank - 1) / 2);
@@ -154,9 +154,9 @@ export class BinarySearchTree {
                     console.log(`Warning! Element at index ${i} is non-existant`);
                     continue;
                 }
-                else{
+                /*else{
                     console.log(`Updating AVL at node ${node.key} with rank ${i}`);
-                }
+                }*/
                 
                 const li = i * 2 + 1;
                 const ri = i * 2 + 2;
@@ -166,26 +166,34 @@ export class BinarySearchTree {
                 const rh = right ? 1 + Math.max(right.leftWeight || 0, right.rightWeight || 0) : 0;
                 node.leftWeight  = lh;
                 node.rightWeight = rh;
-                try{
-                    if(this.avlStatus) await this.breakPoint(node.updateBalance(this.avlStatus));
-                    else node.updateBalance(this.avlStatus); 
-                }
-                catch(e){
-                    if(!justCalc) {
-                        await this.breakPoint(this.balanceAVL(i, childRank));
+                if(this.avlStatus && !justCalc){
+                    try{
+                        await this.breakPoint(node.updateBalance(this.avlStatus));
                     }
-                    console.log(e);                 
+                    catch(e){
+                        await this.breakPoint(this.balanceAVL(i, childRank));
+                        const leafNodes = this.arr.map((node, i) => {
+                            if(!(this.arr[i*2+1] || this.arr[i*2+2]))
+                                return i;
+                        }).filter(rank => {
+                                return rank != undefined && rank != null
+                            }
+                        );
+                        leafNodes.forEach(rank => {
+                            this.updateAVL(rank*2+1, true)
+                        });
+                        i = 0;
+                    }
                 }
-                finally{
-                    // climb
-                    i = Math.floor((i - 1) / 2);
+                else{
+                    node.updateBalance(false);
                 }
+                // climb
+                i = Math.floor((i - 1) / 2);
                 
             }
-            resolve();
+            resolve(true);
         });
-
-        
     }
 
     async balanceAVL(zRank: number, wRank:number){
@@ -202,16 +210,24 @@ export class BinarySearchTree {
 
             const nodes = this.arr!;
             z = nodes[zRank]; //it will always be the 'z' node
-            console.log(depthZ, depthW);
-            if(depthW-depthZ==2){
+            //console.log(depthZ, depthW);
+            if(depthW-depthZ==2){ //when w == x
                 x = nodes[wRank];
                 yRank = Math.floor((wRank-1)/2);
                 y = nodes[yRank];
                 xRank = wRank;
             }
             else{
-                xRank = Math.floor((wRank-1)/2);
-                yRank = Math.floor((xRank-1)/2);
+                let keyW:number = nodes[wRank].key;
+                let nodesFromZtoW = nodes[zRank].key > keyW ? [zRank*2+1] : [zRank*2+2];
+                let i = nodesFromZtoW[0];
+                while(nodes[i].key != keyW){
+                    i = nodes[i].key > keyW ? i*2+1 :i*2+2;
+                    nodesFromZtoW.push(i);
+                }
+                yRank = nodesFromZtoW[0];
+                xRank = nodesFromZtoW[1];
+                console.log(zRank, yRank, xRank);
                 x = nodes[xRank];
                 y = nodes[yRank];
                 w = nodes[wRank];
@@ -318,7 +334,7 @@ export class BinarySearchTree {
             delete nodes[t3[0]];
             delete nodes[xRank];
 
-            if(x == b){ //double rotation happening
+            /*if(x == b){ //double rotation happening
                 console.log(`Double rotation time!`);
                 const radius = parseFloat(y_x_line.l)/2; // radius of rotation in px
                 console.log(y_x_line.l);
@@ -364,11 +380,11 @@ export class BinarySearchTree {
                 //const offsetX = x.xTransform;
                 console.log(offsetX, offsetY, `Midpoint: ${midPoint.x}vw,${midPoint.y}vh`);
                 
-                /*const dot = document.createElement("div");
-                dot.classList.add("dot");
-                dot.style.transform = `translate(${midPoint.x}vw, ${midPoint.y}vh)`;
-                document.body.appendChild(dot);
-                console.log();*/
+                //const dot = document.createElement("div");
+                //dot.classList.add("dot");
+                //dot.style.transform = `translate(${midPoint.x}vw, ${midPoint.y}vh)`;
+                //document.body.appendChild(dot);
+                //console.log();
                 let angleOffset = 0;
                 function animationWrapper(){
                     return new Promise((resolve) =>{
@@ -418,17 +434,8 @@ export class BinarySearchTree {
                 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
                 await this.breakPoint( sleep(1000));
                 //y_x_line.draw(false, true);
-                /*if(y == a) {
-                    a = x;
-                    a.label = `x = a`;
-                }
-                else {
-                    c = x;
-                    c.label = `x = c`;
-                };
-                b = y;
-                b.label = `y = b`;*/
-            }
+            } */
+            
             const parentConnection = this.connections.find(connection => {
                 return connection.parent == nodes[Math.floor((zRank-1)/2)] && connection.child == nodes[zRank];
             });
@@ -500,24 +507,6 @@ export class BinarySearchTree {
         });
             
         
-    }
-
-    async updateAllNodesAVL(justCalculate:boolean=true){
-        console.log(`TEST DIO CANE`);
-        const leafNodes = this.arr.filter((node, rank) => {
-            return !this.arr[rank * 2 + 1] && !this.arr[rank * 2 + 2];
-        });
-        console.log(leafNodes);
-        leafNodes.forEach(node => {
-            node.leftWeight = 0;
-            node.rightWeight = 0;
-            node.balance = 0;
-        });
-        leafNodes.forEach(async (node) => {
-            console.log(`Updating avl from node ${node.key}, from rank ${this.rankOf(node.key)}`);
-            const rankofNode = this.rankOf(node);
-            await this.updateAVL(rankofNode*2+1, true);
-        });
     }
 
     async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>):Promise<number> {
@@ -724,7 +713,7 @@ export class BinarySearchTree {
                     await e.borderCol("orange", true);
                     await this.compareTransform(e, 0);
                 }
-                this.updateAllNodesAVL();
+                //this.updateAllNodesAVL();
                 resolve(++this.size);
             }
         });
