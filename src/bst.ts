@@ -89,19 +89,19 @@ export class BinarySearchTree {
         return returnArr;
     }
 
-    preOrder(root: number = 0): number[] {
+    preOrder(root: number = 0, returnRanks=false): number[] {
         let returnArr = [];
         let nodes = this.arr;
 
-        returnArr.push(nodes![root].key);
+        if(returnRanks) returnArr.push(root);
+        else returnArr.push(nodes![root].key);
 
         if (nodes![root * 2 + 1] && Number.isInteger(nodes![root * 2 + 1].key)) {
-            returnArr = [...returnArr, ...this.preOrder(root * 2 + 1)];
+            returnArr = [...returnArr, ...this.preOrder(root * 2 + 1, returnRanks)];
         }
 
-
         if (nodes![root * 2 + 2] && Number.isInteger(nodes![root * 2 + 2].key))
-            returnArr = [...returnArr, ...this.preOrder(root * 2 + 2)];
+            returnArr = [...returnArr, ...this.preOrder(root * 2 + 2, returnRanks)];
 
         return returnArr;
     }
@@ -120,12 +120,12 @@ export class BinarySearchTree {
         return returnArr;
 }
 
-    breakPoint(fn: Promise<any>){
+    breakPoint(fn: Promise<any>, debug:boolean=false){
         return new Promise(async (resolve, reject) =>{
             let returnVal: any;
             try{
                 returnVal = await fn;
-                if (this.paused) {
+                if (this.paused || debug) {
                     console.log(`PAUSED!`);
                     const handler = () => {
                         resolve(returnVal);
@@ -227,7 +227,6 @@ export class BinarySearchTree {
                 }
                 yRank = nodesFromZtoW[0];
                 xRank = nodesFromZtoW[1];
-                console.log(zRank, yRank, xRank);
                 x = nodes[xRank];
                 y = nodes[yRank];
                 w = nodes[wRank];
@@ -271,8 +270,17 @@ export class BinarySearchTree {
             let t1: number[] = !(nodes[rankA*2+2] == b || nodes[rankA*2+2] == c) ? this.inOrder(rankA*2+2, false, true): this.inOrder(rankB*2+1, false, true); //if a does not have t1 as a child, then b will always have it as its left child
             let t2: number[] = nodes[rankB*2+2] != c ? this.inOrder(rankB*2+2, false, true):  this.inOrder(rankC*2+1, false, true); // if b's right child is not c (no need to check if it is not a, due to the in-order traversal), then t2 is b's right child, else it will always be c's left child
             let t3: number[] = this.inOrder(rankC*2+2, false, true); // because of in-order traversal, t3 will always be c's right child
-            console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
             
+            const sortByNumber = (function(a, b) {
+                return a - b;
+            });
+            t0.sort(sortByNumber);
+            t1.sort(sortByNumber);
+            t2.sort(sortByNumber);
+            t3.sort(sortByNumber);
+            
+            console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
+            await this.breakPoint(() => {}, true);
             /*const createSubTreeSVG = function(label:string):HTMLDivElement{
                 const t0SVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                 const t0Poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
@@ -447,10 +455,12 @@ export class BinarySearchTree {
             y_x_line.parent = b;
             z_y_line.child = c;
             y_x_line.child = a;
-
             this.assign(b, zRank, true, true, false);
             this.assign(c, zRank*2+2, true, true, false, true);
             this.assign(a, zRank*2+1, true, true, false, true);
+            const deltaA = zRank*2+1 - rankA;
+            const deltac = zRank*2+2 - rankC; //in order to check which sub trees and which nodes to move first...
+
             nodes[zRank*2+1] = a;
             nodes[zRank*2+2] = c;
             //z_y_line.child = a; //why this line?
@@ -461,42 +471,58 @@ export class BinarySearchTree {
                 const parentLine = this.connections.find(connection =>{
                     return connection.child == rootT0;
                 });
-                this.assign(rootT0, (zRank*2+1)*2+1, true, true, false, true);
-                this.arr[(zRank*2+1)*2+1] = rootT0;
+                const rootNewRank = (zRank*2+1)*2+1;
+                const delta = rootNewRank - t0[0];
+                console.log(delta);
+                /*this.assign(rootT0, newRank, true, true, false, true);
+                this.arr[newRank] = rootT0;*/
+                t0.forEach(rank => {
+                    const newRank = rank + delta; 
+                    console.log(`Moving old rank ${rank} to new rank ${newRank}`);
+                    this.assign(nodes[rank], newRank, true, true, false, true);
+                    this.arr![newRank] = this.arr![rank];
+                    delete this.arr[rank];
+                });
+
                 parentLine!.parent = this.arr![zRank*2+1];
-                parentLine.dom.id = `${zRank*2+1}-${(zRank*2+1)*2+1}`; 
+                parentLine.dom.id = `${zRank*2+1}-${rootNewRank}`; 
+
                 parentLine?.draw(false, true);
             }
             if(rootT1){
                 const parentLine = this.connections.find(connection =>{
                     return connection.child == rootT1;
                 });
-                this.assign(rootT1, (zRank*2+1)*2+2, true, true, false, true);
-                this.arr[(zRank*2+1)*2+2] = rootT1;
+                const newRank = (zRank*2+1)*2+2;
+                this.assign(rootT1, newRank, true, true, false, true);
+                this.arr[newRank] = rootT1;
                 parentLine!.parent = this.arr![zRank*2+1];
-                parentLine.dom.id = `${zRank*2+1}-${(zRank*2+1)*2+2}`;
+                parentLine.dom.id = `${zRank*2+1}-${newRank}`;
                 parentLine?.draw(false, true);
             } 
             if(rootT2){
                 const parentLine = this.connections.find(connection =>{
                     return connection.child == rootT2;
                 });
-                this.assign(rootT2, (zRank*2+2)*2+1, true, true, false, true);
-                this.arr[(zRank*2+2)*2+1] = rootT2;
+                const newRank = (zRank*2+2)*2+1;
+                this.assign(rootT2, newRank, true, true, false, true);
+                this.arr[newRank] = rootT2;
                 parentLine!.parent = this.arr![zRank*2+2];
-                parentLine.dom.id = `${zRank*2+2}-${(zRank*2+2)*2+1}`;
+                parentLine.dom.id = `${zRank*2+2}-${newRank}`;
                 parentLine?.draw(false, true);
             } 
             if(rootT3) {
                 const parentLine = this.connections.find(connection =>{
                     return connection.child == rootT3;
                 });
-                this.assign(rootT3, (zRank*2+2)*2+2, true, true, false, true);
-                this.arr[(zRank*2+2)*2+2] = rootT3;
+                const newRank = (zRank*2+2)*2+2;
+                this.assign(rootT3, newRank, true, true, false, true);
+                this.arr[newRank] = rootT3;
                 parentLine!.parent = this.arr![zRank*2+2];
-                parentLine.dom.id = `${zRank*2+2}-${(zRank*2+2)*2+2}`;
+                parentLine.dom.id = `${zRank*2+2}-${newRank}`;
                 parentLine?.draw(false, true);
             }
+            
             if(parentConnection) parentConnection.draw(false, true);
             x.label = "";
             y.label = "";

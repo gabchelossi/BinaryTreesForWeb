@@ -735,14 +735,18 @@ const exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() {
-    await exec(["insert", 44,17,78,32,50,88,48,62]); //this is the balanced tree before the insertion of 49
+    //await exec(["insert", 44,17,78,32,50,88,48,62]); //this is the balanced tree before the insertion of 49
     
-
+    
+    //insert 44,17,51,10,32,48,78,5,15,27,35,49,62,88,7,13,16,20,28,33,40
     //await exec(["insert", 44,17,51,32,48,78,49,62,88]); //this is the balanced tree after the insertion of 49
+    await exec(["insert", 10,5,15, 1, 7]); //this is the balanced tree after the insertion of 49
+    //await exec(["insert", 44,17,51,10,32,48,78,5,15,27,35,49,62,88,7,13,16,20,28,33,40, 2]); //more complex subtrees
+    
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
     await exec(["set", "animation", "speed", 5]);
-    await exec(["insert", 49]); //this is the balanced tree before the insertion of 49
+    //await exec(["insert", 49]); //this is the balanced tree before the insertion of 49
 });
 
 const focus = function () {
