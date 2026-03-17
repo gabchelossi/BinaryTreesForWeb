@@ -282,7 +282,7 @@ export class BinarySearchTree {
             console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
             const deltaA = zRank*2+1 - rankA;
             const deltaC = zRank*2+2 - rankC; //in order to check which sub trees and which nodes to move first...
-            console.log(`Delta A: ${deltaA}, Delta C: ${deltaC}`);
+            //console.log(`Delta A: ${deltaA}, Delta C: ${deltaC}`);
             
             
 
@@ -333,10 +333,10 @@ export class BinarySearchTree {
                 });
                 
             }
-            moveDown(t0);
+            /*moveDown(t0);
             moveDown(t1);
             moveDown(t2);
-            await this.breakPoint(moveDown(t3));
+            await this.breakPoint(moveDown(t3));*/
             const rootT0 = this.arr![t0[0]];
             const rootT1 = this.arr![t1[0]];
             const rootT2 = this.arr![t2[0]];
@@ -458,42 +458,54 @@ export class BinarySearchTree {
             }
             const moveSubTree = (rootNode:InstanceType<typeof BinarySearchTree.TreeElement>, subTree:number[], newRank:number) => {
                 const rootRank = subTree[0];
-                //const root = nodes[rootRank];
+                console.log(`Moving subtree with root: ${rootNode.key}`);
                 const deltaRank = newRank - rootRank;
-
+                const rootOldDepth = Math.floor(Math.log2(rootRank+1));
+                const rootNewDepth = Math.floor(Math.log2(newRank+1));
+                const changeInDepth = rootNewDepth - rootOldDepth;
+                console.log(`Change in depth is`,changeInDepth);
                 const parentLine = this.connections.find(connection =>{
                     return connection.child == rootNode;
                 });
-
+                //console.log(`Subtree root: ${rootNode.key}`)
                 if(deltaRank > 0){
                     subTree.sort((a,b) => b - a);
                     subTree.pop(); //remove the root from the subtree, it is already stored in the rootRank
-                    
+                    //console.log(`Tree after pop: ${subTree}`);
                 }
                 else{
                     subTree = subTree.slice(1); //same here but the root is at the beginning
+                    //console.log(`Tree after slice: ${subTree}`);
                 }
                 subTree.forEach(rank => {
-                    const newRank = rank + deltaRank; 
-                    console.log(`Moving old rank ${rank} to new rank ${newRank}`);
-                        //console.log(nodes[rank]);
-                    this.assign(nodes[rank], newRank, true, true, false, true);
-                    nodes[newRank] = this.arr![rank];
-                    delete nodes![rank];
+                    const depth: number = Math.floor(Math.log2(rank+1));
+                    let nodeNewRank: number = deltaRank>0? rank + 2**depth : rank + 2**(depth-1);
+                    if(changeInDepth == 0) nodeNewRank = rank + deltaRank* 2 ** (depth - rootOldDepth);
+                    console.log(`Mapping rank ${rank} to new rank ${nodeNewRank}`);
+                    nodes[nodeNewRank] = nodes[rank];
+                    delete nodes[rank];
                 });
                 this.assign(rootNode, newRank, true, true, false, true);
                 nodes[newRank] = rootNode;
+                subTree.forEach(rank => {
+                    const depth: number = Math.floor(Math.log2(rank+1));
+                    let nodeNewRank: number = deltaRank>0? rank + 2**depth : rank + 2**(depth-1);
+                    if(changeInDepth == 0) nodeNewRank = rank + deltaRank;
+                    this.assign(nodes[nodeNewRank], nodeNewRank, true, true, false, true);
+                });
                 const parentRank = Math.floor((newRank-1)/2);
                 parentLine!.parent = nodes[parentRank];
                 parentLine!.dom.id = `${parentRank}-${newRank}`;
                 parentLine?.draw(false, true);
             }
-
+            //await this.breakPoint(() => {}, true);
             if(deltaC > deltaA){ //first handle the c node and after the a node
                 this.assign(c, zRank*2+2, true, true, false, true);
                 nodes[zRank*2+2] = c;
-                moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
-                moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
+                if(rootT3) moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
+                else console.log(`Empty subtree t3, skipping`);
+                if(rootT2) moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
+                else console.log(`Empty subtree t2, skipping`);
                 //assign b to the new rank
                 nodes[zRank] = b;
                 z_y_line.parent = b;
@@ -501,69 +513,39 @@ export class BinarySearchTree {
                 z_y_line.child = c;
                 y_x_line.child = a;
                 this.assign(b, zRank, true, true, false);
+                nodes[zRank*2+1] = a;
+                this.assign(a, zRank*2+1, true, true, false);
                 z_y_line.draw(false, true);
-                moveSubTree(rootT2, t2, (zRank*2+1)*2+2);
-                /*moveSubTree(rootT1, t1, (zRank*2+1)*2+2);
-                y_x_line.draw(false, true);*/
+                if (rootT1) moveSubTree(rootT1, t1, (zRank*2+1)*2+1);
+                else console.log(`Empty subtree t1, skipping`);
+                if (rootT0) moveSubTree(rootT0, t0, (zRank*2+1)*2+2);
+                else console.log(`Empty subtree t0, skipping`);
+                y_x_line.draw(false, true);
             }
             else{
-
+                this.assign(a, zRank*2+1, true, true, false, true);
+                nodes[zRank*2+1] = a;
+                if (rootT0) moveSubTree(rootT0, t0, (zRank*2+1)*2+1); //UNCOMMENT THIS WHEN DONE DEBUGGING
+                else console.log(`Empty subtree t0, skipping`);
+                
+                if (rootT1) moveSubTree(rootT1, t1, (zRank*2+1)*2+2);
+                else console.log(`Empty subtree t1, skipping`);
+                await this.breakPoint(() => {}, true);
+                nodes[zRank] = b;
+                z_y_line.parent = b;
+                y_x_line.parent = b;
+                z_y_line.child = c;
+                y_x_line.child = a;
+                this.assign(b, zRank, true, true, false);
+                nodes[zRank*2+2] = c;
+                this.assign(c, zRank*2+2, true, true, false);
+                z_y_line.draw(false, true);
+                if(rootT2) moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
+                else console.log(`Empty subtree t2, skipping`);
+                if(rootT3) moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
+                else console.log(`Empty subtree t3, skipping`);
+                y_x_line.draw(false, true);
             }
-            await this.breakPoint(() => {}, true);
-            //this.assign(c, zRank*2+2, true, true, false, true);
-            
-            
-            /*nodes[zRank] = b;
-            z_y_line.parent = b;
-            y_x_line.parent = b;
-            z_y_line.child = c;
-            y_x_line.child = a;
-            this.assign(b, zRank, true, true, false);*/
-            
-            this.assign(c, zRank*2+2, true, true, false, true);
-            //this.assign(a, zRank*2+1, true, true, false, true);
-            
-            
-            nodes[zRank*2+1] = a;
-            
-            //z_y_line.child = a; //why this line?
-            y_x_line.draw(false, true);
-            z_y_line.draw(false, true);
-            
-            if(rootT0){
-                const parentLine = this.connections.find(connection =>{
-                    return connection.child == rootT0;
-                });
-                const rootNewRank = (zRank*2+1)*2+1;
-                const delta = rootNewRank - t0[0];
-                console.log(delta);
-                /*this.assign(rootT0, newRank, true, true, false, true);
-                this.arr[newRank] = rootT0;*/
-                t0.forEach(rank => {
-                    const newRank = rank + delta; 
-                    console.log(`Moving old rank ${rank} to new rank ${newRank}`);
-                    this.assign(nodes[rank], newRank, true, true, false, true);
-                    this.arr![newRank] = this.arr![rank];
-                    delete this.arr[rank];
-                });
-
-                parentLine!.parent = this.arr![zRank*2+1];
-                parentLine.dom.id = `${zRank*2+1}-${rootNewRank}`; 
-
-                parentLine?.draw(false, true);
-            }
-            if(rootT1){
-                const parentLine = this.connections.find(connection =>{
-                    return connection.child == rootT1;
-                });
-                const newRank = (zRank*2+1)*2+2;
-                this.assign(rootT1, newRank, true, true, false, true);
-                this.arr[newRank] = rootT1;
-                parentLine!.parent = this.arr![zRank*2+1];
-                parentLine.dom.id = `${zRank*2+1}-${newRank}`;
-                parentLine?.draw(false, true);
-            } 
-            
             
             if(parentConnection) parentConnection.draw(false, true);
             x.label = "";
