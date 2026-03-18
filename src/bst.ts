@@ -479,35 +479,44 @@ export class BinarySearchTree {
                 }
                 subTree.forEach(rank => {
                     const depth: number = Math.floor(Math.log2(rank+1));
-                    let nodeNewRank: number = deltaRank>0? rank + 2**depth : rank + 2**(depth-1);
+                    let nodeNewRank: number = deltaRank>0? rank + 2**depth : rank - 2**(depth);
                     if(changeInDepth == 0) nodeNewRank = rank + deltaRank* 2 ** (depth - rootOldDepth);
                     console.log(`Mapping rank ${rank} to new rank ${nodeNewRank}`);
                     nodes[nodeNewRank] = nodes[rank];
                     delete nodes[rank];
                 });
+                console.log(`Assigning root element`, this.rankOf(rootNode.key), `to rank`, newRank);
                 this.assign(rootNode, newRank, true, true, false, true);
                 nodes[newRank] = rootNode;
+                //delete nodes[rootRank];
                 subTree.forEach(rank => {
                     const depth: number = Math.floor(Math.log2(rank+1));
-                    let nodeNewRank: number = deltaRank>0? rank + 2**depth : rank + 2**(depth-1);
-                    if(changeInDepth == 0) nodeNewRank = rank + deltaRank;
+                    let nodeNewRank: number = deltaRank>0? rank + 2**depth : rank - 2**(depth);
+                    if(changeInDepth == 0) nodeNewRank = rank + deltaRank* 2 ** (depth - rootOldDepth);
                     this.assign(nodes[nodeNewRank], nodeNewRank, true, true, false, true);
                 });
                 const parentRank = Math.floor((newRank-1)/2);
                 parentLine!.parent = nodes[parentRank];
                 parentLine!.dom.id = `${parentRank}-${newRank}`;
-                parentLine?.draw(false, true);
+                //parentLine?.draw(false, true);
             }
-            //await this.breakPoint(() => {}, true);
             if(deltaC > deltaA){ //first handle the c node and after the a node
                 this.assign(c, zRank*2+2, true, true, false, true);
                 nodes[zRank*2+2] = c;
-                if(rootT3) moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
+                if(rootT3){
+                    moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
+                    //delete nodes[t3[0]];
+                } 
                 else console.log(`Empty subtree t3, skipping`);
-                if(rootT2) moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
+                if(rootT2) {
+                    moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
+                    //delete nodes[t2[0]];
+                }
                 else console.log(`Empty subtree t2, skipping`);
+                delete nodes[rankC];
                 //assign b to the new rank
                 nodes[zRank] = b;
+                delete nodes[rankB];
                 z_y_line.parent = b;
                 y_x_line.parent = b;
                 z_y_line.child = c;
@@ -515,23 +524,42 @@ export class BinarySearchTree {
                 this.assign(b, zRank, true, true, false);
                 nodes[zRank*2+1] = a;
                 this.assign(a, zRank*2+1, true, true, false);
+                delete nodes[rankA];
                 z_y_line.draw(false, true);
-                if (rootT1) moveSubTree(rootT1, t1, (zRank*2+1)*2+1);
+                if (rootT1) {
+                    moveSubTree(rootT1, t1, (zRank*2+1)*2+1);
+                    //delete nodes[t1[0]];
+                }
                 else console.log(`Empty subtree t1, skipping`);
-                if (rootT0) moveSubTree(rootT0, t0, (zRank*2+1)*2+2);
+
+                if (rootT0){
+                    moveSubTree(rootT0, t0, (zRank*2+1)*2+2);
+                    //delete nodes[t0[0]];
+                } 
                 else console.log(`Empty subtree t0, skipping`);
                 y_x_line.draw(false, true);
             }
             else{
-                this.assign(a, zRank*2+1, true, true, false, true);
                 nodes[zRank*2+1] = a;
-                if (rootT0) moveSubTree(rootT0, t0, (zRank*2+1)*2+1); //UNCOMMENT THIS WHEN DONE DEBUGGING
+                console.log(`node a is going to rank`, zRank*2+1);
+                this.assign(a, zRank*2+1, true, true, false, true);
+                
+                if (rootT0) {
+                    moveSubTree(rootT0, t0, (zRank*2+1)*2+1);
+                    //delete nodes[t0[0]];
+                }
                 else console.log(`Empty subtree t0, skipping`);
                 
-                if (rootT1) moveSubTree(rootT1, t1, (zRank*2+1)*2+2);
+
+                if (rootT1) {
+                    moveSubTree(rootT1, t1, (zRank*2+1)*2+2)
+                    //delete nodes[t1[0]];
+                }
                 else console.log(`Empty subtree t1, skipping`);
-                await this.breakPoint(() => {}, true);
+                
+
                 nodes[zRank] = b;
+                delete nodes[rankB];
                 z_y_line.parent = b;
                 y_x_line.parent = b;
                 z_y_line.child = c;
@@ -539,20 +567,34 @@ export class BinarySearchTree {
                 this.assign(b, zRank, true, true, false);
                 nodes[zRank*2+2] = c;
                 this.assign(c, zRank*2+2, true, true, false);
-                z_y_line.draw(false, true);
-                if(rootT2) moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
+                delete nodes[rankC];
+                //z_y_line.draw(false, true);
+                
+                if(rootT2) {
+                    moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
+                    //delete nodes[t2[0]];
+                }
                 else console.log(`Empty subtree t2, skipping`);
-                if(rootT3) moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
+                
+                if(rootT3){
+                    moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
+                    //delete nodes[t3[0]];
+                }
                 else console.log(`Empty subtree t3, skipping`);
-                y_x_line.draw(false, true);
+                
+                //y_x_line.draw(false, true);
             }
-            
-            if(parentConnection) parentConnection.draw(false, true);
+            let mySet = new Set();
+            nodes.forEach((element, index) => { //not elegant I know but for now this is what I can do
+                if(mySet.has(element.key)) delete nodes[index];
+                else mySet.add(element.key);
+            });
+            //if(parentConnection) parentConnection.draw(false, true);
             x.label = "";
             y.label = "";
             z.label = "";
             if(w) w.label = "";
-            
+            this.connections.forEach(connection => connection.draw(false, true));
             resolve(true);
         });
             

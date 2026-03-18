@@ -739,13 +739,13 @@ document.addEventListener("DOMContentLoaded",async function() {
     
     
     //insert 44,17,51,10,32,48,78,5,15,27,35,49,62,88,7,13,16,20,28,33,40
-    await exec(["insert", 44,17,51,32,48,78,49,62,88]); //this is the balanced tree after the insertion of 49
-      
+    //await exec(["insert", 44,17,51,32,48,78,49,62,88]); //this is the balanced tree after the insertion of 49
+    //await exec(["insert", "full"]);
+    //await exec(["insert", "full"]);
+    await exec(["insert", 25,10,40,5,15,30,50,3,7,13,20,27,35,45,61,1,4,6,8,11,14,17,24,26,29,33,37,43,47,55,63,53,60,62,64])
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
     await exec(["set", "animation", "speed", 5]);
-    await exec(["insert", 90]);
-
 });
 
 const focus = function () {
