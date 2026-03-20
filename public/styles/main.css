@@ -285,7 +285,7 @@ html, body{
 
 
 
-@media screen and (max-width: 999px), (max-height: 560px) {
+@media screen and (max-width: 999px), (max-height: 559px) {
     #main, .TreeElement, .line{
         display: none!important;
     }

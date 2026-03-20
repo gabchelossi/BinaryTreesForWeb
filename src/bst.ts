@@ -451,7 +451,9 @@ export class BinarySearchTree {
             } */
             
             const parentConnection = this.connections.find(connection => {
-                return connection.parent == nodes[Math.floor((zRank-1)/2)] && connection.child == nodes[zRank];
+                if(zRank>0)
+                    return connection.parent == nodes[Math.floor((zRank-1)/2)] && connection.child == nodes[zRank];
+                return false;
             });
             if(parentConnection) {
                 parentConnection.child = b;
@@ -523,31 +525,65 @@ export class BinarySearchTree {
                 console.log(`Moving the subtree with root ${rootNode.key}`)
                 subTree = subTree.slice(1);
                 if(rootNewDepth == rootOldDepth){//the subTree is changing parent node
-                    console.log(`The tree is not shifting down nor up`);
+                    console.log(`The subtree is chaning of depth.`);
+                    console.log(`Target rank = ${newRank}`);
+                    nodes[newRank] = rootNode;
+                    this.assign(rootNode, newRank, true, true, false, true);
+                    subTree.forEach((rank) => {
+                        const nodeDepth = Math.floor(Math.log2(rank+1));
+                        console.log(rank, delta, rootNewDepth-nodeDepth);
+                        const mappedRank: number = rank + delta*2**(nodeDepth - rootNewDepth);
+                        nodes[mappedRank] = nodes[rank];
+                        this.assign(nodes[mappedRank], mappedRank, true, true, false, true);
+                        delete nodes[rank];
+                    });
                 }
                 else{ //when deltas change it means that the subtree are staying with their parents, just changing depth
                     if(delta>0){
                         console.log(`Moving the tree down`);
                         subTree.sort((a,b) => b-a); //handle before the lower nodes
                         let mappedRank:number;
+                        console.log(subTree);
                         subTree.forEach((rank) => {
-                            mappedRank = rank%2 == 0? rank*2+2: rank*2+1;
+                            mappedRank = rank%2 == 0? rank << 1: (rank << 1) + 1;
                             nodes[mappedRank] = nodes[rank];
                         });
                         nodes[newRank] = rootNode;
                         this.assign(rootNode, newRank, true, true, false, true);
                         subTree.sort((a,b) => a-b); //construct now the tree from top to bottom
+                        console.log(subTree);
                         subTree.forEach((rank) => {
+                            mappedRank = rank%2 == 0? rank << 1: (rank << 1) + 1;
                             this.assign(nodes[mappedRank], mappedRank, true, true, false, true);
                             delete nodes[rank];
                         });
                     } 
                     else {
                         console.log(`Moving the tree up`);
+                        //subTree.sort((a,b) => b-a); //handle before the lower nodes
+                        let mappedRank:number;
+                        console.log(subTree);
+                        subTree.forEach((rank) => {
+                            mappedRank = (rank >> 1) -1;
+                            nodes[mappedRank] = nodes[rank];
+                        });
+                        nodes[newRank] = rootNode;
+                        this.assign(rootNode, newRank, true, true, false, true);
+                        //subTree.sort((a,b) => a-b); //construct now the tree from top to bottom
+                        subTree.forEach((rank) => {
+                            mappedRank = (rank >> 1) -1;
+                            this.assign(nodes[mappedRank], mappedRank, true, true, false, true);
+                            delete nodes[rank];
+                        });
                     }
                 }
+                const parentConnection = this.connections.find(connection => {
+                    return connection.child == nodes[newRank];
+                });
+                if(parentConnection) {
+                    parentConnection.parent = nodes[Math.floor((newRank-1)/2)];
+                }
             }
-
             if(deltaC > deltaA){ //first handle the c node and after the a node
                 console.log(`Handling C,B,A in this order`);
                 this.assign(c, zRank*2+2, true, true, false, true);
@@ -598,14 +634,14 @@ export class BinarySearchTree {
                     //delete nodes[t0[0]];
                 }
                 else console.log(`Empty subtree t0, skipping`);
-                //await this.breakPoint(null, true);
+                await this.breakPoint(null, true);
                 
                 if (rootT1) {
                     moveSubTree(rootT1, t1, (zRank*2+1)*2+2)
                     //delete nodes[t1[0]];
                 }
                 else console.log(`Empty subtree t1, skipping`);
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
 
                 nodes[zRank] = b;
                 delete nodes[rankB];

@@ -373,7 +373,8 @@ const exec = async function (...parameters: any[]) {
                     case "animation":
                         if (params[2] == "speed") {
                             const speed = parseInt(params[3]);
-                            if (isNaN(speed) || (speed < 1 || speed > 5)) {
+                            const debug = params[4] == "coco"? true:false;
+                            if (!debug && (isNaN(speed) || (speed < 1 || speed > 5))) {
                                 returnval = "The animation speed must be an integer between 1 and 5";
                             }
                             else {
@@ -735,10 +736,13 @@ const exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() {
-    await exec(["insert", 10,5,20,15,25]);
+    await exec(["insert", 25,10,40,5,15,30,50,3,7,13,20,27,35,45,61,1,4,6,8,11,14,17,24,26,29,33,37,43,47,55,63,53,60,62,64]);
+    //await exec(["insert", 44, 17, 51, 32, 48, 78, 49, 52, 88]);
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
-    await exec(["set", "animation", "speed", 5]);
+    await exec(["set", "animation", "speed", 50, "coco"]);
+    //await exec(["insert", 90]);
+    
 });
 
 const focus = function () {
