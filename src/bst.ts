@@ -1,7 +1,7 @@
 //@ts-check
 
-import { create } from "domain";
-import { truncate } from "fs/promises";
+//import { create } from "domain";
+//import { truncate } from "fs/promises";
 
 //reverted instance
 
@@ -522,7 +522,7 @@ export class BinarySearchTree {
                 const rootOldDepth = Math.floor(Math.log2(rootRank+1));
                 const rootNewDepth = Math.floor(Math.log2(newRank+1));
 
-                console.log(`Moving the subtree with root ${rootNode.key}`)
+                console.log(`Moving the subtree with root ${rootNode.key}`);
                 subTree = subTree.slice(1);
                 if(rootNewDepth == rootOldDepth){//the subTree is changing parent node
                     console.log(`The subtree is chaning of depth.`);
@@ -539,39 +539,57 @@ export class BinarySearchTree {
                     });
                 }
                 else{ //when deltas change it means that the subtree are staying with their parents, just changing depth
+                    
                     if(delta>0){
                         console.log(`Moving the tree down`);
                         subTree.sort((a,b) => b-a); //handle before the lower nodes
                         let mappedRank:number;
-                        console.log(subTree);
+                        //console.log(subTree);
                         subTree.forEach((rank) => {
-                            mappedRank = rank%2 == 0? rank << 1: (rank << 1) + 1;
+                            const rootOldDepth = Math.floor(Math.log2(rootRank + 1));
+                            const nodeDepth = Math.floor(Math.log2(rank + 1));
+                            const relativeDepth = nodeDepth - rootOldDepth;
+
+                            const mappedRank = rank + (newRank - rootRank) * 2 ** relativeDepth;
+                            //mappedRank = rank%2 == 0? rank << 1: (rank << 1) + 1;
                             nodes[mappedRank] = nodes[rank];
                         });
+                        //console.log(rootNode);
                         nodes[newRank] = rootNode;
                         this.assign(rootNode, newRank, true, true, false, true);
+                        //console.log(nodes[newRank]);
                         subTree.sort((a,b) => a-b); //construct now the tree from top to bottom
-                        console.log(subTree);
+                        //console.log(subTree);
                         subTree.forEach((rank) => {
-                            mappedRank = rank%2 == 0? rank << 1: (rank << 1) + 1;
+                            const rootOldDepth = Math.floor(Math.log2(rootRank + 1));
+                            const nodeDepth = Math.floor(Math.log2(rank + 1));
+                            const relativeDepth = nodeDepth - rootOldDepth;
+                            const mappedRank = rank + (newRank - rootRank) * 2 ** relativeDepth;
                             this.assign(nodes[mappedRank], mappedRank, true, true, false, true);
-                            delete nodes[rank];
+
+                            //if(nodes[rank].key != rootNode.key) delete nodes[rank]; //in case the root node did not replace this node when descending
                         });
                     } 
                     else {
                         console.log(`Moving the tree up`);
                         //subTree.sort((a,b) => b-a); //handle before the lower nodes
-                        let mappedRank:number;
+                        //let mappedRank:number;
                         console.log(subTree);
                         subTree.forEach((rank) => {
-                            mappedRank = (rank >> 1) -1;
+                            const rootOldDepth = Math.floor(Math.log2(rootRank + 1));
+                            const nodeDepth = Math.floor(Math.log2(rank + 1));
+                            const relativeDepth = nodeDepth - rootOldDepth;
+                            const mappedRank = rank + (newRank - rootRank) * 2 ** relativeDepth;
                             nodes[mappedRank] = nodes[rank];
                         });
                         nodes[newRank] = rootNode;
                         this.assign(rootNode, newRank, true, true, false, true);
                         //subTree.sort((a,b) => a-b); //construct now the tree from top to bottom
                         subTree.forEach((rank) => {
-                            mappedRank = (rank >> 1) -1;
+                            const rootOldDepth = Math.floor(Math.log2(rootRank + 1));
+                            const nodeDepth = Math.floor(Math.log2(rank + 1));
+                            const relativeDepth = nodeDepth - rootOldDepth;
+                            const mappedRank = rank + (newRank - rootRank) * 2 ** relativeDepth;
                             this.assign(nodes[mappedRank], mappedRank, true, true, false, true);
                             delete nodes[rank];
                         });
@@ -634,7 +652,7 @@ export class BinarySearchTree {
                     //delete nodes[t0[0]];
                 }
                 else console.log(`Empty subtree t0, skipping`);
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
                 
                 if (rootT1) {
                     moveSubTree(rootT1, t1, (zRank*2+1)*2+2)
