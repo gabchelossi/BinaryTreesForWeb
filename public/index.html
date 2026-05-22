@@ -10,24 +10,110 @@
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
 </head>
-<body>    
-    <!-- <div class = "left-color five"></div>
-    <div class = "right-color five"></div>
-    <div class = "ruler middle"></div> -->
-    <div id="console">
-        <div id="resizer"></div> <!-- This is the draggable resizer -->
-        <div id="console-bar">
-            <!-- <span class="console-dot red"></span>-->
-            <span class="console-dot green"></span> 
-            <span class="console-dot yellow" id="toggle-console"></span>
-        </div>
-        <div id="console-content">
-            <p>
-                <b>guest@gchelossi:</b>
-                <span id="text"></span>
-                <span id="cursor"> █</span>
-            </p>
-        </div>
+<body>
+    <div id = "main">
+        <fieldset id = "control-panel">
+            <legend>Control Panel</legend>
+            <table style = "height: 100%; width: 90%;">
+                <tr>
+                    <th colspan="1">Key</th>
+                    <th colspan="3">Operations</th>
+                    <th colspan="3">Animation</th>
+                    <th colspan = "3">Controls</th>
+                    <th colspan = "3">Terminal</th>
+                </tr>
+                <tr>
+                    <td rowspan="3" id = "inputtd">
+                        <input type = "number" style = "height: 100%; font-size: 25px;text-align: center;" size = "4">
+                    </td>
+                    <td>
+                        <input id = "add-button" type = "button" value = "Add">
+                    </td>
+                    <td>
+                        <input id = "delete-button" type = "button" value = "Delete">
+                    </td>
+                    <td>
+                        <input id = "search-button" type = "button" value = "Search">
+                    </td>
+                    <td>
+                        <input type="radio" id="Automatic" name="animationselection" value = "on" checked>
+                        <label for="Automatic">Auto</label>
+                    </td>
+                    <td>
+                        <input type="radio" id="Manual" name="animationselection" value = "manual">
+                        <label for="Manual">Manual</label>
+                    </td>
+                    <td>
+                        <input type="radio" id="Off" name="animationselection" value="Off" />
+                            <label for="Off">Off</label>
+                    </td>
+                    <td>
+                        <input id = "toggle-animation-button" type = "button" value = "&#x23EF;">
+                    </td>
+                    <td id="console-container" colspan="4" rowspan = "3">
+                        <div id="console">
+                            <div id="console-content">
+                                <p>
+                                    <b>guest@gchelossi:</b>
+                                    <span id="text"></span>
+                                    <span id="cursor"> █</span>
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <input id = "traverse-button" type = "button" value = "Traverse" style = "width: 100%">
+                    </td>
+                    <th colspan="3">Options</th>
+                    
+                     <td colspan="2">
+                        <input
+                            type="range"
+                            id="speed"
+                            name="speedBar"
+                            min="1"
+                            max="5"
+                            value="1"
+                            step="1" />
+                        <label id = "labelspeed" for="speed">x1 Speed</label>
+                    </td>
+                    
+                    
+                </tr>
+                <tr>
+                    <td>
+                        <input type="radio" id="In-Order" name="trasversalselection" value="in-order" checked />
+                            <label for="In-Order">In-Order</label>
+                    </td>
+                    <td>
+                        <input type="radio" id="Pre-Order" name="trasversalselection" value="pre-order" />
+                            <label for="Pre-Order">Pre-Order</label>
+                    </td>
+                    <td>
+                        <input type="radio" id="Post-Order" name="trasversalselection" value="post-order" />
+                            <label for="Post-Order">Post-Order</label>
+                    </td>
+                    <td>
+                        <label for="AVL">AVL?</label><br/>
+                        <input type="checkbox" id="AVL" name="AVL" />  
+                    </td>
+                    <td colspan="2">
+                        <label for="empty">Empty Nodes?</label><br/>
+                        <input type="checkbox" id="empty" name="empty" />  
+                    </td>
+                    
+                    <td colspan="2">
+                        
+                    </td>
+                </tr>
+                        
+            </table>
+        </fieldset>       
+    </div>
+    <div id = "alternate">
+        <h1>Please make the screen wider/taller to display the page.</h1>
     </div>
     <script src="./js/gui.js" type="module"></script>
 </body>

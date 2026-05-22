@@ -8,6 +8,19 @@ html, body{
     overflow: hidden;
 }
 
+#alternate{
+    display: none;
+}
+
+#alternate h1{
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; /* For horizontal centering of text within the h1 */
+    width: 100%; /* Ensure the h1 takes full width for text-align to work */
+}
+
 .TreeElement{
     cursor: help;
     position: absolute;
@@ -17,14 +30,173 @@ html, body{
     height: 2.5vw;
     width: 2.5vw;
     border-radius: 50%;
-    background-color: white!important;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bolder;
     font-size: 2.5vh;
     border: 2px solid rgb(37, 201, 37);
-    transition: border 1s, opacity 1s;
+    transition: border 1s, opacity 1s, background-color 1s;
+    z-index: 10;
+}
+
+
+
+.TreeElement.empty{
+    opacity: 1;
+    border-radius: 0;
+    border: 2px solid grey!important;
+    height: 2vw;
+    width: 2vw;
+    z-index: 9;
+    transition: 0;
+}
+
+.TreeElement.empty.small{
+    height: 1.75vw;
+    width: 1.75vw;
+    font-size: 1.75vh;
+}
+
+.TreeElement.transform{
+    transition: border 1s, opacity 1s, transform 1s ease-in-out, width 1s, height 1s, font-size 1s;
+}
+
+
+.TreeElement.small{
+    height: 2vw;
+    width: 2vw;
+    font-size: 2vh;
+}
+
+
+.TreeElement.small .avl.bottom::after{
+    font-size: 0.7vw;
+}
+
+/* The overlay span that hosts the pseudo-labels */
+.TreeElement span.avl{
+    position: absolute;      /* sits over the node */
+    inset: 0;                /* fill the TreeElement */
+    font-weight: bolder;
+    font-size: 0.8rem;
+    color: red;
+    pointer-events: none;   /* labels don't block clicks */
+}
+
+/* Hide all labels by default */
+.TreeElement .avl::after{
+    content: attr(data-val);
+    display: none;
+    position: absolute;      /* needed for offsets below */
+    color: red;
+}
+
+/* Show labels when active */
+.TreeElement.active .avl::after{
+    display: inline !important;
+}
+
+/* Top label: centered above the node */
+.TreeElement .avl.top::after{
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Left label: vertically centered to the left */
+.TreeElement .avl.left::after{
+    top: 100%;
+    right: 100%;
+    transform: translateY(-50%);
+}
+
+/* Right label: vertically centered to the right */
+.TreeElement .avl.right::after{
+    top: 100%;
+    left: 100%;
+    transform: translateY(-50%);
+}
+
+/* Bottom label: centered above the node */
+.TreeElement .avl.bottom::after{
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1vw;
+    color: green;
+    font-weight: bolder;
+}
+
+
+
+.TreeElement.search{
+    border: 2px solid rgb(71 173 199);;
+}
+
+.TreeElement.doubleRotation{
+    --t: 0deg;
+    --r: 0px;
+    /*--offsetX: 0vw;
+    --offsetY: 0vh;*/
+    --x: 0;
+    --y: 0;
+    /*transform: translateX(calc(var(--offsetX) + cos(var(--angle)) * var(--radius))) translateY(calc(var(--offsetY) + sin(var(--angle)) * -1 * var(--radius)))!important;*/
+    /*transform: translateX(calc(var(--offsetX))) translateY(calc(var(--offsetY)));*/
+    /*transform: translateX(calc(var(--x) + var(--r)*cos(var(--t)))) translateY(calc(var(--y) + var(--r)*sin(var(--t))));*/
+    transform: translate(
+        calc(var(--x) + var(--r) * cos(var(--t))),
+        calc(var(--y) + var(--r) * sin(var(--t)))
+    );
+    transition: none!important;
+}
+
+
+.dot{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: black;
+}
+
+.triangle-svg{
+    width: 100px; /* let the transform scale property handle its final size */
+    height: 100px;
+    will-change: transform;
+    z-index: 10;
+    position: relative;
+}
+
+.subtreelabel {
+    display: block;
+    position: relative;
+    width: fit-content;
+}
+
+.subtreelabel::after {
+    content: attr(label);
+    position: absolute;
+    top: 100%;               /* just below the bottom of the triangle */
+    left: 50%;               /* horizontally centered relative to parent */
+    transform: translateX(-50%); /* adjust so center aligns, not left edge */
+    
+    /* Optional styling: */
+    margin-top: 4px;
+    font-size: 1.1vw;
+    font-weight: bolder;
+    text-align: center;
+    width: max-content;      /* or 100% if you want it full-width */
+}
+
+.triangle-svg polygon{
+    stroke: black;
+    fill: none;
+    stroke-width: 3px;
 }
 
 .no-animation{
@@ -61,13 +233,7 @@ html, body{
     left: 0!important;
 }
 
-
-.TreeElement.transform{
-    transition: border 1s, opacity 1s, transform 1s ease-in-out;
-}
-
-
-.trasverser{
+.traverser{
     position: absolute;
     font-size: 3vw;
     top:0 !important;
@@ -78,121 +244,133 @@ html, body{
     /*background-color: rgba(255, 0, 0, 0.3); */
 }
 
-.comparator{
-    position: absolute;
-    display: block;
-    opacity: 0;
-    height: 2vh;
-    width: 2vh;
-    font-size: 2vh;
-    transition: opacity 1s;
-    margin:0;
-}
-
 .line {
   position: absolute;
   height: 2px;
   width: 100px; /* fixed base width */
   background-color: black;
+  transition: background-color 2s;
   transform-origin: 0 0;
-  transition: transform 1s ease-out;
-  will-change: transform;
+  
+}
+
+.line.transform{
+    transition: transform 1s ease-in-out, opacity 1s, background-color 2s;
+    will-change: transform;
+}
+
+.line.doubleRotation{
+    --t: 0;
+    --x: 0;
+    --y: 0;
+    --l: 0;
+    transition: none;
+    transform: translate(var(--x), var(--y)) rotate(var(--t)) scaleX(var(--l));
 }
 
 .comparatorTransform{
     position: absolute;
     opacity: 0;
-    transition: opacity 1s;
+    transition: opacity 1s ease-out;
+    mix-blend-mode: difference;
 }
 
 .comparatorTransform.aft{
-    left: 2.6vw;
+    left: 2.5vw;
 }
 
 .comparatorTransform.bef{
-    right: 2.6vw;
-}
-
-
-.TreeElement.lt.aft::after{
-    font-weight: bolder;
-    position: absolute;
-    left: 2.6vw;
-    content: "<";
-}
-
-.TreeElement.lt.bef::before{
-    font-weight: bolder;
-    position: absolute;
-    right: 2.6vw;
-    content: ">";
-}
-
-.TreeElement.gt.bef::before{
-    font-weight: bolder;
-    position: absolute;
     right: 2.5vw;
-    content: "<";
-}
-
-
-.TreeElement.gt.aft::after{
-    font-weight: bolder;
-    position: absolute;
-    left: 2.5vw;
-    content: ">";
 }
 
 
 
-@media screen and (max-width: 1000px) {
-    .TreeElement{
-        height: 4vw;
-        width: 4vw;
-        font-size: 2vw;
+@media screen and (max-width: 999px), (max-height: 559px) {
+    #main, .TreeElement, .line{
+        display: none!important;
     }
-    .comparatorTransform.aft{
-        left: 4vw;
+    #alternate{
+        display: block;
     }
+}
 
-    .comparatorTransform.bef{
-        right: 4vw;
-    }
-    
+#inputtd{
+    width: 25%;
+}
+
+#inputtd > *{
+    width: 100%;
 }
 
 
-#console{
+
+
+
+
+#control-panel{
+    font-weight: 900;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
+    padding: 0 0 1vh 0;
+    border: 2px solid black;
+    background-color:rgb(193 229 194);
+    font-family: "Ubuntu Mono", monospace;
+    text-align: center;
+    z-index: 10;
+}
+
+#control-panel legend{
+    font-size: 2.5vw;
+}
+
+#control-panel table {
+    min-width: 25vw;
+    display: inline-table;
+    /*vertical-align: middle; */  /* aligns the tables themselves 
+    font-size: 20px;*/
+    border: 2px solid black;
+    min-height: 20vh;
+}
+
+#control-panel th,
+#control-panel td {
+    text-align: center;       /* horizontal centering */
+    /*vertical-align: middle; */  /* vertical centering */
+    padding: 0.5vh;    
+    border: 1px solid black;         /* spacing for readability */
+}
+
+#control-panel > tr:first-child{
+    border-right: 1px solid black;
+}
+
+#console-container{
+    padding: 0px!important;
+    width: 100%; /* to avoid overlap with control panel */
+    
+}
+#console{
+    /*position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;*/
+    /*width: 24vw; */
     border: 1px solid black;
     background-color: black;
     color: black;
     font-family: "Ubuntu Mono", monospace;
     font-weight: 500;
     font-style: normal;
+    font-size: 1vw;
     color: white;
     z-index: 4;
-}
-
-#console-content{
-    padding: 10px 30px;
+    text-align: left;
+    height: 100%;
     overflow-y: scroll;
-    height:20vh;
+    /*width: 100%; */
 }
-
-#resizer {
-    height: 5px;
-    background: #444;
-    cursor: ns-resize;
-    width: 100%;
-    position: sticky;
-    top: 0;
-    left: 0;
-}
-
 
 #console b{
     color: rgb(58, 197, 58);
@@ -255,3 +433,8 @@ html, body{
     color: cyan;
 }
 
+#toggle-animation-button{
+    width: 100%;
+    height: 100%;
+    font-size: 1vw;
+}
