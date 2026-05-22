@@ -840,16 +840,16 @@ document.getElementById("speed")!.addEventListener("mouseup", function () {
 
 document.getElementById("AVL")!.addEventListener("change", function () {
     const el = this as HTMLInputElement;
-    alert("This feature has not been completed yet.");
-    el.checked = false;
-    /*
+    /*alert("This feature has not been completed yet.");
+    el.checked = false;*/
+    
     if (el.checked) {
         command!.innerHTML = `set avl on`;
     } else {
         command!.innerHTML = `set avl off`;
     }
 
-    parseCommand();*/
+    parseCommand();
 });
 
 document.getElementById("empty")!.addEventListener("change", function(){
