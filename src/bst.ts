@@ -319,9 +319,8 @@ export class BinarySearchTree {
                 function decimalToBinary(decimalNumber: number) :string { //needed for the mapping function
                     return decimalNumber.toString(2);
                 };
-                if(newRank > parentRank){ //Subtree is getting pushed down
-                    subTree.sort((a,b) => {return b-a;}); // handle the deeper nodes first
-                    subTree.forEach(index => {
+                const translateSubTree = (subT:number[]) => {
+                    subT.forEach(index => {
                         const iRank:number = index + 1;
                         let binDepth:any = decimalToBinary(iRank);
                         binDepth = binDepth.substring(1+depthParent).split("");
@@ -339,11 +338,25 @@ export class BinarySearchTree {
                         delete this.arr[index];
                         //console.log(`Element key ${this.arr[index].key} will go from rank ${index} to new rank ${mappedRank}`);
                     });
+                }
+                if(newRank > parentRank){ //Subtree is getting pushed down
+                    subTree.sort((a,b) => {return b-a;}); // handle the deeper nodes first
+                    translateSubTree(subTree);
                     this.arr[newRank] = rootNode;
                     this.assign(rootNode, newRank, true, true, false, true);
                 }
-                
-                
+                else{
+                    this.arr[newRank] = rootNode;
+                    this.assign(rootNode, newRank, true, true, false, true);
+                    translateSubTree(subTree);
+                }
+                if(Math.floor(Math.log2(newRank+1)) == depthParent){ //subtree is not changing depth
+                    let connection = this.connections.find(conn => {
+                        return conn.child === rootNode;
+                    });
+                    connection.parent = this.arr[Math.floor((newRank-1)/2)];
+                    connection.draw();
+                }
             }
             if(deltaC > deltaA){ //first handle the c node and after the a node //right rotation
                 console.log("The A is going shallower, and the B sub-tree is going deeper.");
