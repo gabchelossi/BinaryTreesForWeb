@@ -279,12 +279,12 @@ export class BinarySearchTree {
             t2.sort(sortByNumber);
             t3.sort(sortByNumber);
             
-            //console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
+            console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
             const deltaA = zRank*2+1 - rankA;
             const deltaC = zRank*2+2 - rankC; //in order to check which sub trees and which nodes to move first...
             console.log(`Delta A: ${deltaA}, Delta C: ${deltaC}`);
        
-            const moveDown = function(arr:number[]) {
+            /*const moveDown = function(arr:number[]) {
                 return new Promise (async (resolve) => {
                     arr.forEach(async (rank) => {
                         if(nodes[rank]){
@@ -296,7 +296,7 @@ export class BinarySearchTree {
                     resolve(true);
                 });
                 
-            }
+            }*/
 
             const rootT0 = this.arr![t0[0]];
             const rootT1 = this.arr![t1[0]];
@@ -313,10 +313,11 @@ export class BinarySearchTree {
 
             
             const moveSubTree = (rootNode:InstanceType<typeof BinarySearchTree.TreeElement>, subTree:number[], newRank:number):void => {
-                console.log(`Moving subtree with rootnode ${rootNode.key} from rank ${this.rankOf(rootNode.key)} to ${newRank}`);
+                //console.log(`Moving subtree with rootnode ${rootNode.key} from rank ${this.rankOf(rootNode.key)} to ${newRank}`);
+                
             }
-            if(deltaC > deltaA){ //first handle the c node and after the a node
-                console.log("The left sub-tree is going deeper, and the right sub-tree is going shallow.");
+            if(deltaC > deltaA){ //first handle the c node and after the a node //right rotation
+                console.log("The A is going shallower, and the B sub-tree is going deeper.");
                 //console.log(`Handling C,B,A in this order`);
                 this.assign(c, zRank*2+2, true, true, false, true);
                 nodes[zRank*2+2] = c;
@@ -356,8 +357,8 @@ export class BinarySearchTree {
                 else //console.log(`Empty subtree t0, skipping`);
                 y_x_line.draw(false, true);
             }
-            else{
-                console.log("The left sub-tree is going shallower, and the right sub-tree is going deeper.");
+            else{ //left rotation
+                console.log("The A sub-tree is going deeper, and the C sub-tree is going shallower.");
                 //console.log(`Handling C,B,A in this order`);
                 nodes[zRank*2+1] = a;
                 this.assign(a, zRank*2+1, true, true, false, true);

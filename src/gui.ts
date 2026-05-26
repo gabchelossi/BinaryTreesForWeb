@@ -736,11 +736,13 @@ const exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() {
-    //await exec(["insert", 25,10,40,5,15,30,61,3,7,13,20,27,35,50,65,1,4,6,8,11,14,17,24,26,29,33,37,45,55,63,67,43,47,53,60,62,64,66,68]);
-    //await exec(["insert", 44, 17, 51, 32, 48, 78, 49, 52, 88]);
+
+    await exec(["insert", 40, 30, 61, 27, 35, 50, 65, 26, 29, 33, 37, 45, 55, 63, 67, 43, 47, 53, 60, 62, 64, 66, 68]);
+    //await exec(["insert", 61,40,65,30,50,63,67,27,35,45,55,62,64,66,68,26,29,33,37,43,47,53,60,69]); //this one is the balanced one after inserting 69
+
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
-    await exec(["set", "animation", "speed", 50, "coco"]);
+    await exec(["set", "animation", "speed", 100, "coco"]);
     //await exec(["insert", 69]);
     //await exec(["insert", 90]);
     
