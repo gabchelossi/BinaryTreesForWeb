@@ -278,11 +278,10 @@ export class BinarySearchTree {
             t1.sort(sortByNumber);
             t2.sort(sortByNumber);
             t3.sort(sortByNumber);
-            
             console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
             const deltaA = zRank*2+1 - rankA;
             const deltaC = zRank*2+2 - rankC; //in order to check which sub trees and which nodes to move first...
-            console.log(`Delta A: ${deltaA}, Delta C: ${deltaC}`);
+            //console.log(`Delta A: ${deltaA}, Delta C: ${deltaC}`);
        
             /*const moveDown = function(arr:number[]) {
                 return new Promise (async (resolve) => {
@@ -313,7 +312,37 @@ export class BinarySearchTree {
 
             
             const moveSubTree = (rootNode:InstanceType<typeof BinarySearchTree.TreeElement>, subTree:number[], newRank:number):void => {
-                //console.log(`Moving subtree with rootnode ${rootNode.key} from rank ${this.rankOf(rootNode.key)} to ${newRank}`);
+                const parentRank = subTree[0];
+                const depthParent = Math.floor(Math.log2(parentRank + 1));
+                subTree = subTree.slice(1);
+
+                function decimalToBinary(decimalNumber: number) :string { //needed for the mapping function
+                    return decimalNumber.toString(2);
+                };
+                if(newRank > parentRank){ //Subtree is getting pushed down
+                    subTree.sort((a,b) => {return b-a;}); // handle the deeper nodes first
+                    subTree.forEach(index => {
+                        const iRank:number = index + 1;
+                        let binDepth:any = decimalToBinary(iRank);
+                        binDepth = binDepth.substring(1+depthParent).split("");
+                        const mapRank = (path: string[]): number => {
+                            let rank = newRank;
+                            path.forEach((c) => {
+                                rank = c == "0"? rank * 2 + 1: rank * 2 + 2;
+                            });
+
+                            return rank;
+                        };
+                        const mappedRank = mapRank(binDepth);
+                        this.arr[mappedRank] = this.arr[index];
+                        this.assign(this.arr[index], mappedRank, true, true, false, true);
+                        delete this.arr[index];
+                        //console.log(`Element key ${this.arr[index].key} will go from rank ${index} to new rank ${mappedRank}`);
+                    });
+                    this.arr[newRank] = rootNode;
+                    this.assign(rootNode, newRank, true, true, false, true);
+                }
+                
                 
             }
             if(deltaC > deltaA){ //first handle the c node and after the a node //right rotation
@@ -325,12 +354,12 @@ export class BinarySearchTree {
                     moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
                     //delete nodes[t3[0]];
                 } 
-                else //console.log(`Empty subtree t3, skipping`);
+                else console.log(`Empty subtree t3, skipping`);
                 if(rootT2) {
                     moveSubTree(rootT2, t2, (zRank*2+2)*2+1);
                     //delete nodes[t2[0]];
                 }
-                else //console.log(`Empty subtree t2, skipping`);
+                else console.log(`Empty subtree t2, skipping`);
                 delete nodes[rankC];
                 //assign b to the new rank
                 nodes[zRank] = b;
@@ -348,13 +377,13 @@ export class BinarySearchTree {
                     moveSubTree(rootT1, t1, (zRank*2+1)*2+1);
                     //delete nodes[t1[0]];
                 }
-                else //console.log(`Empty subtree t1, skipping`);
+                else console.log(`Empty subtree t1, skipping`);
 
                 if (rootT0){
                     moveSubTree(rootT0,t0, (zRank*2+1)*2+2);
                     //delete nodes[t0[0]];
                 } 
-                else //console.log(`Empty subtree t0, skipping`);
+                else console.log(`Empty subtree t0, skipping`);
                 y_x_line.draw(false, true);
             }
             else{ //left rotation
@@ -364,7 +393,7 @@ export class BinarySearchTree {
                 this.assign(a, zRank*2+1, true, true, false, true);
                 
                 if (rootT0) {
-                    moveSubTree(rootT0, t0, (zRank*2+1)*2+1); //why do I need to pass also T0? Because it has been overwritten in the array by a in the instruction above
+                    moveSubTree(rootT0, t0, (zRank*2+1)*2+1); //why do I need to pass also rootT0? Because it has been overwritten in the array by a in the instruction above
                     //delete nodes[t0[0]];
                 }
                 else console.log(`Empty subtree t0, skipping`);

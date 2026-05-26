@@ -745,7 +745,6 @@ document.addEventListener("DOMContentLoaded",async function() {
     await exec(["set", "animation", "speed", 100, "coco"]);
     //await exec(["insert", 69]);
     //await exec(["insert", 90]);
-    
 });
 
 const focus = function () {
