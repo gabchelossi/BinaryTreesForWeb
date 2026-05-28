@@ -315,7 +315,7 @@ export class BinarySearchTree {
                 const parentRank = subTree[0];
                 const depthParent = Math.floor(Math.log2(parentRank + 1));
                 const newRankDepth = Math.floor(Math.log2(newRank + 1));
-                console.log(`moving subtree ${subTree} to rank ${newRank}`);
+                //console.log(`moving subtree ${subTree} to rank ${newRank}`);
                 subTree = subTree.slice(1);
                 function decimalToBinary(decimalNumber: number) :string { //needed for the mapping function
                     return decimalNumber.toString(2);
@@ -341,8 +341,11 @@ export class BinarySearchTree {
                         return mappedRank;
                         //console.log(`Element key ${this.arr[index].key} will go from rank ${index} to new rank ${mappedRank}`);
                     });
+                    console.log(rootNode.key, newRank);
                     this.arr![newRank] = rootNode;
                     this.assign(rootNode, newRank, true, true, false, true);
+                    //delete this.arr![parentRank];
+                    //console.log
                     mappedRanks.sort((a,b) => {return a-b;}).forEach((index) => {
                         this.assign(this.arr![index], index, true, true, false, true);
                     });
@@ -350,7 +353,7 @@ export class BinarySearchTree {
                 if(newRankDepth > depthParent){ //Subtree is getting pushed down
                     
                     subTree.sort((a,b) => {return b-a;}); // handle the deeper nodes first
-                    console.log(`subtree ${subTree} is getting pushed down`);
+                    //console.log(`subtree ${subTree} is getting pushed down`);
                     translateSubTree(subTree);
                     /*this.arr![newRank] = rootNode;
                     this.assign(rootNode, newRank, true, true, false, true);*/
@@ -360,6 +363,8 @@ export class BinarySearchTree {
                     this.assign(rootNode, newRank, true, true, false, true);*/
                     translateSubTree(subTree);
                 }
+                /*this.arr![newRank] = rootNode;
+                this.assign(rootNode, newRank, true, true, false, true);*/
                 let connection = this.connections.find(conn => {
                     return conn.child === rootNode;
                 });
@@ -396,9 +401,10 @@ export class BinarySearchTree {
                 z_y_line.draw(false, true);
                 if (rootT1) {
                     moveSubTree(rootT1, t1, (zRank*2+1)*2+2);
+                    //this.arr![(zRank*2+1)*2+2] = rootT1;
                     //delete nodes[t1[0]];
                 }
-                else console.log(`Empty subtree t1, skipping`);
+                else console.log(`Empty subtree t1, skipping. dio cane`);
                 
                 if (rootT0){
                     moveSubTree(rootT0,t0, (zRank*2+1)*2+1);
@@ -421,7 +427,7 @@ export class BinarySearchTree {
                 //await this.breakPoint(null, true);
                 
                 if (rootT1) {
-                    moveSubTree(rootT1, t1, (zRank*2+1)*2+2)
+                    moveSubTree(rootT1, t1, (zRank*2+1)*2+2);
                     //delete nodes[t1[0]];
                 }
                 else console.log(`Empty subtree t1, skipping`);

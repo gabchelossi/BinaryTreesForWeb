@@ -737,12 +737,12 @@ const exec = async function (...parameters: any[]) {
 
 document.addEventListener("DOMContentLoaded",async function() {
 
-    //await exec(["insert", 40, 30, 61, 27, 35, 50, 65, 26, 29, 33, 37, 45, 55, 63, 67, 43, 47, 53, 60, 62, 64, 66, 68]);
-    //await exec(["insert", 61, 40, 65, 30, 50, 63, 67,27, 35, 45, 55, 62, 64, 66, 68,26, 29, 33, 37, 43, 47, 53, 60]);
-    //await exec(["insert", 63,31,79,15,47,71,87,7,23,39,55,67,75,83,95,3,11,19,27,35,43,51,59,65,69,73,77,81,85,91,97,1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,64,66,68,70,72,74,76,78,80,82,84,86,89,93,96,98,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,88,90,92,94,99]);
+    await exec(["insert", 99,97,100,96,98]);
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
     await exec(["set", "animation", "speed", 100, "coco"]);
+    //insert 95 and observe
+    
     //for(let i=100; i< 140; i++)
         //await exec(["insert", i]);
     //wait exec(["insert", 54]);
