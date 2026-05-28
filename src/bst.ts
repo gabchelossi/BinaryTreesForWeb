@@ -314,13 +314,14 @@ export class BinarySearchTree {
             const moveSubTree = (rootNode:InstanceType<typeof BinarySearchTree.TreeElement>, subTree:number[], newRank:number):void => {
                 const parentRank = subTree[0];
                 const depthParent = Math.floor(Math.log2(parentRank + 1));
+                const newRankDepth = Math.floor(Math.log2(newRank + 1));
+                console.log(`moving subtree ${subTree} to rank ${newRank}`);
                 subTree = subTree.slice(1);
-
                 function decimalToBinary(decimalNumber: number) :string { //needed for the mapping function
                     return decimalNumber.toString(2);
                 };
                 const translateSubTree = (subT:number[]) => {
-                    subT.forEach(index => {
+                    const mappedRanks = subT.map(index => {
                         const iRank:number = index + 1;
                         let binDepth:any = decimalToBinary(iRank);
                         binDepth = binDepth.substring(1+depthParent).split("");
@@ -333,33 +334,40 @@ export class BinarySearchTree {
                             return rank;
                         };
                         const mappedRank = mapRank(binDepth);
-                        this.arr[mappedRank] = this.arr[index];
-                        this.assign(this.arr[index], mappedRank, true, true, false, true);
-                        delete this.arr[index];
+                        //console.log(`Moving element ${this.arr![index].key} to rank ${mappedRank}`);
+                        this.arr![mappedRank] = this.arr![index];
+                        //this.assign(this.arr![index], mappedRank, true, true, false, true);
+                        delete this.arr![index];
+                        return mappedRank;
                         //console.log(`Element key ${this.arr[index].key} will go from rank ${index} to new rank ${mappedRank}`);
                     });
-                }
-                if(newRank > parentRank){ //Subtree is getting pushed down
-                    subTree.sort((a,b) => {return b-a;}); // handle the deeper nodes first
-                    translateSubTree(subTree);
-                    this.arr[newRank] = rootNode;
+                    this.arr![newRank] = rootNode;
                     this.assign(rootNode, newRank, true, true, false, true);
+                    mappedRanks.sort((a,b) => {return a-b;}).forEach((index) => {
+                        this.assign(this.arr![index], index, true, true, false, true);
+                    });
+                }
+                if(newRankDepth > depthParent){ //Subtree is getting pushed down
+                    
+                    subTree.sort((a,b) => {return b-a;}); // handle the deeper nodes first
+                    console.log(`subtree ${subTree} is getting pushed down`);
+                    translateSubTree(subTree);
+                    /*this.arr![newRank] = rootNode;
+                    this.assign(rootNode, newRank, true, true, false, true);*/
                 }
                 else{
-                    this.arr[newRank] = rootNode;
-                    this.assign(rootNode, newRank, true, true, false, true);
+                    /*this.arr![newRank] = rootNode;
+                    this.assign(rootNode, newRank, true, true, false, true);*/
                     translateSubTree(subTree);
                 }
-                if(Math.floor(Math.log2(newRank+1)) == depthParent){ //subtree is not changing depth
-                    let connection = this.connections.find(conn => {
-                        return conn.child === rootNode;
-                    });
-                    connection.parent = this.arr[Math.floor((newRank-1)/2)];
-                    connection.draw();
-                }
+                let connection = this.connections.find(conn => {
+                    return conn.child === rootNode;
+                });
+                connection!.parent = this.arr![Math.floor((newRank-1)/2)];
+                connection!.draw(false, true);
             }
             if(deltaC > deltaA){ //first handle the c node and after the a node //right rotation
-                console.log("The A is going shallower, and the B sub-tree is going deeper.");
+                console.log("The A sub-trees are going shallower, and the C sub-trees are going deeper.");
                 //console.log(`Handling C,B,A in this order`);
                 this.assign(c, zRank*2+2, true, true, false, true);
                 nodes[zRank*2+2] = c;
@@ -384,23 +392,23 @@ export class BinarySearchTree {
                 this.assign(b, zRank, true, true, false);
                 nodes[zRank*2+1] = a;
                 this.assign(a, zRank*2+1, true, true, false);
-                delete nodes[rankA];
+                if(zRank*2+1 != rankA) delete nodes[rankA];
                 z_y_line.draw(false, true);
                 if (rootT1) {
-                    moveSubTree(rootT1, t1, (zRank*2+1)*2+1);
+                    moveSubTree(rootT1, t1, (zRank*2+1)*2+2);
                     //delete nodes[t1[0]];
                 }
                 else console.log(`Empty subtree t1, skipping`);
-
+                
                 if (rootT0){
-                    moveSubTree(rootT0,t0, (zRank*2+1)*2+2);
+                    moveSubTree(rootT0,t0, (zRank*2+1)*2+1);
                     //delete nodes[t0[0]];
                 } 
                 else console.log(`Empty subtree t0, skipping`);
                 y_x_line.draw(false, true);
             }
             else{ //left rotation
-                console.log("The A sub-tree is going deeper, and the C sub-tree is going shallower.");
+                console.log("The A sub-trees are going deeper, and the C sub-trees are going shallower.");
                 //console.log(`Handling C,B,A in this order`);
                 nodes[zRank*2+1] = a;
                 this.assign(a, zRank*2+1, true, true, false, true);
@@ -425,10 +433,14 @@ export class BinarySearchTree {
                 y_x_line.parent = b;
                 z_y_line.child = c;
                 y_x_line.child = a;
-                this.assign(b, zRank, true, true, false);
+
+                this.assign(b, zRank, true, true, false, true);
+                
                 nodes[zRank*2+2] = c;
-                this.assign(c, zRank*2+2, true, true, false);
-                delete nodes[rankC];
+                this.assign(c, zRank*2+2, true, true, false, true);
+                
+                if(zRank*2+2 != rankC) delete nodes[rankC];
+
                 //z_y_line.draw(false, true);
                 
                 if(rootT2) {
@@ -437,7 +449,7 @@ export class BinarySearchTree {
                 }
                 else console.log(`Empty subtree t2, skipping`);
                 
-                if(rootT3){
+                if(rootT3 && t3[0] != (zRank*2+2)*2+2){
                     moveSubTree(rootT3, t3, (zRank*2+2)*2+2);
                     //delete nodes[t3[0]];
                 }
@@ -537,7 +549,7 @@ export class BinarySearchTree {
         }
     }
 
-    toggleEmptyNodes(on: boolean = true): Promise<boolean> {
+    toggleEmptyNodes(on: boolean = true, placeHolder:boolean = false): Promise<boolean> {
     return new Promise(async (resolve) => {
 
         const emptyNodes = new Set<number>();
@@ -575,7 +587,8 @@ export class BinarySearchTree {
 
                 const element = new BinarySearchTree.TreeElement(targetKey);
                 element.addClass("empty");
-
+                if(placeHolder)
+                    element.dom.style = "visibility: hidden;";
                 this.assign(element, rank, true, false);
                 this.arr![rank] = element;
                 element.dom.innerHTML = "X";
@@ -755,6 +768,7 @@ export class BinarySearchTree {
     async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true, avl: boolean = this.avlStatus, forceRank: boolean = false) {
         return new Promise(async (resolve) => {
             // //console.log(`assign Promise Opened`);
+            if(!e) throw new Error(`Element passed is not initialized`);
             if(animation) {
                 e.addClass("transform");
             }
@@ -768,6 +782,7 @@ export class BinarySearchTree {
             else e.removeClass("small"); //in case it is getting shifted up
             let parentRank = Math.floor((rank - 1) / 2);
             let parent = nodes![parentRank];
+            if(!parent && rank > 0) throw new Error(`Parent is non-existant at rank ${Math.floor((rank - 1) / 2)}.\nWas trying to assign child ${e.key} to rank ${rank}`);
             ////console.log(parent);
             let translateInfo : {x: string, y: string} = {
                 x: "",
