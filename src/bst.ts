@@ -4,10 +4,12 @@
 //import { truncate } from "fs/promises";
 
 //reverted instance
+type TreeElementInstance = InstanceType<typeof BinarySearchTree.TreeElement>;
 
 export class BinarySearchTree {
     
-    arr: (InstanceType<typeof BinarySearchTree.TreeElement>)[] | undefined;
+    
+    arr: TreeElementInstance[];    
     connections: InstanceType<typeof BinarySearchTree.Connection>[];
     s: number;
     width: number;
@@ -15,7 +17,53 @@ export class BinarySearchTree {
     paused: boolean;
 
     constructor() {
-        this.arr = [];
+        this.arr = new Proxy<TreeElementInstance[]>([], {
+        get(target, prop, receiver) {
+            /*
+            if (prop !== "length" && typeof prop !== "symbol") {
+            if (prop == "4" || prop == "5") {
+                console.log("READ:", prop);
+                console.trace();
+            }
+            }
+            */
+
+            // console.log("READ:", prop);
+            // console.trace();
+
+            return Reflect.get(target, prop, receiver);
+        },
+
+        set(target, prop, value, receiver) {
+            /*
+            if (prop !== "length") {
+            if (prop == "4" || prop == "5") {
+                console.log("WRITE:", prop, value);
+                console.trace();
+            }
+            }
+            */
+
+            // console.log("WRITE:", prop, value);
+            // console.trace();
+
+            return Reflect.set(target, prop, value, receiver);
+        },
+
+        deleteProperty(target, prop) {
+            /*
+            if (prop == "4" || prop == "5") {
+            console.log("DELETE:", prop);
+            console.trace();
+            }
+            */
+
+            // console.log("DELETE:", prop);
+            // console.trace();
+
+            return Reflect.deleteProperty(target, prop);
+        }
+});
         this.connections = [];
         this.s = 0;
         this.width = 85;
@@ -310,7 +358,7 @@ export class BinarySearchTree {
                 parentConnection.child = b;
             }
 
-            
+            console.clear();
             const moveSubTree = (rootNode:InstanceType<typeof BinarySearchTree.TreeElement>, subTree:number[], newRank:number):void => {
                 const parentRank = subTree[0];
                 const depthParent = Math.floor(Math.log2(parentRank + 1));
@@ -344,8 +392,6 @@ export class BinarySearchTree {
                     console.log(rootNode.key, newRank);
                     this.arr![newRank] = rootNode;
                     this.assign(rootNode, newRank, true, true, false, true);
-                    //delete this.arr![parentRank];
-                    //console.log
                     mappedRanks.sort((a,b) => {return a-b;}).forEach((index) => {
                         this.assign(this.arr![index], index, true, true, false, true);
                     });
@@ -370,6 +416,7 @@ export class BinarySearchTree {
                 });
                 connection!.parent = this.arr![Math.floor((newRank-1)/2)];
                 connection!.draw(false, true);
+                if(this.arr[newRank] == this.arr![parentRank] && newRank != parentRank) delete this.arr![parentRank];
             }
             if(deltaC > deltaA){ //first handle the c node and after the a node //right rotation
                 console.log("The A sub-trees are going shallower, and the C sub-trees are going deeper.");
@@ -466,9 +513,10 @@ export class BinarySearchTree {
 
             let mySet = new Set();
             nodes.forEach((element, index) => { //not elegant I know but for now this is what I can do
-                if(mySet.has(element.key)) delete nodes[index];
+                if(mySet.has(element.key)) throw new Error(`After balancing there is duplicate key ${element.key}`);
                 else mySet.add(element.key);
             });
+            console.log("All good!");
             //if(parentConnection) parentConnection.draw(false, true);
             x.label = "";
             y.label = "";
