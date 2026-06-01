@@ -742,9 +742,9 @@ document.addEventListener("DOMContentLoaded",async function() {
     await exec(["set", "animation", "speed", 100, "coco"]);
     //await exec(["insert", 40,30,61,27,35,50,65,37,45,55,63,67,43,47,53,60,62,64,66,68]);
     
-    /*for(let i = 1; i< 200; i++){
-        await exec(["insert", i]);
-    }*/
+    while(true){
+        await exec(["remove", binarysearchT.arr[0].key]);
+    }
     //insert 95 and observe
     
     //for(let i=100; i< 140; i++)

@@ -976,6 +976,7 @@ export class BinarySearchTree {
     async removeKey(key: number, animation: boolean = true): Promise<number | string> { 
     return new Promise(async (resolve, reject) => {
         const rank = this.rankOf(key);
+        const parentRank = Math.floor((rank-1)/2);
         if (rank > -1) {
             if(animation) await this.breakPoint(this.arr![rank].borderCol("red", animation));
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
@@ -1042,7 +1043,7 @@ export class BinarySearchTree {
 
                 delete this.arr![rank]; //delete it NOW, not after the event is triggered.
 
-                const parentRank = Math.floor((rank-1)/2);
+                
                 if(!(this.arr![rank*2+1] || this.arr![rank*2+2])){ //leaf node
                     
                     const parent = this.arr![parentRank];
@@ -1163,10 +1164,11 @@ export class BinarySearchTree {
                         this.connections[reassingLineIndex].draw(false, animation);
                     }                    
                 }
-                if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
-                    await this.updateAVL(rank, false, 1);
-                }
                 
+                
+            }
+            if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
+                await this.updateAVL(rank, false, 1);
             }
             resolve(--this.size);
             this.trim();
