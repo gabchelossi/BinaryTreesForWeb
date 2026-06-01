@@ -738,13 +738,16 @@ const exec = async function (...parameters: any[]) {
 document.addEventListener("DOMContentLoaded",async function() {
     await exec(["insert", "full"]);
     //await exec(["insert", 136, 132, 140, 138, 142]);
+    //await exec(["insert", 47,10,55,5,15,50,60,3,7,13,20,53,1,4,6,8,11,14,17,24]);
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
-    await exec(["set", "animation", "speed", 5, "coco"]);
-    //await exec(["insert", 40,30,61,27,35,50,65,37,45,55,63,67,43,47,53,60,62,64,66,68]);
-    /*while(binarysearchT.size>0){
+    await exec(["set", "animation", "speed", 100, "coco"]);
+    /*confirm(`Current tree's size is: ${binarysearchT.size}`);  */
+    while(binarysearchT.size>3){
+        //confirm(`Current tree's size is: ${binarysearchT.size}`);        
         await exec(["remove", binarysearchT.arr[0].key]);
-    }*/
+        ///alert(binarysearchT.arr[0].key);
+    }
     //insert 95 and observe
     
     //for(let i=100; i< 140; i++)

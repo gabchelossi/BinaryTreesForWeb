@@ -183,7 +183,7 @@ export class BinarySearchTree {
         });
     }
 
-    async updateAVL(childRank: number, justCalc:boolean = false, operation:number|null = null): Promise<boolean> {
+    async updateAVL(childRank: number, justCalc:boolean = false, operation:number|null = null, animation:boolean = true): Promise<boolean> {
     // start from the parent of the changed node
         return new Promise(async (resolve) => {
             let i = Math.floor((childRank - 1) / 2);
@@ -214,7 +214,7 @@ export class BinarySearchTree {
                     catch(e){
                         //if(operation!=null) alert(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
                         const ranks:number[] = await this.findXY(i, childRank, operation!);
-                        await this.breakPoint(this.balanceAVL(i, ranks[0], ranks[1], ranks[2]));
+                        if(animation) await this.breakPoint(this.balanceAVLTransform(i, ranks[0], ranks[1], ranks[2]));
                         const leafNodes = this.arr!.map((node, i) => {
                             if(!(this.arr![i*2+1] || this.arr![i*2+2]))
                                 return i;
@@ -234,6 +234,7 @@ export class BinarySearchTree {
                 i = Math.floor((i - 1) / 2);
                 
             }
+            //await this.trim();
             resolve(true);
         });
     }
@@ -295,7 +296,7 @@ export class BinarySearchTree {
         
     }
 
-    async balanceAVL(zRank: number, yRank:number, xRank:number, wRank:number|null){
+    async balanceAVLTransform(zRank: number, yRank:number, xRank:number, wRank:number|null){
         return new Promise(async (resolve) =>{
             //console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
             /*let depthW:number;
@@ -310,28 +311,6 @@ export class BinarySearchTree {
             let x: TreeElementInstance= nodes[xRank];
             let y: TreeElementInstance = nodes[yRank];
             let w: TreeElementInstance|null = Boolean(wRank)?nodes[wRank!]:null;
-            ////console.log(depthZ, depthW);
-            /*if(depthW-depthZ==2){ //when w == x
-                x = nodes[wRank];
-                yRank = Math.floor((wRank-1)/2);
-                y = nodes[yRank];
-                xRank = wRank;
-            }
-            else{
-                let keyW:number = nodes[wRank].key;
-                let nodesFromZtoW = nodes[zRank].key > keyW ? [zRank*2+1] : [zRank*2+2];
-                let i = nodesFromZtoW[0];
-                while(nodes[i].key != keyW){
-                    i = nodes[i].key > keyW ? i*2+1 :i*2+2;
-                    nodesFromZtoW.push(i);
-                }
-                yRank = nodesFromZtoW[0];
-                xRank = nodesFromZtoW[1];
-                x = nodes[xRank];
-                y = nodes[yRank];
-                w = nodes[wRank];
-                w.label = "w";
-            }*/
             x.label = "x";
             y.label = "y";
             z.label = "z";
@@ -979,19 +958,51 @@ export class BinarySearchTree {
         });
     }
 
+    checkRedundancy():boolean{
+        const values = new Set();
+        for(let i=0; i<this.arr.length; i++){
+            const node = this.arr[i];
+            if(node){
+                if(values.has(node.key))
+                    return false;
+                else values.add(node.key);
+            }
+            
+        }
+        return true;
+    }
+
     async removeKey(key: number, animation: boolean = true, leafNode:boolean=true): Promise<number | string> { 
     return new Promise(async (resolve, reject) => {
         const rank = this.rankOf(key);
-        const parentRank = Math.floor((rank-1)/2);
+        let parentRank = Math.floor((rank-1)/2);
         if (rank > -1) {
             if(animation) await this.breakPoint(this.arr![rank].borderCol("red", animation));
             if (this.arr![rank * 2 + 1] && this.arr![rank * 2 + 2]) {
                 ////console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 if(animation){
                     await this.traversal(rank, "in-order", true).then(async (result) =>{
+                        const rankOfDeleted = this.rankOf(result[0]);
                         await this.removeKey(result[0] as number, animation, false); 
                         this.size++; //to counter the previous instruction side-effect
                         this.arr![rank].key = result[0];
+                        parentRank = Math.floor((rankOfDeleted-1)/2);
+                        const parent = this.arr![parentRank];
+                        const comingFromLeft = rankOfDeleted%2 == 0?false:true;
+                        ////console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
+
+                        if(this.size>1){
+                            if(comingFromLeft) {
+                                parent.leftWeight = 0
+                            }
+                            else{
+                                parent.rightWeight = 0
+                            }
+                            const check = comingFromLeft? rankOfDeleted*2+1:rankOfDeleted*2+2;
+                            //console.clear();
+                            await this.updateAVL(check, false, 1);
+                            
+                        }
                     });
                     
                 }
@@ -1153,13 +1164,13 @@ export class BinarySearchTree {
                         this.connections[reassingLineIndex].draw(false, animation);
                     }                    
                 }
-                if(!(this.arr![rank*2+1] || this.arr![rank*2+2])){ //leaf node
+                if(!(this.arr![rank*2+1] || this.arr![rank*2+2]) && leafNode){ //leaf node
                     
                     const parent = this.arr![parentRank];
                     const comingFromLeft = rank%2 == 0?false:true;
                     ////console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
 
-                    if(this.size>1){
+                    if(this.size>2){
                         if(comingFromLeft) {
                             parent.leftWeight = 0
                         }
@@ -1275,6 +1286,9 @@ export class BinarySearchTree {
     }
 
     async traversal(root: number, mode: string, removing: boolean = false) : Promise<number[]> {
+        document.querySelectorAll(".traverser").forEach(arr => {
+            arr.remove();
+        });
         let nodes = this.arr;
         let traverse = [];
         let arrow = document.createElement("span");
