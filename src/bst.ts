@@ -5,12 +5,13 @@
 
 //reverted instance
 type TreeElementInstance = InstanceType<typeof BinarySearchTree.TreeElement>;
+type ConnectionInstance = InstanceType<typeof BinarySearchTree.Connection>;
 
 export class BinarySearchTree {
     
     
     arr: TreeElementInstance[];    
-    connections: InstanceType<typeof BinarySearchTree.Connection>[];
+    connections: ConnectionInstance[];
     s: number;
     width: number;
     avl: boolean;
@@ -190,7 +191,7 @@ export class BinarySearchTree {
         });
     }
 
-    async updateAVL(childRank: number, justCalc:boolean = false): Promise<boolean> {
+    async updateAVL(childRank: number, justCalc:boolean = false, operation:number|null = null): Promise<boolean> {
     // start from the parent of the changed node
         return new Promise(async (resolve) => {
             let i = Math.floor((childRank - 1) / 2);
@@ -219,16 +220,17 @@ export class BinarySearchTree {
                         await this.breakPoint(node.updateBalance(this.avlStatus));
                     }
                     catch(e){
-                        await this.breakPoint(this.balanceAVL(i, childRank));
+                        //if(operation!=null) alert(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
+                        const ranks:number[] = await this.findXY(i, childRank, operation!);
+                        await this.breakPoint(this.balanceAVL(i, ranks[0], ranks[1], ranks[2]));
                         const leafNodes = this.arr!.map((node, i) => {
                             if(!(this.arr![i*2+1] || this.arr![i*2+2]))
                                 return i;
                         }).filter(rank => {
-                                return rank != undefined && rank != null
-                            }
-                        );
+                            return rank != undefined && rank != null
+                            });
                         leafNodes.forEach(rank => {
-                            this.updateAVL(rank*2+1, true)
+                            this.updateAVL(rank*2+1, true, operation);
                         });
                         i = 0;
                     }
@@ -244,22 +246,71 @@ export class BinarySearchTree {
         });
     }
 
-    async balanceAVL(zRank: number, wRank:number){
-        return new Promise(async (resolve) =>{
-            console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
-            const depthW = Math.floor(Math.log2(wRank + 1));
+    async findXY(zRank: number, wRank: number|null, operation:number = 0):Promise<number[]>{
+        return new Promise(res => {
+            let nodes = this.arr!;
+            const depthW = Math.floor(Math.log2(wRank!+1));
             const depthZ = Math.floor(Math.log2(zRank+1));
-            let xRank: number;
-            let yRank: number;
-            let x: InstanceType<typeof BinarySearchTree.TreeElement>;
-            let y: InstanceType<typeof BinarySearchTree.TreeElement>;
-            let z: InstanceType<typeof BinarySearchTree.TreeElement>;
-            let w: InstanceType<typeof BinarySearchTree.TreeElement>;
+            if(operation==1) wRank = Math.floor((wRank!-1)/2); //the parent of the child who got deleted
+            let xRank: number =-1;
+            let yRank: number =-1;
+            if(operation==0){ //insertion unbalancing
+                if(depthW-depthZ==2){ //when w == x
+                    //x = nodes[wRank];
+                    yRank = Math.floor((wRank!-1)/2);
+                    //y = nodes[yRank];
+                    xRank = wRank!;
+                    wRank = null;
+                }
+                else{
+                    let keyW:number = nodes[wRank!].key;
+                    let nodesFromZtoW = nodes[zRank].key > keyW ? [zRank*2+1] : [zRank*2+2];
+                    let i = nodesFromZtoW[0];
+                    while(nodes[i].key != keyW){
+                        i = nodes[i].key > keyW ? i*2+1 :i*2+2;
+                        nodesFromZtoW.push(i);
+                    }
+                    yRank = nodesFromZtoW[0];
+                    xRank = nodesFromZtoW[1];
+                    /*x = nodes[xRank];
+                    y = nodes[yRank];
+                    w = nodes[wRank];
+                    w.label = "w";*/
+                }
+            }
+            else{ //Imbalance happened because of key removal
+                const z = nodes[zRank];
+                yRank = z.leftWeight > z.rightWeight ? zRank*2+1:zRank*2+2;
+                const y = nodes[yRank];
+                if(y.balance>0){ //it means one of the subtrees is higher than the other
+                    xRank = y.leftWeight > y.rightWeight ? yRank*2+1:yRank*2+2;
+                }
+                else{
+                    xRank = yRank%2 == 0? yRank*2+2:yRank*2+1; //if y has two subtrees of same height, then make x the child the same direction y is to z.
+                }
+            }
+            res([yRank, xRank, wRank!]);
+        });
+        
+    }
+
+    async balanceAVL(zRank: number, yRank:number, xRank:number, wRank:number|null){
+        return new Promise(async (resolve) =>{
+            //console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
+            /*let depthW:number;
+            if(wRank){
+                depthW = Math.floor(Math.log2(wRank + 1));
+            }
+            const depthZ = Math.floor(Math.log2(zRank+1));*/
+            
 
             const nodes = this.arr!;
-            z = nodes[zRank]; //it will always be the 'z' node
+            let z: TreeElementInstance = nodes[zRank]; //it will always be the 'z' node
+            let x: TreeElementInstance= nodes[xRank];
+            let y: TreeElementInstance = nodes[yRank];
+            let w: TreeElementInstance|null = Boolean(wRank)?nodes[wRank!]:null;
             ////console.log(depthZ, depthW);
-            if(depthW-depthZ==2){ //when w == x
+            /*if(depthW-depthZ==2){ //when w == x
                 x = nodes[wRank];
                 yRank = Math.floor((wRank-1)/2);
                 y = nodes[yRank];
@@ -279,10 +330,11 @@ export class BinarySearchTree {
                 y = nodes[yRank];
                 w = nodes[wRank];
                 w.label = "w";
-            }
+            }*/
             x.label = "x";
             y.label = "y";
             z.label = "z";
+            if(w) w.label = "w";
             x.borderCol("red", false);
             y.borderCol("red", false);
             z.borderCol("red", false);
@@ -359,7 +411,7 @@ export class BinarySearchTree {
             }
 
             console.clear();
-            const moveSubTree = (rootNode:InstanceType<typeof BinarySearchTree.TreeElement>, subTree:number[], newRank:number):Promise<boolean> => {
+            const moveSubTree = (rootNode:TreeElementInstance, subTree:number[], newRank:number):Promise<boolean> => {
                 return new Promise<boolean>((res) => {
                     const parentRank = subTree[0];
                     const depthParent = Math.floor(Math.log2(parentRank + 1));
@@ -415,7 +467,7 @@ export class BinarySearchTree {
                     /*this.arr![newRank] = rootNode;
                     this.assign(rootNode, newRank, true, true, false, true);*/
                     let connection = this.connections.find(conn => {
-                        return conn.child === rootNode;
+                        if(conn) return conn.child == rootNode;
                     });
                     connection!.parent = this.arr![Math.floor((newRank-1)/2)];
                     //connection!.draw(false, true);
@@ -535,7 +587,7 @@ export class BinarySearchTree {
         
     }
 
-    async addNew(e:InstanceType<typeof BinarySearchTree.TreeElement>):Promise<number> {
+    async addNew(e:TreeElementInstance):Promise<number> {
         e.dom.classList.add('no-animation');
         ////console.log(`Adding new element ${e.key} with no amination`);
         if (this.rankOf(e.key) > -1) {
@@ -597,7 +649,7 @@ export class BinarySearchTree {
                 }
                 
                 ////console.log(`Calling updateAVLFromRank from addNew`);
-                await this.updateAVL(rank);
+                await this.updateAVL(rank, false, 0);
                 e.removeClass("transform");
 
             }
@@ -716,7 +768,7 @@ export class BinarySearchTree {
     });
 }
 
-    addNewTransform(e: InstanceType<typeof BinarySearchTree.TreeElement>) {
+    addNewTransform(e: TreeElementInstance) {
         e.dom.classList.add("transform");
         e.dom.offsetHeight; //important for reflow
         return new Promise(async (resolve, reject) => {
@@ -746,7 +798,7 @@ export class BinarySearchTree {
         });
     }
 
-    async compareTransform(e:InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
+    async compareTransform(e:TreeElementInstance, rank: number) {
         return new Promise(async (resolve) => {
             // //console.log(`compare Promise Opened`);
             let pointer = this.arr![rank];
@@ -789,7 +841,7 @@ export class BinarySearchTree {
             if (this.arr![rank] == undefined || !Number.isInteger(this.arr![rank].key)){
                 await this.assign(e, rank);
                 this.arr![rank] = e;
-                if(this.avlStatus) await this.breakPoint(this.updateAVL(rank));
+                if(this.avlStatus) await this.breakPoint(this.updateAVL(rank, false, 0));
                 else this.updateAVL(rank);
             }
             else {
@@ -801,7 +853,7 @@ export class BinarySearchTree {
         });
     };
 
-    async prepareNextCompare(e : InstanceType<typeof BinarySearchTree.TreeElement>, rank: number) {
+    async prepareNextCompare(e : TreeElementInstance, rank: number) {
         return new Promise(async (resolve) => {
             // //console.log(`prepareNextCompare Promise opened`);
             let parent = this.arr![rank];
@@ -825,7 +877,7 @@ export class BinarySearchTree {
         });
     }
 
-    async assign(e: InstanceType<typeof BinarySearchTree.TreeElement>, rank: number, reassign: boolean = false, animation: boolean = true, avl: boolean = this.avlStatus, forceRank: boolean = false) {
+    async assign(e: TreeElementInstance, rank: number, reassign: boolean = false, animation: boolean = true, avl: boolean = this.avlStatus, forceRank: boolean = false) {
         return new Promise(async (resolve) => {
             // //console.log(`assign Promise Opened`);
             if(!e) throw new Error(`Element passed is not initialized`);
@@ -897,14 +949,14 @@ export class BinarySearchTree {
         });
     }
 
-    async connectTransform(rank: number|InstanceType<typeof BinarySearchTree.TreeElement>, parentRank: number|InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
+    async connectTransform(rank: number|TreeElementInstance, parentRank: number|TreeElementInstance, animation: boolean = true) {
         // //console.log(`connectTransform Promise Opened`);
         return new Promise((resolve) => {
-            let e: InstanceType<typeof BinarySearchTree.TreeElement>;
+            let e: TreeElementInstance;
             if (typeof rank === "number") {
-                e = this.arr![rank] as InstanceType<typeof BinarySearchTree.TreeElement>;
+                e = this.arr![rank] as TreeElementInstance;
             } else {
-                e = rank as InstanceType<typeof BinarySearchTree.TreeElement>;
+                e = rank as TreeElementInstance;
             }
             let parent = this.arr![(parentRank as number)];
             ////console.log(`calling connect transform with animation ${animation}`)
@@ -990,9 +1042,9 @@ export class BinarySearchTree {
 
                 delete this.arr![rank]; //delete it NOW, not after the event is triggered.
 
-                
+                const parentRank = Math.floor((rank-1)/2);
                 if(!(this.arr![rank*2+1] || this.arr![rank*2+2])){ //leaf node
-                    const parentRank = Math.floor((rank-1)/2);
+                    
                     const parent = this.arr![parentRank];
                     const comingFromLeft = rank%2 == 0?false:true;
                     ////console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
@@ -1004,11 +1056,7 @@ export class BinarySearchTree {
                         else{
                             parent.rightWeight = 0
                         }
-                        parent.updateBalance(this.avlStatus);
-
-                        if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
-                            await this.updateAVL(rank);
-                        }
+                        //parent.updateBalance(this.avlStatus);
                     }
                     
 
@@ -1106,7 +1154,7 @@ export class BinarySearchTree {
                     }
                 }
                 leafNodes.forEach((index) => {
-                    this.updateAVL(index);
+                    this.updateAVL(index, false, 1);
                 });
                 if((this.arr![rank*2+1] || this.arr![rank*2+2])){
                     if(Boolean(parent)){
@@ -1114,6 +1162,9 @@ export class BinarySearchTree {
                         this.connections[reassingLineIndex]!.parent = parent;
                         this.connections[reassingLineIndex].draw(false, animation);
                     }                    
+                }
+                if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
+                    await this.updateAVL(rank, false, 1);
                 }
                 
             }
@@ -1521,10 +1572,10 @@ export class BinarySearchTree {
 
     static Connection = class {
         dom: HTMLDivElement;
-        child: InstanceType<typeof BinarySearchTree.TreeElement>;
-        parent: InstanceType<typeof BinarySearchTree.TreeElement>;
+        child: TreeElementInstance;
+        parent: TreeElementInstance;
         l!: string;
-        constructor(child: InstanceType<typeof BinarySearchTree.TreeElement>, parent: InstanceType<typeof BinarySearchTree.TreeElement>, animation: boolean = true) {
+        constructor(child: TreeElementInstance, parent: TreeElementInstance, animation: boolean = true) {
             this.dom = document.createElement("div");
             this.dom.classList.add("line");
             if(animation){
