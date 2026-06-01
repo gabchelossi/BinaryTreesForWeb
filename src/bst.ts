@@ -52,16 +52,8 @@ export class BinarySearchTree {
         },
 
         deleteProperty(target, prop) {
-            /*
-            if (prop == "4" || prop == "5") {
-            console.log("DELETE:", prop);
-            console.trace();
-            }
-            */
-
-            // console.log("DELETE:", prop);
-            // console.trace();
-
+            /*console.log("DELETE:", prop);
+            console.trace();*/
             return Reflect.deleteProperty(target, prop);
         }
 });
@@ -195,7 +187,7 @@ export class BinarySearchTree {
     // start from the parent of the changed node
         return new Promise(async (resolve) => {
             let i = Math.floor((childRank - 1) / 2);
-            ////console.log(`Called updateAVl from rank ${childRank}`);
+            //console.log(`Called updateAVl from rank ${childRank}`);
             while (i >= 0) {
                 const node = this.arr![i];
                 if (!node) {
@@ -203,9 +195,9 @@ export class BinarySearchTree {
                     //console.log(`Warning! Element at index ${i} is non-existant`);
                     continue;
                 }
-                /*else{
+                else{
                     //console.log(`Updating AVL at node ${node.key} with rank ${i}`);
-                }*/
+                }
                 
                 const li = i * 2 + 1;
                 const ri = i * 2 + 2;
@@ -232,7 +224,7 @@ export class BinarySearchTree {
                         leafNodes.forEach(rank => {
                             this.updateAVL(rank*2+1, true, operation);
                         });
-                        i = 0;
+                        //i = 0;
                     }
                 }
                 else{
@@ -251,7 +243,12 @@ export class BinarySearchTree {
             let nodes = this.arr!;
             const depthW = Math.floor(Math.log2(wRank!+1));
             const depthZ = Math.floor(Math.log2(zRank+1));
+            
             if(operation==1) wRank = Math.floor((wRank!-1)/2); //the parent of the child who got deleted
+            if(wRank == zRank){
+                console.log(`Special case scenario where wRank == zRank`);
+                wRank = null;
+            }
             let xRank: number =-1;
             let yRank: number =-1;
             if(operation==0){ //insertion unbalancing
@@ -281,12 +278,16 @@ export class BinarySearchTree {
             else{ //Imbalance happened because of key removal
                 const z = nodes[zRank];
                 yRank = z.leftWeight > z.rightWeight ? zRank*2+1:zRank*2+2;
+                console.log(`yRank is choosing the`, z.leftWeight > z.rightWeight ? "left side":"right side");
                 const y = nodes[yRank];
-                if(y.balance>0){ //it means one of the subtrees is higher than the other
+                console.log(`Y balance is ${y.balance}`);
+                if(Math.abs(y.balance)>0){ //it means one of the subtrees is higher than the other
                     xRank = y.leftWeight > y.rightWeight ? yRank*2+1:yRank*2+2;
+                    console.log(`xRank is choosing the`, y.leftWeight > y.rightWeight ? "left side":"right side");
                 }
                 else{
                     xRank = yRank%2 == 0? yRank*2+2:yRank*2+1; //if y has two subtrees of same height, then make x the child the same direction y is to z.
+                    console.log(`yRank has equally deep subtrees`, yRank);
                 }
             }
             res([yRank, xRank, wRank!]);
@@ -402,7 +403,7 @@ export class BinarySearchTree {
             const rootT2 = this.arr![t2[0]];
             const rootT3 = this.arr![t3[0]];
             const parentConnection = this.connections.find(connection => {
-                if(zRank>0)
+                if(zRank>0 && connection)
                     return connection.parent == nodes[Math.floor((zRank-1)/2)] && connection.child == nodes[zRank];
                 return false;
             });
@@ -410,7 +411,10 @@ export class BinarySearchTree {
                 parentConnection.child = b;
             }
 
-            console.clear();
+            //console.clear();
+            /*const crucialRanks = new Set();
+            crucialRanks.add(zRank*2+1);
+            crucialRanks.add(zRank*2+2);*/
             const moveSubTree = (rootNode:TreeElementInstance, subTree:number[], newRank:number):Promise<boolean> => {
                 return new Promise<boolean>((res) => {
                     const parentRank = subTree[0];
@@ -446,6 +450,7 @@ export class BinarySearchTree {
                         console.log(rootNode.key, newRank);
                         this.arr![newRank] = rootNode;
                         this.assign(rootNode, newRank, true, true, false, true);
+                        console.log(`Assigning subtree's root node ${rootNode.key} at index ${newRank}`);
                         mappedRanks.sort((a,b) => {return a-b;}).forEach((index) => {
                             this.assign(this.arr![index], index, true, true, false, true);
                         });
@@ -532,6 +537,7 @@ export class BinarySearchTree {
                 //await this.breakPoint(null, true);
                 
                 if (rootT1) {
+                    console.log(`moving subtree T1 to new rootRank ${(zRank*2+1)*2+2}`)
                     await this.breakPoint(moveSubTree(rootT1, t1, (zRank*2+1)*2+2));
                     //delete nodes[t1[0]];
                 }
@@ -973,7 +979,7 @@ export class BinarySearchTree {
         });
     }
 
-    async removeKey(key: number, animation: boolean = true): Promise<number | string> { 
+    async removeKey(key: number, animation: boolean = true, leafNode:boolean=true): Promise<number | string> { 
     return new Promise(async (resolve, reject) => {
         const rank = this.rankOf(key);
         const parentRank = Math.floor((rank-1)/2);
@@ -983,10 +989,11 @@ export class BinarySearchTree {
                 ////console.log("Hardest case scenario"); //turned out to be the easiest one LOL
                 if(animation){
                     await this.traversal(rank, "in-order", true).then(async (result) =>{
-                        await this.removeKey(result[0] as number, animation); 
+                        await this.removeKey(result[0] as number, animation, false); 
                         this.size++; //to counter the previous instruction side-effect
                         this.arr![rank].key = result[0];
                     });
+                    
                 }
                 else{
                     const match = this.inOrder(rank*2+2, true)[0];
@@ -1044,25 +1051,7 @@ export class BinarySearchTree {
                 delete this.arr![rank]; //delete it NOW, not after the event is triggered.
 
                 
-                if(!(this.arr![rank*2+1] || this.arr![rank*2+2])){ //leaf node
-                    
-                    const parent = this.arr![parentRank];
-                    const comingFromLeft = rank%2 == 0?false:true;
-                    ////console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
-
-                    if(this.size>1){
-                        if(comingFromLeft) {
-                            parent.leftWeight = 0
-                        }
-                        else{
-                            parent.rightWeight = 0
-                        }
-                        //parent.updateBalance(this.avlStatus);
-                    }
-                    
-
-                    
-                }
+                
                 let shiftUp: Function;
                 let leafNodes : number[] = [];
                 if(this.arr![rank*2+1]){ //if left child
@@ -1164,11 +1153,25 @@ export class BinarySearchTree {
                         this.connections[reassingLineIndex].draw(false, animation);
                     }                    
                 }
-                
-                
-            }
-            if(!(this.arr![parentRank*2+1] || this.arr![parentRank*2+2])){ //parent has become a leaf node
-                await this.updateAVL(rank, false, 1);
+                if(!(this.arr![rank*2+1] || this.arr![rank*2+2])){ //leaf node
+                    
+                    const parent = this.arr![parentRank];
+                    const comingFromLeft = rank%2 == 0?false:true;
+                    ////console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
+
+                    if(this.size>1){
+                        if(comingFromLeft) {
+                            parent.leftWeight = 0
+                        }
+                        else{
+                            parent.rightWeight = 0
+                        }
+                        const check = comingFromLeft? parentRank*2+1:parentRank*2+2;
+                        //console.clear();
+                        await this.updateAVL(check, false, 1);
+                        
+                    }
+                }
             }
             resolve(--this.size);
             this.trim();
@@ -1176,7 +1179,7 @@ export class BinarySearchTree {
         else {
             reject(`The key '${key}' is not in the binary search Tree`);
         }
-        }); // <- this closes the Promise
+        }); 
     }
 
     reset() {
