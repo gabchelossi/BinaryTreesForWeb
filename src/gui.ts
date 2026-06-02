@@ -741,13 +741,17 @@ document.addEventListener("DOMContentLoaded",async function() {
     //await exec(["insert", 47,10,55,5,15,50,60,3,7,13,20,53,1,4,6,8,11,14,17,24]);
     await exec(["set", "animation", "on"]);
     await exec(["set", "avl", "on"]);
-    await exec(["set", "animation", "speed", 100, "coco"]);
+    await exec(["set", "animation", "speed", 25, "coco"]);
     /*confirm(`Current tree's size is: ${binarysearchT.size}`);  */
-    while(binarysearchT.size>3){
-        //confirm(`Current tree's size is: ${binarysearchT.size}`);        
-        await exec(["remove", binarysearchT.arr[0].key]);
-        ///alert(binarysearchT.arr[0].key);
-    }
+    /*while(true){
+        while(binarysearchT.size>3){
+            //confirm(`Current tree's size is: ${binarysearchT.size}`);        
+            await exec(["remove", binarysearchT.arr[1].key]);
+            ///alert(binarysearchT.arr[0].key);
+        }
+        await exec(["fill-random"]);
+    }*/
+    
     //insert 95 and observe
     
     //for(let i=100; i< 140; i++)

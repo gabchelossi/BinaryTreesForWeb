@@ -422,7 +422,7 @@ export class BinarySearchTree {
                             //console.log(`Moving element ${this.arr![index].key} to rank ${mappedRank}`);
                             this.arr![mappedRank] = this.arr![index];
                             //this.assign(this.arr![index], mappedRank, true, true, false, true);
-                            delete this.arr![index];
+                            if(mappedRank!= index) delete this.arr![index];
                             return mappedRank;
                             //console.log(`Element key ${this.arr[index].key} will go from rank ${index} to new rank ${mappedRank}`);
                         });
