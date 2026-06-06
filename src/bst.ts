@@ -214,7 +214,7 @@ export class BinarySearchTree {
                     catch(e){
                         //if(operation!=null) alert(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
                         const ranks:number[] = await this.findXY(i, childRank, operation!);
-                        if(animation) await this.breakPoint(this.balanceAVLTransform(i, ranks[0], ranks[1], ranks[2]));
+                        await this.breakPoint(this.balanceAVL(i, ranks[0], ranks[1], ranks[2], animation));
                         const leafNodes = this.arr!.map((node, i) => {
                             if(!(this.arr![i*2+1] || this.arr![i*2+2]))
                                 return i;
@@ -222,7 +222,7 @@ export class BinarySearchTree {
                             return rank != undefined && rank != null
                             });
                         leafNodes.forEach(rank => {
-                            this.updateAVL(rank*2+1, true, operation);
+                            this.updateAVL(rank*2+1, true, operation, animation);
                         });
                         //i = 0;
                     }
@@ -296,7 +296,7 @@ export class BinarySearchTree {
         
     }
 
-    async balanceAVLTransform(zRank: number, yRank:number, xRank:number, wRank:number|null){
+    async balanceAVL(zRank: number, yRank:number, xRank:number, wRank:number|null, animation:boolean=true){
         return new Promise(async (resolve) =>{
             //console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
             /*let depthW:number;
@@ -311,21 +311,33 @@ export class BinarySearchTree {
             let x: TreeElementInstance= nodes[xRank];
             let y: TreeElementInstance = nodes[yRank];
             let w: TreeElementInstance|null = Boolean(wRank)?nodes[wRank!]:null;
-            x.label = "x";
-            y.label = "y";
-            z.label = "z";
-            if(w) w.label = "w";
-            x.borderCol("red", false);
-            y.borderCol("red", false);
-            z.borderCol("red", false);
+            
+            if(animation){
+                x.borderCol("red", false);
+                y.borderCol("red", false);
+                z.borderCol("red", false);
+                x.label = "x";
+                y.label = "y";
+                z.label = "z";
+                if(w) w.label = "w";
+            }
             const z_y_line = this.connections.filter((line) => {
                 return line.parent == z && line.child == y;
             })[0];
             const y_x_line = this.connections.filter((line) => {
                 return line.parent == y && line.child == x;
             })[0];
-            
-            const ranks = await this.breakPoint(this.traversal(zRank, "AVL")) as number[]; //the traversal returns x y and z in in-order traversal
+            let ranks: number[];
+
+            if(animation) {
+                ranks = await this.breakPoint(this.traversal(zRank, "AVL")) as number[]; //the traversal returns x y and z in in-order traversal
+            }
+            else {
+                const traversal = this.inOrder(zRank, false, true);
+                const mySet = new Set([zRank, yRank, xRank]);
+                ranks = traversal.filter(rank => mySet.has(rank)); //filter is a conservative function (like radix sort)
+            };
+
             const elements = ranks.map(rank => {return nodes![rank]});
             
             const lines = this.connections.filter((line) => { 
@@ -634,7 +646,7 @@ export class BinarySearchTree {
                 }
                 
                 ////console.log(`Calling updateAVLFromRank from addNew`);
-                await this.updateAVL(rank, false, 0);
+                await this.updateAVL(rank, false, 0, false);
                 e.removeClass("transform");
 
             }
@@ -1000,7 +1012,8 @@ export class BinarySearchTree {
                             }
                             const check = comingFromLeft? rankOfDeleted*2+1:rankOfDeleted*2+2;
                             //console.clear();
-                            await this.updateAVL(check, false, 1);
+                            console.log(`updating AVL with animation val being ${animation} line 1015`);
+                            await this.updateAVL(check, false, 1, true);
                             
                         }
                     });
@@ -1008,13 +1021,31 @@ export class BinarySearchTree {
                 }
                 else{
                     const match = this.inOrder(rank*2+2, true)[0];
-                    //const rankofMatch = this.rankOf(match);
-                    await this.removeKey(match, false);
+                    const rankOfDeleted = this.rankOf(match);
+                    parentRank = Math.floor((rankOfDeleted-1)/2);
+                    await this.removeKey(match, false, false);
                     this.arr![rank].changeKey(match, true);
                     //this.arr![rank].dom.innerHTML = match.toString();
                     ////console.log(`this.removeKey(${match}, false)`);
                     this.size++;
                     this.arr![rank].key = match;
+                    const parent = this.arr![parentRank];
+                    const comingFromLeft = rankOfDeleted%2 == 0?false:true;
+                    ////console.log(`Removing Leaf Node: Parent is at rank ${Math.floor((rank-1)/2)}`);
+
+                    if(this.size>1){
+                        if(comingFromLeft) {
+                            parent.leftWeight = 0
+                        }
+                        else{
+                            parent.rightWeight = 0
+                        }
+                        const check = comingFromLeft? rankOfDeleted*2+1:rankOfDeleted*2+2;
+                        //console.clear();
+                        console.log(`updating AVL with animation val being ${animation} line 1045`);
+                        await this.updateAVL(check, false, 1, false);
+                        
+                    }
                     
                 }
             } 
@@ -1179,7 +1210,8 @@ export class BinarySearchTree {
                         }
                         const check = comingFromLeft? parentRank*2+1:parentRank*2+2;
                         //console.clear();
-                        await this.updateAVL(check, false, 1);
+                        console.log(`updating AVL with animation val being ${animation}`);
+                        await this.updateAVL(check, false, 1, animation);
                         
                     }
                 }
