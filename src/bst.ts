@@ -206,7 +206,7 @@ export class BinarySearchTree {
             try{
                 if(fn) returnVal = await fn;
                 if (this.paused || debug) {
-                    //console.log(`PAUSED!`);
+                    if(debug) console.log(`DEBUG!`);
                     const handler = () => {
                         resolve(returnVal);
                         document.removeEventListener("play", handler); // remove the SAME function
@@ -251,7 +251,9 @@ export class BinarySearchTree {
                         await this.breakPoint(node.updateBalance(this.avlStatus));
                     }
                     catch(e){
-                        //if(operation!=null) alert(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
+                        console.clear();
+                        if(operation!=null) console.log(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
+                        else console.log(`Unbalance happened but no operation has been defined`);
                         const ranks:number[] = await this.findXY(i, childRank, operation!);
                         await this.breakPoint(this.balanceAVL(i, ranks[0], ranks[1], ranks[2], animation));
                         const leafNodes = this.arr!.map((node, i) => {
@@ -260,7 +262,7 @@ export class BinarySearchTree {
                         }).filter(rank => {
                             return rank != undefined && rank != null
                             });
-                        leafNodes.forEach(rank => {
+                        leafNodes.forEach(async (rank) => {
                             this.updateAVL(rank*2+1, true, operation, animation);
                         });
                         //i = 0;
@@ -330,12 +332,14 @@ export class BinarySearchTree {
                     console.log(`yRank has equally deep subtrees`, yRank);
                 }
             }
+            console.log(`Y: ${Boolean(nodes[yRank!])} X: ${Boolean(nodes[xRank!])} W: ${Boolean(nodes[wRank!])}`);
             res([yRank, xRank, wRank!]);
         });
         
     }
 
     async balanceAVL(zRank: number, yRank:number, xRank:number, wRank:number|null, animation:boolean=true){
+        console.trace(`balanceAVL called with zRank=${zRank}, yRank=${yRank}, xRank=${xRank}, wRank=${wRank}`);
         return new Promise(async (resolve) =>{
             //console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
             /*let depthW:number;
@@ -350,25 +354,69 @@ export class BinarySearchTree {
             let x: TreeElementInstance= nodes[xRank];
             let y: TreeElementInstance = nodes[yRank];
             let w: TreeElementInstance|null = Boolean(wRank)?nodes[wRank!]:null;
-            console.clear();
-            console.log(z, y, x, w, zRank, yRank, xRank, wRank);
+            //console.clear();
+            /*console.log(z, y, x, w, zRank, yRank, xRank, wRank);
             console.log(nodes);
+
+            console.log("Before line search:", {
+                zRank,
+                yRank,
+                xRank,
+                wRank,
+                z: z?.key,
+                y: y?.key,
+                x: x?.key,
+                w: w?.key
+            });
             console.table(this.connections.map((line, i) => ({
                 index: i,
                 exists: Boolean(line),
+                parentExists: Boolean(line?.parent),
+                childExists: Boolean(line?.child),
                 parentKey: line?.parent?.key,
                 childKey: line?.child?.key
             })));
-            let z_y_line: ConnectionInstance;
-            let y_x_line: ConnectionInstance;
-            
-            z_y_line = this.connections.filter((line) => {
+            //let z_y_line: ConnectionInstance;
+            //let y_x_line: ConnectionInstance;*/
+            const z_y_line = this.connections.find((line, i) => {
+                if (!line) {
+                    console.warn("Missing line at", i);
+                    return false;
+                }
+
+                if (!line.parent || !line.child) {
+                    console.warn("Broken connection at", i, line);
+                    return false;
+                }
+
+                return line.parent.key === z.key && line.child.key === y.key;
+            });
+
+            const y_x_line = this.connections.find((line, i) => {
+                if (!line) {
+                    console.warn("Missing line at", i);
+                    return false;
+                }
+
+                if (!line.parent || !line.child) {
+                    console.warn("Broken connection at", i, line);
+                    return false;
+                }
+
+                if (!x) {
+                    console.error("x is undefined before y_x_line search", { xRank });
+                    return false;
+                }
+
+                return line.parent.key === y.key && line.child.key === x.key;
+            });
+            /*z_y_line = this.connections.filter((line) => {
                 return line.parent.key == z.key && line.child.key == y.key;
             })[0];
 
             y_x_line = this.connections.filter((line) => {
                 return line.parent.key == y.key && line.child.key == x.key;
-            })[0];
+            })[0]; */
 
             if(animation){
                 x.borderCol("red", false);
@@ -497,7 +545,7 @@ export class BinarySearchTree {
                             return mappedRank;
                             //console.log(`Element key ${this.arr[index].key} will go from rank ${index} to new rank ${mappedRank}`);
                         });
-                        console.log(rootNode.key, newRank);
+                        //console.log(rootNode.key, newRank);
                         this.arr![newRank] = rootNode;
                         this.assign(rootNode, newRank, true, true, false, true);
                         console.log(`Assigning subtree's root node ${rootNode.key} at index ${newRank}`);
@@ -572,7 +620,7 @@ export class BinarySearchTree {
                     //delete nodes[t1[0]];
                 }
                 else console.log(`Empty subtree t1, skipping. dio cane`);
-                alert("wow");
+                //alert("wow");
                 if (rootT0){
                     await this.breakPoint(moveSubTree(rootT0,t0, (zRank*2+1)*2+1));
                     //delete nodes[t0[0]];
