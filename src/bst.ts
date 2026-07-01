@@ -251,7 +251,7 @@ export class BinarySearchTree {
                         await this.breakPoint(node.updateBalance(this.avlStatus));
                     }
                     catch(e){
-                        console.clear();
+                        //console.clear();
                         if(operation!=null) console.log(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
                         else console.log(`Unbalance happened but no operation has been defined`);
                         const ranks:number[] = await this.findXY(i, childRank, operation!);
