@@ -379,7 +379,7 @@ export class BinarySearchTree {
                 z.label = "z";
                 if(w) w.label = "w";
             }
-            await this.breakPoint(null, true);
+            //await this.breakPoint(null, true);
             let ranks: number[];
 
             if(animation) {
@@ -459,7 +459,7 @@ export class BinarySearchTree {
             if(parentConnection) {
                 parentConnection.child = b;
             }
-            await this.breakPoint(null, true);
+            //await this.breakPoint(null, true);
             //console.clear();
             /*const crucialRanks = new Set();
             crucialRanks.add(zRank*2+1);
@@ -532,7 +532,7 @@ export class BinarySearchTree {
                     res(true);
                 });
             }
-            await this.breakPoint(null, true);
+            //await this.breakPoint(null, true);
             if(deltaC > deltaA){ //first handle the c node and after the a node //right rotation
                 console.log("The A sub-trees are going shallower, and the C sub-trees are going deeper.");
                 //console.log(`Handling C,B,A in this order`);
@@ -572,7 +572,7 @@ export class BinarySearchTree {
                     //delete nodes[t1[0]];
                 }
                 else console.log(`Empty subtree t1, skipping. dio cane`);
-                
+                alert("wow");
                 if (rootT0){
                     await this.breakPoint(moveSubTree(rootT0,t0, (zRank*2+1)*2+1));
                     //delete nodes[t0[0]];
@@ -586,14 +586,14 @@ export class BinarySearchTree {
                 nodes[zRank*2+1] = a;
                 //this.assign(a, zRank*2+1, true, true, false, true);
                 this.assign(a, zRank*2+1, true, animation, false, true);
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
                 if (rootT0) {
                     await this.breakPoint(moveSubTree(rootT0, t0, (zRank*2+1)*2+1)); //why do I need to pass also rootT0? Because it has been overwritten in the array by a in the instruction above
                     //delete nodes[t0[0]];
                 }
                 else console.log(`Empty subtree t0, skipping`);
                 //await this.breakPoint(null, true);
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
                 if (rootT1) {
                     console.log(`moving subtree T1 to new rootRank ${(zRank*2+1)*2+2}`)
                     await this.breakPoint(moveSubTree(rootT1, t1, (zRank*2+1)*2+2));
@@ -601,23 +601,23 @@ export class BinarySearchTree {
                 }
                 else console.log(`Empty subtree t1, skipping`);
                 //await this.breakPoint(null, true);
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
                 nodes[zRank] = b;
                 delete nodes[rankB];
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
                 z_y_line!.parent = b;
                 y_x_line!.parent = b;
                 z_y_line!.child = c;
                 y_x_line!.child = a;
                 
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
                 //this.assign(b, zRank, true, true, false, true);
                 this.assign(b, zRank, true, animation, false, true);
                 
                 nodes[zRank*2+2] = c;
                 //this.assign(c, zRank*2+2, true, true, false, true);
                 this.assign(c, zRank*2+2, true, animation, false, true);
-                await this.breakPoint(null, true);
+                //await this.breakPoint(null, true);
                 if(zRank*2+2 != rankC) delete nodes[rankC];
 
                 //z_y_line.draw(false, true);
