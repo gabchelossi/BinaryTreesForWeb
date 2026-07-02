@@ -45,15 +45,15 @@ export class BinarySearchTree {
                 }
                 */
 
-                console.log("WRITE:", prop, value);
-                console.trace();
+                /*console.log("WRITE:", prop, value);
+                console.trace();*/
 
                 return Reflect.set(target, prop, value, receiver);
             },
 
             deleteProperty(target, prop) {
-                console.log("DELETE:", prop);
-                console.trace();
+                /*console.log("DELETE:", prop);
+                console.trace();*/
                 return Reflect.deleteProperty(target, prop);
             }
         });
@@ -85,15 +85,15 @@ export class BinarySearchTree {
                 }
                 */
 
-                console.log("WRITE:", prop, value);
-                console.trace();
+                /*console.log("WRITE:", prop, value);
+                console.trace();*/
 
                 return Reflect.set(target, prop, value, receiver);
             },
 
             deleteProperty(target, prop) {
-                console.log("DELETE:", prop);
-                console.trace();
+                /*console.log("DELETE:", prop);
+                console.trace();*/
                 return Reflect.deleteProperty(target, prop);
             }
         });
@@ -231,7 +231,7 @@ export class BinarySearchTree {
                 const node = this.arr![i];
                 if (!node) {
                     i = Math.floor((i - 1) / 2);
-                    //console.log(`Warning! Element at index ${i} is non-existant`);
+                    console.log(`Warning! Element at index ${i} is non-existant`);
                     continue;
                 }
                 else{
@@ -256,6 +256,7 @@ export class BinarySearchTree {
                         else console.log(`Unbalance happened but no operation has been defined`);
                         const ranks:number[] = await this.findXY(i, childRank, operation!);
                         await this.breakPoint(this.balanceAVL(i, ranks[0], ranks[1], ranks[2], animation));
+                        //console.log(`calling balanceAVL(${i}, ${ranks[0]}, ${ranks[1]}, ${ranks[2]}, ${animation})`);
                         const leafNodes = this.arr!.map((node, i) => {
                             if(!(this.arr![i*2+1] || this.arr![i*2+2]))
                                 return i;
@@ -1133,7 +1134,7 @@ export class BinarySearchTree {
                             //console.clear();
                             console.log(`updating AVL with animation val being ${animation} line 1015`);
                             await this.updateAVL(check, false, 1, animation);
-                            
+                            console.log(`Running updateAVL(${check}, ${false}, ${1}, ${animation})`);
                         }
                     });
                     
@@ -1142,7 +1143,7 @@ export class BinarySearchTree {
                     const match = this.inOrder(rank*2+2, true)[0];
                     const rankOfDeleted = this.rankOf(match);
                     parentRank = Math.floor((rankOfDeleted-1)/2);
-                    await this.removeKey(match, false, false);
+                    await this.removeKey(match, animation, false);
                     this.arr![rank].changeKey(match, true);
                     //this.arr![rank].dom.innerHTML = match.toString();
                     ////console.log(`this.removeKey(${match}, false)`);
@@ -1162,7 +1163,9 @@ export class BinarySearchTree {
                         const check = comingFromLeft? rankOfDeleted*2+1:rankOfDeleted*2+2;
                         //console.clear();
                         console.log(`updating AVL with animation val being ${animation} line 1045`);
-                        await this.updateAVL(check, false, 1, animation);
+                        const sleep = (ms:number) => new Promise((resolve) => setTimeout(resolve, ms));
+                        await sleep(100); //Absolutely a disaster of a solution, but if it works it aint stupid
+                        await this.updateAVL(check, false, 1, false);
                         
                     }
                     
@@ -1201,7 +1204,7 @@ export class BinarySearchTree {
                             delete this.connections[removeLineIndex];
                         }
                         catch(e){
-                            //console.log(e);
+                            console.log(e);
                             //console.log(removeLineIndex);
                         }
                         
@@ -1304,9 +1307,9 @@ export class BinarySearchTree {
                         await shiftUp(rank*2+2, rank);
                     }
                 }
-                leafNodes.forEach((index) => {
-                    this.updateAVL(index, false, 1, animation);
-                });
+                /*leafNodes.forEach(async (index) => {
+                    await this.updateAVL(index, false, 1, animation);
+                });*/
                 if((this.arr![rank*2+1] || this.arr![rank*2+2])){
                     if(Boolean(parent)){
                         const reassingLineIndex = this.connections.findIndex((c) => {if(c) return c.child.key == child.key});

@@ -229,7 +229,7 @@ const exec = async function (...parameters: any[]) {
                                     if (animation)
                                         await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(vals[i]));
                                     else {
-                                        binarysearchT.addNew(new BinarySearchTree.TreeElement(vals[i]));
+                                        await binarysearchT.addNew(new BinarySearchTree.TreeElement(vals[i]));
                                     }
                                     if(emptyNodes) binarysearchT.toggleEmptyNodes();
                                 }
@@ -372,7 +372,7 @@ const exec = async function (...parameters: any[]) {
                 switch (params[1]) {
                     case "animation":
                         if (params[2] == "speed") {
-                            const speed = parseInt(params[3]);
+                            let speed = parseInt(params[3]);
                             const debug = params[4] == "coco"? true:false;
                             if (!debug && (isNaN(speed) || (speed < 1 || speed > 5))) {
                                 returnval = "The animation speed must be an integer between 1 and 5";
@@ -383,6 +383,7 @@ const exec = async function (...parameters: any[]) {
                                 if (oldStyle) {
                                     oldStyle.remove();
                                 }*/
+                               speed = speed*5;
                                let style = document.getElementById("dynamic-animation-style") as HTMLStyleElement | null;
                                 if (!style) {
                                     style = document.createElement("style");
@@ -737,27 +738,14 @@ const exec = async function (...parameters: any[]) {
 
 document.addEventListener("DOMContentLoaded",async function() {
     //await exec(["insert", "full"]);
-    await exec(["insert", 60,20,70,10,40,80,5,15,30,45]);
-    //await exec(["insert", 47,10,55,5,15,50,60,3,7,13,20,53,1,4,6,8,11,14,17,24]);
     await exec(["set", "animation", "off"]);
+    //await exec(["insert", 50, 30, 80, 20, 40, 65, 90, 10, 25, 45, 60, 70, 85, 95, 5, 15, 55, 82, 87, 97, 81]);
     await exec(["set", "avl", "on"]);
-    //await exec(["set", "animation", "speed", 100, "coco"]);
-    /*confirm(`Current tree's size is: ${binarysearchT.size}`);  */
-    /*while(true){
-        while(binarysearchT.size>3){
-            //confirm(`Current tree's size is: ${binarysearchT.size}`);        
-            await exec(["remove", binarysearchT.arr[1].key]);
-            ///alert(binarysearchT.arr[0].key);
-        }
-        await exec(["fill-random"]);
-    }*/
     
-    //insert 95 and observe
-    
-    //for(let i=100; i< 140; i++)
-        //await exec(["insert", i]);
-    //wait exec(["insert", 54]);
-    //await exec(["insert", 90]);
+    for(let i = 0; i <1000; i++){
+       await exec(["insert", i])
+       await sleep(5);
+    }
 });
 
 const focus = function () {
