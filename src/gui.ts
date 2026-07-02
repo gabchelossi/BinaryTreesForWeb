@@ -742,10 +742,12 @@ document.addEventListener("DOMContentLoaded",async function() {
     //await exec(["insert", 50, 30, 80, 20, 40, 65, 90, 10, 25, 45, 60, 70, 85, 95, 5, 15, 55, 82, 87, 97, 81]);
     await exec(["set", "avl", "on"]);
     
-    for(let i = 0; i <1000; i++){
+    for(let i = 0; i <256; i++){
        await exec(["insert", i])
-       await sleep(5);
+       await sleep(1);
     }
+    while(binarysearchT.size>0)
+        await exec(["remove", binarysearchT.arr[0].key]);
 });
 
 const focus = function () {
