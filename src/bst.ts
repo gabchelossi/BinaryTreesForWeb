@@ -231,7 +231,7 @@ export class BinarySearchTree {
                 const node = this.arr![i];
                 if (!node) {
                     i = Math.floor((i - 1) / 2);
-                    console.log(`Warning! Element at index ${i} is non-existant`);
+                    //console.log(`Warning! Element at index ${i} is non-existant`);
                     continue;
                 }
                 else{
@@ -252,8 +252,8 @@ export class BinarySearchTree {
                     }
                     catch(e){
                         //console.clear();
-                        if(operation!=null) console.log(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
-                        else console.log(`Unbalance happened but no operation has been defined`);
+                        /*if(operation!=null) console.log(`Unbalance happened because of a${operation==0?"n addition":" deletion"} operation`);
+                        else console.log(`Unbalance happened but no operation has been defined`);*/
                         const ranks:number[] = await this.findXY(i, childRank, operation!);
                         await this.breakPoint(this.balanceAVL(i, ranks[0], ranks[1], ranks[2], animation));
                         //console.log(`calling balanceAVL(${i}, ${ranks[0]}, ${ranks[1]}, ${ranks[2]}, ${animation})`);
@@ -289,7 +289,7 @@ export class BinarySearchTree {
             
             if(operation==1) wRank = Math.floor((wRank!-1)/2); //the parent of the child who got deleted
             if(wRank == zRank){
-                console.log(`Special case scenario where wRank == zRank`);
+                //console.log(`Special case scenario where wRank == zRank`);
                 wRank = null;
             }
             let xRank: number =-1;
@@ -321,26 +321,26 @@ export class BinarySearchTree {
             else{ //Imbalance happened because of key removal
                 const z = nodes[zRank];
                 yRank = z.leftWeight > z.rightWeight ? zRank*2+1:zRank*2+2;
-                console.log(`yRank is choosing the`, z.leftWeight > z.rightWeight ? "left side":"right side");
+                //console.log(`yRank is choosing the`, z.leftWeight > z.rightWeight ? "left side":"right side");
                 const y = nodes[yRank];
-                console.log(`Y balance is ${y.balance}`);
+                //console.log(`Y balance is ${y.balance}`);
                 if(Math.abs(y.balance)>0){ //it means one of the subtrees is higher than the other
                     xRank = y.leftWeight > y.rightWeight ? yRank*2+1:yRank*2+2;
-                    console.log(`xRank is choosing the`, y.leftWeight > y.rightWeight ? "left side":"right side");
+                    //console.log(`xRank is choosing the`, y.leftWeight > y.rightWeight ? "left side":"right side");
                 }
                 else{
                     xRank = yRank%2 == 0? yRank*2+2:yRank*2+1; //if y has two subtrees of same height, then make x the child the same direction y is to z.
-                    console.log(`yRank has equally deep subtrees`, yRank);
+                    //console.log(`yRank has equally deep subtrees`, yRank);
                 }
             }
-            console.log(`Y: ${Boolean(nodes[yRank!])} X: ${Boolean(nodes[xRank!])} W: ${Boolean(nodes[wRank!])}`);
+            //console.log(`Y: ${Boolean(nodes[yRank!])} X: ${Boolean(nodes[xRank!])} W: ${Boolean(nodes[wRank!])}`);
             res([yRank, xRank, wRank!]);
         });
         
     }
 
     async balanceAVL(zRank: number, yRank:number, xRank:number, wRank:number|null, animation:boolean=true){
-        console.trace(`balanceAVL called with zRank=${zRank}, yRank=${yRank}, xRank=${xRank}, wRank=${wRank}`);
+        //console.trace(`balanceAVL called with zRank=${zRank}, yRank=${yRank}, xRank=${xRank}, wRank=${wRank}`);
         return new Promise(async (resolve) =>{
             //console.log(`Rank where the imbalance happened: ${zRank}. The Child that got inserted is at rank ${wRank}`);
             /*let depthW:number;
@@ -381,7 +381,7 @@ export class BinarySearchTree {
             //let y_x_line: ConnectionInstance;*/
             const z_y_line = this.connections.find((line, i) => {
                 if (!line) {
-                    console.warn("Missing line at", i);
+                    //console.warn("Missing line at", i);
                     return false;
                 }
 
@@ -395,7 +395,7 @@ export class BinarySearchTree {
 
             const y_x_line = this.connections.find((line, i) => {
                 if (!line) {
-                    console.warn("Missing line at", i);
+                    //console.warn("Missing line at", i);
                     return false;
                 }
 
@@ -477,7 +477,7 @@ export class BinarySearchTree {
             t1.sort(sortByNumber);
             t2.sort(sortByNumber);
             t3.sort(sortByNumber);
-            console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
+            //console.log(`T0: ${t0}, T1: ${t1}, T2: ${t2}, T3: ${t3}`);
             const deltaA = zRank*2+1 - rankA;
             const deltaC = zRank*2+2 - rankC; //in order to check which sub trees and which nodes to move first...
             //console.log(`Delta A: ${deltaA}, Delta C: ${deltaC}`);
@@ -549,7 +549,7 @@ export class BinarySearchTree {
                         //console.log(rootNode.key, newRank);
                         this.arr![newRank] = rootNode;
                         this.assign(rootNode, newRank, true, true, false, true);
-                        console.log(`Assigning subtree's root node ${rootNode.key} at index ${newRank}`);
+                        //console.log(`Assigning subtree's root node ${rootNode.key} at index ${newRank}`);
                         mappedRanks.sort((a,b) => {return a-b;}).forEach((index) => {
                             //await this.assign(this.arr![index], index, true, true, false, true);
                             this.assign(this.arr![index], index, true, animation, false, true);
@@ -583,7 +583,7 @@ export class BinarySearchTree {
             }
             //await this.breakPoint(null, true);
             if(deltaC > deltaA){ //first handle the c node and after the a node //right rotation
-                console.log("The A sub-trees are going shallower, and the C sub-trees are going deeper.");
+                //console.log("The A sub-trees are going shallower, and the C sub-trees are going deeper.");
                 //console.log(`Handling C,B,A in this order`);
                 //this.assign(c, zRank*2+2, true, true, false, true);
                 this.assign(c, zRank*2+2, true, animation, false, true);
@@ -592,12 +592,12 @@ export class BinarySearchTree {
                     await this.breakPoint(moveSubTree(rootT3, t3, (zRank*2+2)*2+2));
                     //delete nodes[t3[0]];
                 } 
-                else console.log(`Empty subtree t3, skipping`);
+                //else console.log(`Empty subtree t3, skipping`);
                 if(rootT2) {
                     await this.breakPoint(moveSubTree(rootT2, t2, (zRank*2+2)*2+1));
                     //delete nodes[t2[0]];
                 }
-                else console.log(`Empty subtree t2, skipping`);
+                //else console.log(`Empty subtree t2, skipping`);
                 delete nodes[rankC];
                 //assign b to the new rank
                 nodes[zRank] = b;
@@ -620,17 +620,17 @@ export class BinarySearchTree {
                     //this.arr![(zRank*2+1)*2+2] = rootT1;
                     //delete nodes[t1[0]];
                 }
-                else console.log(`Empty subtree t1, skipping. dio cane`);
+                //else console.log(`Empty subtree t1, skipping. dio cane`);
                 //alert("wow");
                 if (rootT0){
                     await this.breakPoint(moveSubTree(rootT0,t0, (zRank*2+1)*2+1));
                     //delete nodes[t0[0]];
                 } 
-                else console.log(`Empty subtree t0, skipping`);
+                //else console.log(`Empty subtree t0, skipping`);
                 y_x_line!.draw(false, animation);
             }
             else{ //left rotation
-                console.log("The A sub-trees are going deeper, and the C sub-trees are going shallower.");
+                //("The A sub-trees are going deeper, and the C sub-trees are going shallower.");
                 //console.log(`Handling C,B,A in this order`);
                 nodes[zRank*2+1] = a;
                 //this.assign(a, zRank*2+1, true, true, false, true);
@@ -640,15 +640,15 @@ export class BinarySearchTree {
                     await this.breakPoint(moveSubTree(rootT0, t0, (zRank*2+1)*2+1)); //why do I need to pass also rootT0? Because it has been overwritten in the array by a in the instruction above
                     //delete nodes[t0[0]];
                 }
-                else console.log(`Empty subtree t0, skipping`);
+                //else console.log(`Empty subtree t0, skipping`);
                 //await this.breakPoint(null, true);
                 //await this.breakPoint(null, true);
                 if (rootT1) {
-                    console.log(`moving subtree T1 to new rootRank ${(zRank*2+1)*2+2}`)
+                    //console.log(`moving subtree T1 to new rootRank ${(zRank*2+1)*2+2}`)
                     await this.breakPoint(moveSubTree(rootT1, t1, (zRank*2+1)*2+2));
                     //delete nodes[t1[0]];
                 }
-                else console.log(`Empty subtree t1, skipping`);
+                //else console.log(`Empty subtree t1, skipping`);
                 //await this.breakPoint(null, true);
                 //await this.breakPoint(null, true);
                 nodes[zRank] = b;
@@ -675,13 +675,13 @@ export class BinarySearchTree {
                     await this.breakPoint(moveSubTree(rootT2, t2, (zRank*2+2)*2+1));
                     //delete nodes[t2[0]];
                 }
-                else console.log(`Empty subtree t2, skipping`);
+                //else console.log(`Empty subtree t2, skipping`);
                 
                 if(rootT3 && t3[0] != (zRank*2+2)*2+2){
                     await this.breakPoint(moveSubTree(rootT3, t3, (zRank*2+2)*2+2));
                     //delete nodes[t3[0]];
                 }
-                else console.log(`Empty subtree t3, skipping`);
+                //else console.log(`Empty subtree t3, skipping`);
                 
                 //y_x_line.draw(false, true);
             }
@@ -691,7 +691,7 @@ export class BinarySearchTree {
                 if(mySet.has(element.key)) throw new Error(`After balancing there is duplicate key ${element.key}`);
                 else mySet.add(element.key);
             });
-            console.log("All good!");
+            //console.log("All good!");
             //if(parentConnection) parentConnection.draw(false, true);
             x.label = "";
             y.label = "";
@@ -1132,9 +1132,9 @@ export class BinarySearchTree {
                             }
                             const check = comingFromLeft? rankOfDeleted*2+1:rankOfDeleted*2+2;
                             //console.clear();
-                            console.log(`updating AVL with animation val being ${animation} line 1015`);
+                            //console.log(`updating AVL with animation val being ${animation} line 1015`);
                             await this.updateAVL(check, false, 1, animation);
-                            console.log(`Running updateAVL(${check}, ${false}, ${1}, ${animation})`);
+                            //console.log(`Running updateAVL(${check}, ${false}, ${1}, ${animation})`);
                         }
                     });
                     
@@ -1162,7 +1162,7 @@ export class BinarySearchTree {
                         }
                         const check = comingFromLeft? rankOfDeleted*2+1:rankOfDeleted*2+2;
                         //console.clear();
-                        console.log(`updating AVL with animation val being ${animation} line 1045`);
+                        //console.log(`updating AVL with animation val being ${animation} line 1045`);
                         const sleep = (ms:number) => new Promise((resolve) => setTimeout(resolve, ms));
                         await sleep(100); //Absolutely a disaster of a solution, but if it works it aint stupid
                         await this.updateAVL(check, false, 1, false);
@@ -1332,7 +1332,7 @@ export class BinarySearchTree {
                         }
                         const check = comingFromLeft? parentRank*2+1:parentRank*2+2;
                         //console.clear();
-                        console.log(`updating AVL with animation val being ${animation}`);
+                        //console.log(`updating AVL with animation val being ${animation}`);
                         await this.updateAVL(check, false, 1, animation);
                         
                     }

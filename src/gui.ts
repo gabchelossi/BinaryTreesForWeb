@@ -16,13 +16,13 @@ function sleep(ms: number) {
 }
 
 function pause() {
-    console.log("Pause called");
+    //console.log("Pause called");
     return new Promise(resolve => {
         document.body.onkeyup = (e) => {
             if (e.key === "Enter") {
                 resolve(true);
                 document.body.onkeyup = null;
-                console.log("Pause resolved");
+                //console.log("Pause resolved");
             }
         };
     });
@@ -157,7 +157,7 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
                 }
             }
             else{
-                console.log(`Animation off!`);
+                //console.log(`Animation off!`);
                 if(i.id == "speed" || i.id == "toggle-animation-button") i.disabled = true;
                 else{
                     i.disabled = false;
@@ -466,7 +466,7 @@ const exec = async function (...parameters: any[]) {
                         }
                         else {
                             if (params[2] == "off") {
-                                console.log(`Animation are being turned off`);
+                                //console.log(`Animation are being turned off`);
                                 animation = false;
                                 const radiobtn = document.getElementById("Off") as HTMLInputElement;
                                 radiobtn.checked = true;
@@ -494,7 +494,7 @@ const exec = async function (...parameters: any[]) {
                             }
                             else {
                                 if (params[2] == "on") {
-                                    console.log(`Animation are being turned on`);
+                                    //console.log(`Animation are being turned on`);
                                     animation = true;
                                     const radiobtn = document.getElementById("Automatic") as HTMLInputElement;
                                     radiobtn.checked = true;
@@ -737,17 +737,176 @@ const exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() {
-    //await exec(["insert", "full"]);
-    await exec(["set", "animation", "off"]);
-    //await exec(["insert", 50, 30, 80, 20, 40, 65, 90, 10, 25, 45, 60, 70, 85, 95, 5, 15, 55, 82, 87, 97, 81]);
-    await exec(["set", "avl", "on"]);
-    
-    for(let i = 0; i <256; i++){
-       await exec(["insert", i])
-       await sleep(1);
+    function assertAVL(label: string = "") {
+        const arr = binarysearchT.arr;
+        const seenKeys = new Set<number>();
+        const seenRanks = new Set<number>();
+
+        function isRealNode(n: any): boolean {
+            return Boolean(n) && Number.isInteger(n.key);
+        }
+
+        function walk(
+            rank: number,
+            min: number = -Infinity,
+            max: number = Infinity,
+            depth: number = 0
+        ): { height: number; maxDepth: number; count: number } {
+            const node = arr[rank];
+
+            if (!isRealNode(node)) {
+                return {
+                    height: 0,
+                    maxDepth: depth - 1,
+                    count: 0
+                };
+            }
+
+            const key = node.key;
+
+            if (seenKeys.has(key)) {
+                throw new Error(`${label}: duplicate key ${key}`);
+            }
+
+            if (!(key > min && key < max)) {
+                throw new Error(
+                    `${label}: BST violation at rank ${rank}, key=${key}, bounds=(${min}, ${max})`
+                );
+            }
+
+            seenKeys.add(key);
+            seenRanks.add(rank);
+
+            const leftRank = rank * 2 + 1;
+            const rightRank = rank * 2 + 2;
+
+            const left = walk(leftRank, min, key, depth + 1);
+            const right = walk(rightRank, key, max, depth + 1);
+
+            const balanceDifference = Math.abs(left.height - right.height);
+
+            if (balanceDifference > 1) {
+                throw new Error(
+                    `${label}: AVL violation at key=${key}, rank=${rank}, leftHeight=${left.height}, rightHeight=${right.height}`
+                );
+            }
+
+            if (node.leftWeight !== left.height || node.rightWeight !== right.height) {
+                throw new Error(
+                    `${label}: wrong weights at key=${key}, rank=${rank}. ` +
+                    `Expected leftWeight=${left.height}, rightWeight=${right.height}, ` +
+                    `got leftWeight=${node.leftWeight}, rightWeight=${node.rightWeight}`
+                );
+            }
+
+            return {
+                height: 1 + Math.max(left.height, right.height),
+                maxDepth: Math.max(depth, left.maxDepth, right.maxDepth),
+                count: 1 + left.count + right.count
+            };
+        }
+
+        const result = walk(0);
+
+        for (let i = 0; i < arr.length; i++) {
+            const node = arr[i];
+
+            if (isRealNode(node) && !seenRanks.has(i)) {
+                throw new Error(
+                    `${label}: unreachable node at rank ${i}, key=${node.key}`
+                );
+            }
+        }
+
+        return {
+            nodes: result.count,
+            height: result.height,
+            maxDepth: result.maxDepth
+        };
     }
-    while(binarysearchT.size>0)
-        await exec(["remove", binarysearchT.arr[0].key]);
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    async function resetTree() {
+        while (binarysearchT.size > 0) {
+            await exec(["remove", binarysearchT.arr[0].key]);
+            await sleep(1);
+        }
+    }
+
+    async function insertMany(values: number[]) {
+        for (const value of values) {
+            await exec(["insert", value]);
+            await sleep(1);
+            assertAVL(`after insert ${value}`);
+        }
+    }
+
+    async function removeMany(values: number[]) {
+        for (const value of values) {
+            await exec(["remove", value]);
+            await sleep(1);
+            assertAVL(`after remove ${value}`);
+        }
+    }
+
+    async function runAVLCase(
+        name: string,
+        inserts: number[],
+        removes: number[] = [],
+        animation: "on" | "off" = "off"
+    ) {
+        console.log(`\n=== TEST: ${name} ===`);
+
+        await exec(["set", "animation", animation]);
+        await exec(["set", "avl", "on"]);
+
+        await resetTree();
+        await insertMany(inserts);
+        await removeMany(removes);
+
+        const stats = assertAVL(name);
+        console.log(`PASS: ${name}`, stats);
+    }
+
+    function shuffle<T>(arr: T[]): T[] {
+        const copy = [...arr];
+
+        for (let i = copy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+
+        return copy;
+    }
+
+    async function randomMixedAVLTest(size: number = 500) {
+        console.log(`=== RANDOM MIXED AVL TEST: ${size} ===`);
+
+        await exec(["set", "animation", "off"]);
+        await exec(["set", "avl", "on"]);
+        await resetTree();
+
+        const values = shuffle(Array.from({ length: size }, (_, i) => i));
+
+        for (const value of values) {
+            await exec(["insert", value]);
+            await sleep(1);
+            assertAVL(`random insert ${value}`);
+        }
+
+        const deleteOrder = shuffle(values);
+
+        for (const value of deleteOrder) {
+            await exec(["remove", value]);
+            await sleep(1);
+            assertAVL(`random delete ${value}`);
+        }
+
+        console.log(`PASS: random mixed AVL test ${size}`);
+    }
+    await randomMixedAVLTest(100);
+    await randomMixedAVLTest(500);
+    await randomMixedAVLTest(1000);
 });
 
 const focus = function () {
