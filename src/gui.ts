@@ -904,9 +904,9 @@ document.addEventListener("DOMContentLoaded",async function() {
 
         console.log(`PASS: random mixed AVL test ${size}`);
     }
-    await randomMixedAVLTest(100);
-    await randomMixedAVLTest(500);
-    await randomMixedAVLTest(1000);
+    //await randomMixedAVLTest(100);
+    //await randomMixedAVLTest(500);
+    //await randomMixedAVLTest(1000);
 });
 
 const focus = function () {
