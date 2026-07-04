@@ -165,7 +165,7 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
             }
         });
         let newLine = document.createElement("p");
-        newLine.innerHTML = "<b>guest@gchelossi: </b><span id=\'text\'></span>";
+        newLine.innerHTML = "<b>guest@gchelossi-dev.com: </b><span id=\'text\'></span>";
         consoleOutput!.append(newLine);
         command = document.getElementById("text");
         (consoleOutput!.lastChild as Element).append(cursor!);
@@ -461,7 +461,7 @@ const exec = async function (...parameters: any[]) {
                                     } `;
                                 document.head.appendChild(style);
                                 animationSpeed = speed;
-                                returnval = `The animation speed has been now set to ${speed}x`;
+                                returnval = `The animation speed has been now set to ${speed/5}x`;
                             }
                         }
                         else {
@@ -493,7 +493,7 @@ const exec = async function (...parameters: any[]) {
                                 returnval = `Animations have been turned off.`;
                             }
                             else {
-                                if (params[2] == "on") {
+                                if (params[2] == "on" || params[2] == "manual") {
                                     //console.log(`Animation are being turned on`);
                                     animation = true;
                                     const radiobtn = document.getElementById("Automatic") as HTMLInputElement;
@@ -511,14 +511,17 @@ const exec = async function (...parameters: any[]) {
                                         (e as HTMLElement).offsetHeight;
                                     });
                                     returnval = `Animations have been turned on.`;
-                                }
-                                else {
                                     if(params[2] == "manual"){
-                                        animation = true;
                                         binarysearchT.paused = true;
+                                        toggleButton.disabled = false;
+                                        radiobtn.checked = false;
+                                        const pausedBtn = document.getElementById("Manual") as HTMLInputElement;
+                                        pausedBtn.checked = true;
                                         returnval = `Step-by-step animation has been turned on.`;
                                     }
-                                    else returnval = `Invalid animation parameter ${params[2]}`;
+                                }
+                                else {
+                                    returnval = `Invalid animation parameter ${params[2]}`;
                                 }
                             }
                         }
@@ -541,6 +544,20 @@ const exec = async function (...parameters: any[]) {
                                 binarysearchT.avlStatus = true;
                                 avlCheckbox.checked = true;
                                 returnval = "AVL mode activated";
+                                //if a tree is already inserted, and non balanced, I want to map all the keys to their
+                                //respective ranks as if the insertion had started as an AVL tree.
+                                if(binarysearchT.size>0){
+                                    const equivalent = binarysearchT.arr
+                                    .map(v => v?.key)
+                                    .filter((v): v is number => v !== undefined);
+                                    //console.log(equivalent);
+                                    binarysearchT.reset();
+                                    if(animation) await exec(["set", "animation", "off"]);
+                                    await exec(["insert", ...equivalent.map(Number)]);
+                                    if(animation) await exec(["set", "animation", "on"]);
+                                }
+                                
+                                
                             }
                             else {
                                 binarysearchT.avlStatus = false;
@@ -561,21 +578,34 @@ const exec = async function (...parameters: any[]) {
                 switch (params[1]) {
                     case "array":
                         if (binarysearchT.arr!.length) {
-                            if (params[2] == 'true') {
+                            if (params[2] === "true") {
                                 let s = "[";
-                                for (let i = 0; i < binarysearchT.arr!.length; i++) {
-                                    let val = binarysearchT.arr![i] || Number.isInteger(binarysearchT.arr![i].key) == undefined ? '<span style="color: grey">[empty]</span>' : binarysearchT.arr![i].key;
-                                    s += `<span style='color: orange'>${i}</span>: ${val}${(i < binarysearchT.arr!.length - 1) ? ", " : "]"}`;
-                                };
+
+                                for (let i = 0; i < binarysearchT.arr.length; i++) {
+                                    const node = binarysearchT.arr[i];
+
+                                    const val =
+                                        node && Number.isInteger(node.key)
+                                            ? node.key
+                                            : '<span style="color: grey">[empty]</span>';
+
+                                    s += `<span style='color: orange'>${i}</span>: ${val}${i < binarysearchT.arr.length - 1 ? ", " : "]"}`;
+                                }
+
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
                                 returnval = s;
-                            }
-                            else {
+                            } else {
                                 let s = "[";
-                                binarysearchT.arr!.forEach((val: { key: number; }, index: number, arr: string | any[]) => {
-                                    if(Number.isInteger(val.key))
-                                        s += `<span style='color: orange'>${index}</span>: ${val.key}${(index < arr.length - 1) ? ", " : "]"}`;
+
+                                const entries: string[] = [];
+
+                                binarysearchT.arr.forEach((node, index) => {
+                                    if (node && Number.isInteger(node.key)) {
+                                        entries.push(`<span style='color: orange'>${index}</span>: ${node.key}`);
+                                    }
                                 });
+
+                                s += entries.join(", ") + "]";
                                 s += "<br>Where the <span style='color: orange'>rank</span> is orange";
                                 returnval = s;
                             }

@@ -130,25 +130,19 @@ export class BinarySearchTree {
         }
     }
 
-    trim(): boolean{
-        let size = this.size;
-        /*if(!this.arr![this.arr!.length-1]){
-            //console.log(`Truncating the arr`);
-        }*/
-        let lastIndex, count: number;
-        count = 0;
-        for(let i = 0; i<this.arr!.length; i++){
-            if(this.arr![i]){
-                count++;
-            }
-            if(count == size){
+    async trim(): Promise<boolean> {
+        let lastIndex = -1;
+
+        for (let i = this.arr.length - 1; i >= 0; i--) {
+            const node = this.arr[i];
+
+            if (node && Number.isInteger(node.key)) {
                 lastIndex = i;
-                i = this.arr!.length; //fancy way of not using break statement
+                break;
             }
         }
-        if(size>0)
-            lastIndex!++; //slice goes up to index n-1
-        this.arr! = this.arr!.slice(0,lastIndex!);
+
+        this.arr = this.arr.slice(0, lastIndex + 1);
         return true;
     }
 
@@ -276,7 +270,7 @@ export class BinarySearchTree {
                 i = Math.floor((i - 1) / 2);
                 
             }
-            //await this.trim();
+            await this.trim();
             resolve(true);
         });
     }
@@ -1339,7 +1333,7 @@ export class BinarySearchTree {
                 }
             }
             resolve(--this.size);
-            this.trim();
+            await this.trim();
         } 
         else {
             reject(`The key '${key}' is not in the binary search Tree`);
