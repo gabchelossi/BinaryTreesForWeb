@@ -231,7 +231,6 @@ const exec = async function (...parameters: any[]) {
                                     else {
                                         await binarysearchT.addNew(new BinarySearchTree.TreeElement(vals[i]));
                                     }
-                                    if(emptyNodes) binarysearchT.toggleEmptyNodes();
                                 }
                                 catch (e) {
                                     let index = -1;
@@ -246,6 +245,9 @@ const exec = async function (...parameters: any[]) {
                                         returnval = `Succesfully inserted ${vals} into the binary search tree`;
                                     }
                                     else returnval = `None of the values have been inserted`;
+                                }
+                                finally{
+                                    if(emptyNodes) binarysearchT.toggleEmptyNodes();
                                 }
                             }
                         })();
