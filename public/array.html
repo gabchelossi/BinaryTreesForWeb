@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BinaryTreesForWeb — Array Representation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --page-bg: #dedede;
+            --panel-bg: rgb(193, 229, 194);
+            --panel-border: #000;
+            --terminal-bg: #000;
+            --terminal-fg: #fff;
+            --green: rgb(37, 201, 37);
+            --terminal-green: rgb(58, 197, 58);
+            --orange: orange;
+            --red: red;
+            --muted: #555;
+            --unused-bg: rgba(0, 0, 0, 0.08);
+            --used-bg: rgba(37, 201, 37, 0.18);
+            --placeholder-bg: rgba(255, 165, 0, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            background: var(--page-bg);
+            font-family: "Ubuntu Mono", monospace;
+            color: #000;
+        }
+
+        body {
+            padding: 2rem;
+        }
+
+        .page {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header,
+        section,
+        footer {
+            border: 2px solid var(--panel-border);
+            background: var(--panel-bg);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            line-height: 1;
+        }
+
+        p {
+            line-height: 1.45;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.08);
+            padding: 0.05rem 0.25rem;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .summary-card {
+            border: 1px solid var(--panel-border);
+            background: rgba(255, 255, 255, 0.25);
+            padding: 0.75rem;
+        }
+
+        .summary-card strong {
+            display: block;
+            font-size: 1.3rem;
+            margin-top: 0.25rem;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            margin: 0.75rem 0;
+        }
+
+        .toolbar input,
+        .toolbar select,
+        .toolbar button {
+            font-family: "Ubuntu Mono", monospace;
+            font-weight: 700;
+            padding: 0.35rem 0.5rem;
+            border: 1px solid var(--panel-border);
+        }
+
+        .toolbar label {
+            font-weight: 700;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 0.75rem 0;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .swatch {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 1px solid var(--panel-border);
+        }
+
+        .swatch.used {
+            background: var(--used-bg);
+        }
+
+        .swatch.unused {
+            background: var(--unused-bg);
+        }
+
+        .swatch.placeholder {
+            background: var(--placeholder-bg);
+        }
+
+        .table-wrap {
+            overflow: auto;
+            border: 2px solid var(--panel-border);
+            background: rgba(255, 255, 255, 0.25);
+            max-height: 70vh;
+        }
+
+        table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        th,
+        td {
+            border: 1px solid var(--panel-border);
+            padding: 0.45rem 0.55rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--panel-bg);
+        }
+
+        tr.used {
+            background: var(--used-bg);
+        }
+
+        tr.unused {
+            background: var(--unused-bg);
+            color: var(--muted);
+        }
+
+        tr.placeholder {
+            background: var(--placeholder-bg);
+        }
+
+        .rank {
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        .state {
+            font-weight: 700;
+        }
+
+        .state.used {
+            color: var(--green);
+        }
+
+        .state.unused {
+            color: var(--muted);
+        }
+
+        .state.placeholder {
+            color: #9a6500;
+        }
+
+        .error {
+            border-left: 6px solid var(--red);
+            background: rgba(255, 255, 255, 0.35);
+            padding: 0.75rem 1rem;
+        }
+
+        .note {
+            border-left: 6px solid var(--panel-border);
+            background: rgba(255, 255, 255, 0.35);
+            padding: 0.75rem 1rem;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        a.button,
+        button {
+            display: inline-block;
+            border: 1px solid var(--panel-border);
+            background: #efefef;
+            color: #000;
+            text-decoration: none;
+            padding: 0.45rem 0.7rem;
+            font-family: "Ubuntu Mono", monospace;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+        }
+
+        @media (max-width: 850px) {
+            body {
+                padding: 1rem;
+            }
+
+            .summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <header>
+            <h1>Array Representation</h1>
+            <p>
+                This page displays the internal array used by the Binary Search Tree visualizer.
+                For a node at rank <code>i</code>, the left child is <code>2*i + 1</code>
+                and the right child is <code>2*i + 2</code>.
+            </p>
+            <p>
+                The table is generated from the current tree state when <code>show array</code>
+                or <code>show array true</code> is executed in the terminal.
+            </p>
+        </header>
+
+        <main id="app">
+            <section>
+                <p class="error">
+                    No array data was found. Return to the visualizer and run
+                    <code>show array</code> or <code>show array true</code>.
+                </p>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        function escapeHTML(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function formatValue(value) {
+            if (value === null || value === undefined) return "—";
+            return escapeHTML(value);
+        }
+
+        function stateLabel(row) {
+            if (row.state === "used") return "used";
+            if (row.state === "placeholder") return "visual placeholder";
+            return "unused";
+        }
+
+        function stateClass(row) {
+            if (row.state === "used") return "used";
+            if (row.state === "placeholder") return "placeholder";
+            return "unused";
+        }
+
+        function makeRow(row) {
+            const cls = stateClass(row);
+
+            return `
+                <tr class="${cls}" data-state="${cls}" data-rank="${row.rank}" data-key="${row.key ?? ""}">
+                    <td><span class="rank">${row.rank}</span></td>
+                    <td><span class="state ${cls}">${stateLabel(row)}</span></td>
+                    <td>${formatValue(row.key)}</td>
+                    <td>${formatValue(row.rawKey)}</td>
+                    <td>${formatValue(row.depth)}</td>
+                    <td>${formatValue(row.parentRank)}</td>
+                    <td>${formatValue(row.leftRank)}</td>
+                    <td>${formatValue(row.rightRank)}</td>
+                </tr>
+            `;
+        }
+
+        function downloadCSV(payload, visibleRows) {
+            const headers = [
+                "rank",
+                "state",
+                "key",
+                "rawKey",
+                "depth",
+                "parentRank",
+                "leftRank",
+                "rightRank"
+            ];
+
+            const lines = [
+                headers.join(","),
+                ...visibleRows.map(row => {
+                    return headers.map(header => {
+                        const value = row[header] ?? "";
+                        return `"${String(value).replaceAll('"', '""')}"`;
+                    }).join(",");
+                })
+            ];
+
+            const blob = new Blob([lines.join("\\n")], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "bst-array-representation.csv";
+            a.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        function render(payload) {
+            const app = document.getElementById("app");
+            const rows = Array.isArray(payload.rows) ? payload.rows : [];
+
+            if (!rows.length) {
+                app.innerHTML = `
+                    <section>
+                        <p class="error">
+                            The array data exists, but it contains no rows to display.
+                        </p>
+                    </section>
+                `;
+                return;
+            }
+
+            let visibleRows = [...rows];
+
+            app.innerHTML = `
+                <section>
+                    <h2>Summary</h2>
+
+                    <div class="summary">
+                        <div class="summary-card">
+                            Mode
+                            <strong>${payload.showEmptySlots ? "Full array" : "Used cells only"}</strong>
+                        </div>
+
+                        <div class="summary-card">
+                            Real nodes
+                            <strong>${payload.realNodeCount}</strong>
+                        </div>
+
+                        <div class="summary-card">
+                            Array length
+                            <strong>${payload.arrayLength}</strong>
+                        </div>
+
+                        <div class="summary-card">
+                            Generated
+                            <strong>${escapeHTML(payload.generatedAt || "unknown")}</strong>
+                        </div>
+                    </div>
+
+                    <div class="legend" aria-label="Legend">
+                        <span class="legend-item"><span class="swatch used"></span> Used logical node</span>
+                        <span class="legend-item"><span class="swatch placeholder"></span> Visual placeholder</span>
+                        <span class="legend-item"><span class="swatch unused"></span> Unused memory cell</span>
+                    </div>
+
+                    <p class="note">
+                        A <strong>used logical node</strong> is a real tree key.
+                        A <strong>visual placeholder</strong> is an empty-node illustration created by the visualizer.
+                        An <strong>unused memory cell</strong> is a rank with no node stored at that position.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Memory Cells</h2>
+
+                    <div class="toolbar">
+                        <label for="state-filter">Filter:</label>
+                        <select id="state-filter">
+                            <option value="all">All displayed rows</option>
+                            <option value="used">Used logical nodes</option>
+                            <option value="placeholder">Visual placeholders</option>
+                            <option value="unused">Unused memory cells</option>
+                        </select>
+
+                        <label for="rank-search">Rank/key search:</label>
+                        <input id="rank-search" type="search" placeholder="Example: 10 or 42">
+
+                        <button id="download-csv" type="button">Download CSV</button>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>State</th>
+                                    <th>Key</th>
+                                    <th>Raw key</th>
+                                    <th>Depth</th>
+                                    <th>Parent rank</th>
+                                    <th>Left child rank</th>
+                                    <th>Right child rank</th>
+                                </tr>
+                            </thead>
+                            <tbody id="array-body">
+                                ${visibleRows.map(makeRow).join("")}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </section>
+            `;
+
+            const stateFilter = document.getElementById("state-filter");
+            const rankSearch = document.getElementById("rank-search");
+            const tbody = document.getElementById("array-body");
+            const csvButton = document.getElementById("download-csv");
+
+            function applyFilters() {
+                const state = stateFilter.value;
+                const query = rankSearch.value.trim();
+
+                visibleRows = rows.filter(row => {
+                    const stateMatches = state === "all" || row.state === state;
+
+                    const queryMatches =
+                        query === "" ||
+                        String(row.rank) === query ||
+                        String(row.key ?? "") === query ||
+                        String(row.rawKey ?? "") === query;
+
+                    return stateMatches && queryMatches;
+                });
+
+                tbody.innerHTML = visibleRows.map(makeRow).join("");
+            }
+
+            stateFilter.addEventListener("change", applyFilters);
+            rankSearch.addEventListener("input", applyFilters);
+            csvButton.addEventListener("click", () => downloadCSV(payload, visibleRows));
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        if (id) {
+            const storageKey = `bst-array-view:${id}`;
+            const raw = localStorage.getItem(storageKey);
+
+            if (raw) {
+                try {
+                    const payload = JSON.parse(raw);
+                    render(payload);
+
+                    if (payload.temporary !== false) {
+                        localStorage.removeItem(storageKey);
+                    }
+                } catch (error) {
+                    document.getElementById("app").innerHTML = `
+                        <section>
+                            <p class="error">
+                                Failed to parse array data.
+                            </p>
+                        </section>
+                    `;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

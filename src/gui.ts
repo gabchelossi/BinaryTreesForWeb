@@ -396,347 +396,43 @@ const exec = async function (...parameters: any[]) {
                     returnval = "The tree is empty";
                 break;
 
-            case "help":
-            returnval = `
-                <div style="line-height: 1.45">
-                    <h2>Binary Search Tree Visualizer — Help</h2>
-
-                    <p>
-                        This project visualizes a <b>Binary Search Tree</b> using an
-                        <b>array-based representation</b>. Each node has a rank/index:
-                        for a node at rank <code>i</code>, its left child is stored at
-                        <code>2*i + 1</code> and its right child at <code>2*i + 2</code>.
-                    </p>
-
-                    <p>
-                        The visualizer supports regular BST operations, AVL self-balancing mode,
-                        animated insertion/search/removal, manual step-by-step animation,
-                        traversal animations, empty-node display, and direct inspection of the
-                        underlying array.
-                    </p>
-
-                    <hr>
-
-                    <h3>Insertion Commands</h3>
-
-                    <p>
-                        <code>insert [value]</code><br>
-                        Inserts a single integer key into the tree.
-                    </p>
-
-                    <p>
-                        Example:<br>
-                        <code>insert 42</code>
-                    </p>
-
-                    <p>
-                        <code>insert [v1] [v2] [v3] ...</code><br>
-                        Inserts multiple keys in the given order.
-                    </p>
-
-                    <p>
-                        Example:<br>
-                        <code>insert 50 30 70 20 40 60 80</code>
-                    </p>
-
-                    <p>
-                        <code>insert full</code><br>
-                        Clears the current tree and inserts a predefined full test tree.
-                        This is useful for quickly generating a large example.
-                    </p>
-
-                    <p>
-                        <code>insert random</code><br>
-                        Inserts 20 unique random keys between 0 and 99.
-                        The median value is inserted first so the initial root is centered.
-                    </p>
-
-                    <p>
-                        <code>insert random [max]</code><br>
-                        Inserts 20 unique random keys between 0 and <code>max</code>.
-                    </p>
-
-                    <p>
-                        <code>insert random [min] [max]</code><br>
-                        Inserts 20 unique random keys between <code>min</code> and <code>max</code>.
-                    </p>
-
-                    <p>
-                        <code>insert random [min] [max] [count]</code><br>
-                        Inserts <code>count</code> unique random keys between
-                        <code>min</code> and <code>max</code>.
-                    </p>
-
-                    <p>
-                        Examples:<br>
-                        <code>insert random</code><br>
-                        <code>insert random 200</code><br>
-                        <code>insert random 10 80</code><br>
-                        <code>insert random 10 80 30</code>
-                    </p>
-
-                    <hr>
-
-                    <h3>Removal Command</h3>
-
-                    <p>
-                        <code>remove [value]</code><br>
-                        Removes a key from the tree if it exists.
-                        The visualizer handles standard BST deletion cases:
-                        leaf deletion, deletion of a node with one child, deletion of a node
-                        with two children, and AVL rebalancing when AVL mode is enabled.
-                    </p>
-
-                    <p>
-                        Example:<br>
-                        <code>remove 42</code>
-                    </p>
-
-                    <hr>
-
-                    <h3>Search Command</h3>
-
-                    <p>
-                        <code>search [value]</code><br>
-                        Searches for a key and returns its rank in the array representation.
-                        If animations are enabled, the search path is highlighted visually.
-                    </p>
-
-                    <p>
-                        Example:<br>
-                        <code>search 30</code>
-                    </p>
-
-                    <hr>
-
-                    <h3>Traversal Commands</h3>
-
-                    <p>
-                        <code>traverse in-order</code><br>
-                        Traverses the tree in sorted order: left subtree, root, right subtree.
-                    </p>
-
-                    <p>
-                        <code>traverse pre-order</code><br>
-                        Traverses the tree as: root, left subtree, right subtree.
-                    </p>
-
-                    <p>
-                        <code>traverse post-order</code><br>
-                        Traverses the tree as: left subtree, right subtree, root.
-                    </p>
-
-                    <p>
-                        You can also provide a starting rank/key parameter depending on the current implementation:
-                    </p>
-
-                    <p>
-                        Examples:<br>
-                        <code>traverse in-order</code><br>
-                        <code>traverse pre-order</code><br>
-                        <code>traverse post-order</code>
-                    </p>
-
-                    <hr>
-
-                    <h3>AVL Mode</h3>
-
-                    <p>
-                        <code>set avl on</code><br>
-                        Activates AVL mode. Future insertions and removals will automatically
-                        rebalance the tree when necessary.
-                    </p>
-
-                    <p>
-                        If the tree already contains nodes, enabling AVL mode converts the current
-                        tree into an AVL-balanced version by reinserting the existing keys under AVL rules.
-                    </p>
-
-                    <p>
-                        <code>set avl off</code><br>
-                        Deactivates AVL mode. Future insertions behave like a regular,
-                        non-self-balancing BST.
-                    </p>
-
-                    <p>
-                        Examples:<br>
-                        <code>set avl on</code><br>
-                        <code>set avl off</code>
-                    </p>
-
-                    <hr>
-
-                    <h3>Animation Controls</h3>
-
-                    <p>
-                        <code>set animation on</code><br>
-                        Enables automatic animations.
-                    </p>
-
-                    <p>
-                        <code>set animation off</code><br>
-                        Disables animations. Operations execute immediately.
-                    </p>
-
-                    <p>
-                        <code>set animation manual</code><br>
-                        Enables step-by-step mode. The visualizer pauses during animations
-                        and waits for a manual resume/next command.
-                    </p>
-
-                    <p>
-                        <code>set animation speed [1-5]</code><br>
-                        Sets the animation speed. Higher values are faster.
-                    </p>
-
-                    <p>
-                        Examples:<br>
-                        <code>set animation on</code><br>
-                        <code>set animation off</code><br>
-                        <code>set animation manual</code><br>
-                        <code>set animation speed 3</code>
-                    </p>
-
-                    <hr>
-
-                    <h3>Manual Animation Controls</h3>
-
-                    <p>
-                        <code>pause</code><br>
-                        Pauses the animation system.
-                    </p>
-
-                    <p>
-                        <code>play</code><br>
-                        Resumes the animation system.
-                    </p>
-
-                    <p>
-                        In manual animation mode, the visualizer pauses between animation steps.
-                        The next-step action is controlled through the animation toggle button in the interface,
-                        not through a user-entered console command.
-                    </p>
-
-                    
-
-                    <hr>
-
-                    <h3>Display Commands</h3>
-
-                    <p>
-                        <code>show array</code><br>
-                        Displays the internal array representation of the tree, showing only
-                        initialized real nodes.
-                    </p>
-
-                    <p>
-                        <code>show array true</code><br>
-                        Displays the full array representation, including empty slots.
-                        Ranks are shown in <span style="color: orange">orange</span>.
-                    </p>
-
-                    <p>
-                        <code>show empty on</code><br>
-                        Displays uninitialized child positions as visual empty nodes.
-                        This helps show where future insertions would go.
-                    </p>
-
-                    <p>
-                        <code>show empty off</code><br>
-                        Hides the visual empty nodes.
-                    </p>
-
-                    <p>
-                        <code>show help</code><br>
-                        Shows help for the <code>show</code> command.
-                    </p>
-
-                    <p>
-                        Examples:<br>
-                        <code>show array</code><br>
-                        <code>show array true</code><br>
-                        <code>show empty on</code><br>
-                        <code>show empty off</code>
-                    </p>
-
-                    <hr>
-
-                    <h3>Utility Commands</h3>
-
-                    <p>
-                        <code>equivalent</code><br>
-                        Returns an equivalent <code>insert ...</code> command containing
-                        the keys currently stored in the tree. This is useful for reproducing
-                        the same tree later.
-                    </p>
-
-                    <p>
-                        <code>reset</code><br>
-                        Clears the tree and removes all nodes and connections.
-                    </p>
-
-                    <p>
-                        <code>clear</code><br>
-                        Clears the command console output.
-                    </p>
-
-                    <p>
-                        <code>credits</code><br>
-                        Shows developer credits and contact information.
-                    </p>
-
-                    <hr>
-
-                    <h3>Fake Shell Commands</h3>
-
-                    <p>
-                        The console visually resembles a terminal, but it is not a real Linux shell.
-                        Commands such as <code>ls</code>, <code>pwd</code>, <code>cd</code>,
-                        <code>chmod</code>, <code>su</code>, <code>echo</code>, and
-                        <code>exit</code> are intentionally handled as jokes/placeholders.
-                    </p>
-
-                    <hr>
-
-                    <h3>Quick Start Examples</h3>
-
-                    <p>
-                        Build a regular BST:<br>
-                        <code>set avl off</code><br>
-                        <code>insert 50 30 70 20 40 60 80</code>
-                    </p>
-
-                    <p>
-                        Build an AVL tree:<br>
-                        <code>set avl on</code><br>
-                        <code>insert 50 30 70 20 40 60 80</code>
-                    </p>
-
-                    <p>
-                        Generate a random AVL tree:<br>
-                        <code>set avl on</code><br>
-                        <code>insert random 0 100 25</code>
-                    </p>
-
-                    <p>
-                        Inspect the array representation:<br>
-                        <code>show array true</code>
-                    </p>
-
-                    <p>
-                        Traverse the tree:<br>
-                        <code>traverse in-order</code>
-                    </p>
-
-                    <p>
-                        Use manual animation:<br>
-                        <code>set animation manual</code><br>
-                        <code>insert 30 20 10</code><br>
-                        Then use the animation toggle button to advance through the operation step by step.
-                    </p>
-                </div>
-            `;
-            break;
+            case "help": {
+                const helpWindow = window.open("./help.html", "_blank");
+
+                returnval = helpWindow
+                    ? `
+                        <div style="line-height: 1.5;">
+                            <h2>Help</h2>
+
+                            <p>
+                                The full command documentation has been opened in a new tab.
+                            </p>
+
+                            <p>
+                                <a href="./help.html" target="_blank" style="font-weight: bold; color: cyan;">
+                                    Open Command Help Page
+                                </a>
+                            </p>
+                        </div>
+                    `
+                    : `
+                        <div style="line-height: 1.5;">
+                            <h2>Help</h2>
+
+                            <p>
+                                The browser blocked the help page popup.
+                            </p>
+
+                            <p>
+                                <a href="./help.html" target="_blank" style="font-weight: bold; color: cyan;">
+                                    Click here to open the full command documentation.
+                                </a>
+                            </p>
+                        </div>
+                    `;
+
+                break;
+            }
 
             case "credits":
             returnval = `
@@ -1066,109 +762,99 @@ const exec = async function (...parameters: any[]) {
                         const arr = binarysearchT.arr ?? [];
 
                         if (!arr.length) {
-                            returnval = `
-                                <div style="padding: 0.75rem; border-left: 4px solid grey;">
-                                    <b>Array Representation</b><br>
-                                    The array is currently empty.
-                                </div>
-                            `;
+                            returnval = "The array is empty.";
                             break;
                         }
 
-                        const showEmptySlots = params[2] === "true";
+                        const showEmptySlots = params[2]?.toLowerCase() === "true";
 
-                        const rows: string[] = [];
                         let realNodeCount = 0;
 
                         for (let i = 0; i < arr.length; i++) {
                             const node = arr[i];
-                            const isRealNode = node && Number.isInteger(node.key);
 
-                            if (isRealNode) {
+                            if (node && Number.isInteger(node.key)) {
                                 realNodeCount++;
                             }
+                        }
 
-                            if (!showEmptySlots && !isRealNode) {
+                        const rows: {
+                            rank: number;
+                            state: "used" | "placeholder" | "unused";
+                            key: number | null;
+                            rawKey: number | null;
+                            depth: number;
+                            parentRank: number | null;
+                            leftRank: number;
+                            rightRank: number;
+                        }[] = [];
+
+                        for (let index = 0; index < arr.length; index++) {
+                            const node = arr[index];
+
+                            const isRealNode = Boolean(node && Number.isInteger(node.key));
+                            const isVisualPlaceholder = Boolean(node && !Number.isInteger(node.key));
+
+                            let state: "used" | "placeholder" | "unused";
+
+                            if (isRealNode) {
+                                state = "used";
+                            } else if (isVisualPlaceholder) {
+                                state = "placeholder";
+                            } else {
+                                state = "unused";
+                            }
+
+                            if (!showEmptySlots && state !== "used") {
                                 continue;
                             }
 
-                            const valueCell = isRealNode
-                                ? `<span style="font-weight: bold;">${node.key}</span>`
-                                : `<span style="color: grey; font-style: italic;">[empty]</span>`;
-
-                            const typeCell = isRealNode
-                                ? `<span style="color: rgb(37, 201, 37);">node</span>`
-                                : `<span style="color: grey;">empty slot</span>`;
-
-                            rows.push(`
-                                <tr>
-                                    <td style="padding: 0.35rem 0.6rem; color: orange; font-weight: bold; text-align: center;">
-                                        ${i}
-                                    </td>
-                                    <td style="padding: 0.35rem 0.6rem; text-align: center;">
-                                        ${valueCell}
-                                    </td>
-                                    <td style="padding: 0.35rem 0.6rem; text-align: center;">
-                                        ${typeCell}
-                                    </td>
-                                    <td style="padding: 0.35rem 0.6rem; text-align: center; color: grey;">
-                                        ${2 * i + 1}
-                                    </td>
-                                    <td style="padding: 0.35rem 0.6rem; text-align: center; color: grey;">
-                                        ${2 * i + 2}
-                                    </td>
-                                </tr>
-                            `);
+                            rows.push({
+                                rank: index,
+                                state,
+                                key: isRealNode ? node!.key : null,
+                                rawKey: node ? node.key : null,
+                                depth: Math.floor(Math.log2(index + 1)),
+                                parentRank: index === 0 ? null : Math.floor((index - 1) / 2),
+                                leftRank: 2 * index + 1,
+                                rightRank: 2 * index + 2
+                            });
                         }
 
-                        if (!rows.length) {
-                            returnval = `
-                                <div style="padding: 0.75rem; border-left: 4px solid grey;">
-                                    <b>Array Representation</b><br>
-                                    No real nodes are currently stored in the array.
-                                </div>
+                        console.log("Array view payload:", {
+                            showEmptySlots,
+                            arrayLength: arr.length,
+                            realNodeCount,
+                            rowsLength: rows.length
+                        });
+
+                        const id =
+                            typeof crypto !== "undefined" && "randomUUID" in crypto
+                                ? crypto.randomUUID()
+                                : String(Date.now());
+
+                        const payload = {
+                            temporary: true,
+                            showEmptySlots,
+                            generatedAt: new Date().toLocaleString(),
+                            arrayLength: arr.length,
+                            realNodeCount,
+                            rows
+                        };
+
+                        localStorage.setItem(`bst-array-view:${id}`, JSON.stringify(payload));
+
+                        const opened = window.open(`./array.html?id=${id}`, "_blank");
+
+                        returnval = opened
+                            ? "Opened the array representation in a new page."
+                            : `
+                                The browser blocked the popup.
+                                <br>
+                                <a href="./array.html?id=${id}" target="_blank" style="color: cyan; font-weight: bold;">
+                                    Click here to open the array representation.
+                                </a>
                             `;
-                            break;
-                        }
-
-                        returnval = `
-                            <div style="line-height: 1.45;">
-                                <h3 style="margin-bottom: 0.4rem;">Array Representation</h3>
-
-                                <p style="margin: 0.25rem 0 0.75rem 0;">
-                                    <b>Mode:</b> ${showEmptySlots ? "Full array with empty slots" : "Real nodes only"}<br>
-                                    <b>Real nodes:</b> ${realNodeCount}<br>
-                                    <b>Array length:</b> ${arr.length}
-                                </p>
-
-                                <table style="
-                                    border-collapse: collapse;
-                                    margin-top: 0.5rem;
-                                    font-family: monospace;
-                                    min-width: 420px;
-                                ">
-                                    <thead>
-                                        <tr style="border-bottom: 1px solid grey;">
-                                            <th style="padding: 0.35rem 0.6rem; color: orange;">Rank</th>
-                                            <th style="padding: 0.35rem 0.6rem;">Key</th>
-                                            <th style="padding: 0.35rem 0.6rem;">Type</th>
-                                            <th style="padding: 0.35rem 0.6rem;">Left child</th>
-                                            <th style="padding: 0.35rem 0.6rem;">Right child</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        ${rows.join("")}
-                                    </tbody>
-                                </table>
-
-                                <p style="margin-top: 0.75rem; color: grey;">
-                                    Formula: for a node at rank <code>i</code>, left child = <code>2*i + 1</code>,
-                                    right child = <code>2*i + 2</code>.
-                                    Ranks are shown in <span style="color: orange;">orange</span>.
-                                </p>
-                            </div>
-                        `;
 
                         break;
                     }
