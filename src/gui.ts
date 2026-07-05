@@ -11,6 +11,7 @@ let animationSpeed = 1;
 let animation = false;
 let awaiting: boolean = false;
 
+
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -28,17 +29,6 @@ function pause() {
     });
 }
 
-function awaitInput() {
-    return new Promise(resolve => {
-        let onKeyHandler = function (e: { key: string; }) {
-            if (e.key == "ArrowRight") {
-                document.removeEventListener('keydown', onKeyHandler);
-                resolve(true);
-            }
-        }
-        document.addEventListener('keydown', onKeyHandler);
-    });
-}
 
 export var binarysearchT = new BinarySearchTree();
 (window as any).binarysearchT = binarysearchT;
@@ -62,13 +52,9 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
                 command!.innerHTML = command!.innerHTML.substring(0, command!.innerHTML.length - 1);
                 break;
 
-            default: //NEEDS OPTIMIZING
-                if (!( e.key == "PageDown" || e.key == "PageUp" || e.key == "NumLock" || e.key == "Delete" || e.key == "Home" || e.key == "Insert" || e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta")){
-                    //console.log(e.key);
-                    //command!.innerHTML = command!.innerHTML + e.key;
+            default:
+                if(e.key.length == 1){ //it means it is just a simple key and not win/pageup/pagedown et cetera special keys
                     let char = e.key.toString();
-                    const re = new RegExp("^[A-Za-z0-9]$");
-                    re.exec(char);
                     command!.innerHTML = command!.innerHTML + char;
                 }
                 else {
@@ -100,7 +86,6 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
             
             
             case "Enter":
-                
                 parseCommand();
                 break;
         }
@@ -195,8 +180,9 @@ const exec = async function (...parameters: any[]) {
         const emptyNodes : boolean = (document.getElementById("empty") as HTMLInputElement).checked?true:false;
         switch (params[0]) {
             case 'insert':
-                
+                if(emptyNodes) await binarysearchT.toggleEmptyNodes(false); 
                 if (params[1] == "full") {
+                    binarysearchT.reset();
                     let arr = [25, 10, 40, 5, 15, 30, 50, 3, 7, 13, 20, 27, 35, 45, 55, 1, 4, 6, 8, 11, 14, 17, 24, 26, 29, 33, 37, 43, 47, 53, 60];
                     const insertFull = function () {
                         return new Promise(async function (res) {
@@ -205,83 +191,196 @@ const exec = async function (...parameters: any[]) {
                                 if (animation)
                                     await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(arr[i]));
                                 else
-                                    binarysearchT.addNew(new BinarySearchTree.TreeElement(arr[i]));
+                                    await binarysearchT.addNew(new BinarySearchTree.TreeElement(arr[i]));
                             }
                             res(true);
                         });
                     };
                     await insertFull();
-                    if(emptyNodes) binarysearchT.toggleEmptyNodes(); //in case you are using this command in a non-empty binary tree
                 }
-                else {
-                    if (params.length > 2) {
-                        let vals = params.map(function (e: string) {
-                            return parseInt(e);
-                        }).filter((v: number) => {
-                            if (!isNaN(v)) {
-                                return v;
+                else{
+                    if (params[1] === "random") {
+                        const parseInteger = (value: string | undefined): number | null => {
+                            if (value === undefined) return null;
+
+                            const n = Number(value);
+                            return Number.isInteger(n) ? n : null;
+                        };
+
+                        let min = 0;
+                        let max = 99;
+                        let count = 20;
+
+                        const p2 = parseInteger(params[2]);
+                        const p3 = parseInteger(params[3]);
+                        const p4 = parseInteger(params[4]);
+
+                        if (params[2] !== undefined && p2 === null) {
+                            reject(`Invalid max value: '${params[2]}'`);
+                            break;
+                        }
+
+                        if (params[3] !== undefined && p3 === null) {
+                            reject(`Invalid max value: '${params[3]}'`);
+                            break;
+                        }
+
+                        if (params[4] !== undefined && p4 === null) {
+                            reject(`Invalid count value: '${params[4]}'`);
+                            break;
+                        }
+
+                        if (p2 !== null && p3 === null) {
+                            // insert random <max>
+                            max = p2;
+                        } else if (p2 !== null && p3 !== null) {
+                            // insert random <min> <max>
+                            min = p2;
+                            max = p3;
+                        }
+
+                        if (p4 !== null) {
+                            count = p4;
+                        }
+
+                        if (min > max) {
+                            reject(`Minimum value cannot be greater than maximum value.`);
+                            break;
+                        }
+
+                        if (count <= 0) {
+                            reject(`Count must be greater than 0.`);
+                            break;
+                        }
+
+                        const rangeSize = max - min + 1;
+
+                        if (count > rangeSize) {
+                            reject(`Cannot insert ${count} unique keys from range [${min}, ${max}]. Maximum possible is ${rangeSize}.`);
+                            break;
+                        }
+
+                        const insertOne = async (value: number) => {
+                            const element = new BinarySearchTree.TreeElement(value);
+
+                            if (animation) {
+                                await binarysearchT.addNewTransform(element);
+                            } else {
+                                await binarysearchT.addNew(element);
                             }
-                        });
+                        };
+
+                        const shuffle = (arr: number[]): number[] => {
+                            for (let i = arr.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [arr[i], arr[j]] = [arr[j], arr[i]];
+                            }
+
+                            return arr;
+                        };
+
                         await (async function () {
-                            returnval = `Succesfully inserted ${vals} into the binary search tree`;
-                            for (let i = 0; i < vals.length; i++) {
-                                try {
-                                    if (animation)
-                                        await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(vals[i]));
-                                    else {
-                                        await binarysearchT.addNew(new BinarySearchTree.TreeElement(vals[i]));
-                                    }
-                                }
-                                catch (e) {
-                                    let index = -1;
-                                    if (typeof e === "string") {
-                                        index = vals.indexOf(parseInt(e.substring(1)));
-                                    }
-                                    vals.splice(index, 1);
-                                    //console.log(vals);
-                                    alert(e);
-                                    i--;
-                                    if (vals.length > 0){
-                                        returnval = `Succesfully inserted ${vals} into the binary search tree`;
-                                    }
-                                    else returnval = `None of the values have been inserted`;
-                                }
-                                finally{
-                                    if(emptyNodes) binarysearchT.toggleEmptyNodes();
+                            const median = Math.floor((min + max) / 2);
+
+                            const values: number[] = [];
+
+                            // Put median first so the initial root is centered.
+                            values.push(median);
+
+                            const candidates: number[] = [];
+
+                            for (let n = min; n <= max; n++) {
+                                if (n !== median) {
+                                    candidates.push(n);
                                 }
                             }
+
+                            shuffle(candidates);
+
+                            values.push(...candidates.slice(0, count - 1));
+
+
+                            for (const value of values) {
+                                if (binarysearchT.rankOf(value) === -1) {
+                                    await insertOne(value);
+                                }
+                            }
+
+                            returnval = `Successfully inserted ${values} into the binary search tree`;
                         })();
-                        
                     }
                     else {
-                        if(!Number.isInteger(Number.parseFloat(params[1]))){
-                            reject(`The passed parameter is not an integer.`);
-                        }
-                        else{
-                            if(binarysearchT.rankOf(parseInt(params[1]))>-1){
-                                reject(`The key '${parseInt(params[1])}' is already present in the tree.`);
-                            }
-                            else{
-                                await (async function () {
-                                    try {
-                                        if (animation)
-                                            await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(parseInt(params[1])));
-                                        else
-                                            binarysearchT.addNew(new BinarySearchTree.TreeElement(parseInt(params[1])));
-                                        returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
+                        if (params.length > 2) {
+                            let vals = params
+                                .map((e: string) => parseInt(e, 10))
+                                .filter((v: number) => !isNaN(v));
+
+                            returnval = `Successfully inserted ${vals} into the binary search tree`;
+
+                            // If empty-node mode is active, remove placeholders before inserting
+
+                            for (let i = 0; i < vals.length; i++) {
+                                try {
+                                    const element = new BinarySearchTree.TreeElement(vals[i]);
+
+                                    if (animation) {
+                                        await binarysearchT.addNewTransform(element);
+                                    } else {
+                                        await binarysearchT.addNew(element);
                                     }
-                                    catch (e) {
-                                        returnval = String(e);
+                                } catch (e) {
+                                    let index = -1;
+
+                                    if (typeof e === "string") {
+                                        index = vals.indexOf(parseInt(e.substring(1), 10));
                                     }
-                                })();
-                                if(emptyNodes) binarysearchT.toggleEmptyNodes();
+
+                                    if (index > -1) {
+                                        vals.splice(index, 1);
+                                        i--;
+                                    }
+
+                                    alert(e);
+
+                                    if (vals.length > 0) {
+                                        returnval = `Successfully inserted ${vals} into the binary search tree`;
+                                    } else {
+                                        returnval = `None of the values have been inserted`;
+                                    }
+                                }
                             }
                             
                         }
-                        
+                        else {
+                            if(!Number.isInteger(Number.parseFloat(params[1]))){
+                                reject(`The passed parameter is not an integer.`);
+                            }
+                            else{
+                                if(binarysearchT.rankOf(parseInt(params[1]))>-1){
+                                    reject(`The key '${parseInt(params[1])}' is already present in the tree.`);
+                                }
+                                else{
+                                    await (async function () {
+                                        try {
+                                            if (animation)
+                                                await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(parseInt(params[1])));
+                                            else
+                                                await binarysearchT.addNew(new BinarySearchTree.TreeElement(parseInt(params[1])));
+                                            returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
+                                        }
+                                        catch (e) {
+                                            returnval = String(e);
+                                        }
+                                    })();
+                                }
+                                
+                            }
+                            
+                        }
                     }
                 }
-
+                
+                if(emptyNodes) await binarysearchT.toggleEmptyNodes(true); 
 
                 break;
 
@@ -297,19 +396,385 @@ const exec = async function (...parameters: any[]) {
                     returnval = "The tree is empty";
                 break;
 
-            case 'help':
-                returnval = "'insert [value]' inserts a key into the binary tree <br> \
-                'delete [value]' deletes (if exists) a key from the binary tree<br> \
-                'search [value] returns the rank of a given value.'<br> \
-                'show' will show the array representing the data structure: \t-array (?boolean:show empty slots)<br> \
-                'clear' clears the console (it gets too messy sometimes)<br> \
-                'credits' to show the credits of the developer who made this site";
-                break;
+            case "help":
+            returnval = `
+                <div style="line-height: 1.45">
+                    <h2>Binary Search Tree Visualizer — Help</h2>
 
-            case 'credits':
-                returnval = "Thank you for visiting my website! I hope this visual representation of these data structures are to your liking<br>\
-                if you have any questions do not hesitate to e-mail me at <a href='mailto:gc.consulting22@gmail.com'>gc.consulting22@gmail.com</a>";
-                break;
+                    <p>
+                        This project visualizes a <b>Binary Search Tree</b> using an
+                        <b>array-based representation</b>. Each node has a rank/index:
+                        for a node at rank <code>i</code>, its left child is stored at
+                        <code>2*i + 1</code> and its right child at <code>2*i + 2</code>.
+                    </p>
+
+                    <p>
+                        The visualizer supports regular BST operations, AVL self-balancing mode,
+                        animated insertion/search/removal, manual step-by-step animation,
+                        traversal animations, empty-node display, and direct inspection of the
+                        underlying array.
+                    </p>
+
+                    <hr>
+
+                    <h3>Insertion Commands</h3>
+
+                    <p>
+                        <code>insert [value]</code><br>
+                        Inserts a single integer key into the tree.
+                    </p>
+
+                    <p>
+                        Example:<br>
+                        <code>insert 42</code>
+                    </p>
+
+                    <p>
+                        <code>insert [v1] [v2] [v3] ...</code><br>
+                        Inserts multiple keys in the given order.
+                    </p>
+
+                    <p>
+                        Example:<br>
+                        <code>insert 50 30 70 20 40 60 80</code>
+                    </p>
+
+                    <p>
+                        <code>insert full</code><br>
+                        Clears the current tree and inserts a predefined full test tree.
+                        This is useful for quickly generating a large example.
+                    </p>
+
+                    <p>
+                        <code>insert random</code><br>
+                        Inserts 20 unique random keys between 0 and 99.
+                        The median value is inserted first so the initial root is centered.
+                    </p>
+
+                    <p>
+                        <code>insert random [max]</code><br>
+                        Inserts 20 unique random keys between 0 and <code>max</code>.
+                    </p>
+
+                    <p>
+                        <code>insert random [min] [max]</code><br>
+                        Inserts 20 unique random keys between <code>min</code> and <code>max</code>.
+                    </p>
+
+                    <p>
+                        <code>insert random [min] [max] [count]</code><br>
+                        Inserts <code>count</code> unique random keys between
+                        <code>min</code> and <code>max</code>.
+                    </p>
+
+                    <p>
+                        Examples:<br>
+                        <code>insert random</code><br>
+                        <code>insert random 200</code><br>
+                        <code>insert random 10 80</code><br>
+                        <code>insert random 10 80 30</code>
+                    </p>
+
+                    <hr>
+
+                    <h3>Removal Command</h3>
+
+                    <p>
+                        <code>remove [value]</code><br>
+                        Removes a key from the tree if it exists.
+                        The visualizer handles standard BST deletion cases:
+                        leaf deletion, deletion of a node with one child, deletion of a node
+                        with two children, and AVL rebalancing when AVL mode is enabled.
+                    </p>
+
+                    <p>
+                        Example:<br>
+                        <code>remove 42</code>
+                    </p>
+
+                    <hr>
+
+                    <h3>Search Command</h3>
+
+                    <p>
+                        <code>search [value]</code><br>
+                        Searches for a key and returns its rank in the array representation.
+                        If animations are enabled, the search path is highlighted visually.
+                    </p>
+
+                    <p>
+                        Example:<br>
+                        <code>search 30</code>
+                    </p>
+
+                    <hr>
+
+                    <h3>Traversal Commands</h3>
+
+                    <p>
+                        <code>traverse in-order</code><br>
+                        Traverses the tree in sorted order: left subtree, root, right subtree.
+                    </p>
+
+                    <p>
+                        <code>traverse pre-order</code><br>
+                        Traverses the tree as: root, left subtree, right subtree.
+                    </p>
+
+                    <p>
+                        <code>traverse post-order</code><br>
+                        Traverses the tree as: left subtree, right subtree, root.
+                    </p>
+
+                    <p>
+                        You can also provide a starting rank/key parameter depending on the current implementation:
+                    </p>
+
+                    <p>
+                        Examples:<br>
+                        <code>traverse in-order</code><br>
+                        <code>traverse pre-order</code><br>
+                        <code>traverse post-order</code>
+                    </p>
+
+                    <hr>
+
+                    <h3>AVL Mode</h3>
+
+                    <p>
+                        <code>set avl on</code><br>
+                        Activates AVL mode. Future insertions and removals will automatically
+                        rebalance the tree when necessary.
+                    </p>
+
+                    <p>
+                        If the tree already contains nodes, enabling AVL mode converts the current
+                        tree into an AVL-balanced version by reinserting the existing keys under AVL rules.
+                    </p>
+
+                    <p>
+                        <code>set avl off</code><br>
+                        Deactivates AVL mode. Future insertions behave like a regular,
+                        non-self-balancing BST.
+                    </p>
+
+                    <p>
+                        Examples:<br>
+                        <code>set avl on</code><br>
+                        <code>set avl off</code>
+                    </p>
+
+                    <hr>
+
+                    <h3>Animation Controls</h3>
+
+                    <p>
+                        <code>set animation on</code><br>
+                        Enables automatic animations.
+                    </p>
+
+                    <p>
+                        <code>set animation off</code><br>
+                        Disables animations. Operations execute immediately.
+                    </p>
+
+                    <p>
+                        <code>set animation manual</code><br>
+                        Enables step-by-step mode. The visualizer pauses during animations
+                        and waits for a manual resume/next command.
+                    </p>
+
+                    <p>
+                        <code>set animation speed [1-5]</code><br>
+                        Sets the animation speed. Higher values are faster.
+                    </p>
+
+                    <p>
+                        Examples:<br>
+                        <code>set animation on</code><br>
+                        <code>set animation off</code><br>
+                        <code>set animation manual</code><br>
+                        <code>set animation speed 3</code>
+                    </p>
+
+                    <hr>
+
+                    <h3>Manual Animation Controls</h3>
+
+                    <p>
+                        <code>pause</code><br>
+                        Pauses the animation system.
+                    </p>
+
+                    <p>
+                        <code>play</code><br>
+                        Resumes the animation system.
+                    </p>
+
+                    <p>
+                        In manual animation mode, the visualizer pauses between animation steps.
+                        The next-step action is controlled through the animation toggle button in the interface,
+                        not through a user-entered console command.
+                    </p>
+
+                    
+
+                    <hr>
+
+                    <h3>Display Commands</h3>
+
+                    <p>
+                        <code>show array</code><br>
+                        Displays the internal array representation of the tree, showing only
+                        initialized real nodes.
+                    </p>
+
+                    <p>
+                        <code>show array true</code><br>
+                        Displays the full array representation, including empty slots.
+                        Ranks are shown in <span style="color: orange">orange</span>.
+                    </p>
+
+                    <p>
+                        <code>show empty on</code><br>
+                        Displays uninitialized child positions as visual empty nodes.
+                        This helps show where future insertions would go.
+                    </p>
+
+                    <p>
+                        <code>show empty off</code><br>
+                        Hides the visual empty nodes.
+                    </p>
+
+                    <p>
+                        <code>show help</code><br>
+                        Shows help for the <code>show</code> command.
+                    </p>
+
+                    <p>
+                        Examples:<br>
+                        <code>show array</code><br>
+                        <code>show array true</code><br>
+                        <code>show empty on</code><br>
+                        <code>show empty off</code>
+                    </p>
+
+                    <hr>
+
+                    <h3>Utility Commands</h3>
+
+                    <p>
+                        <code>equivalent</code><br>
+                        Returns an equivalent <code>insert ...</code> command containing
+                        the keys currently stored in the tree. This is useful for reproducing
+                        the same tree later.
+                    </p>
+
+                    <p>
+                        <code>reset</code><br>
+                        Clears the tree and removes all nodes and connections.
+                    </p>
+
+                    <p>
+                        <code>clear</code><br>
+                        Clears the command console output.
+                    </p>
+
+                    <p>
+                        <code>credits</code><br>
+                        Shows developer credits and contact information.
+                    </p>
+
+                    <hr>
+
+                    <h3>Fake Shell Commands</h3>
+
+                    <p>
+                        The console visually resembles a terminal, but it is not a real Linux shell.
+                        Commands such as <code>ls</code>, <code>pwd</code>, <code>cd</code>,
+                        <code>chmod</code>, <code>su</code>, <code>echo</code>, and
+                        <code>exit</code> are intentionally handled as jokes/placeholders.
+                    </p>
+
+                    <hr>
+
+                    <h3>Quick Start Examples</h3>
+
+                    <p>
+                        Build a regular BST:<br>
+                        <code>set avl off</code><br>
+                        <code>insert 50 30 70 20 40 60 80</code>
+                    </p>
+
+                    <p>
+                        Build an AVL tree:<br>
+                        <code>set avl on</code><br>
+                        <code>insert 50 30 70 20 40 60 80</code>
+                    </p>
+
+                    <p>
+                        Generate a random AVL tree:<br>
+                        <code>set avl on</code><br>
+                        <code>insert random 0 100 25</code>
+                    </p>
+
+                    <p>
+                        Inspect the array representation:<br>
+                        <code>show array true</code>
+                    </p>
+
+                    <p>
+                        Traverse the tree:<br>
+                        <code>traverse in-order</code>
+                    </p>
+
+                    <p>
+                        Use manual animation:<br>
+                        <code>set animation manual</code><br>
+                        <code>insert 30 20 10</code><br>
+                        Then use the animation toggle button to advance through the operation step by step.
+                    </p>
+                </div>
+            `;
+            break;
+
+            case "credits":
+            returnval = `
+                <div style="line-height: 1.5;">
+                    <h2>Credits</h2>
+
+                    <p>
+                        Thank you for checking out this project.
+                        This visualizer was designed to make Binary Search Trees and AVL Trees
+                        easier to understand through interactive animations and direct inspection
+                        of the underlying array representation.
+                    </p>
+
+                    <p>
+                        Features include insertion, removal, search, traversal, empty-node display,
+                        AVL balancing, rotations, animation controls, and step-by-step execution.
+                    </p>
+
+                    <p>
+                        Created by <b>Gabriel. Chelossi</b>.
+                    </p>
+
+                    <p>
+                        Contact:
+                        <a href="mailto:contact@gchelossi-dev.com">
+                            contact@gchelossi-dev.com
+                        </a>
+                    </p>
+
+                    <p>
+                        Website:
+                        <a href="https://gchelossi-dev.com" target="_blank">
+                            https://gchelossi-dev.com
+                        </a>
+                    </p>
+                </div>
+            `;
+            break;
 
             case 'clear':
                 document.getElementById("console-content")!.innerHTML = "";
@@ -327,12 +792,15 @@ const exec = async function (...parameters: any[]) {
                         if(animation){
                             await sleep(1000/animationSpeed);
                         }
-                        if(emptyNodes) await binarysearchT.toggleEmptyNodes();
+                        
                         
                         resolve(`The key '${params[1]}' has been deleted.`);
                     }
                     catch(e){
                         reject(e);
+                    }
+                    finally{
+                        if(emptyNodes) await binarysearchT.toggleEmptyNodes();
                     }
                 }
             break;
@@ -342,32 +810,38 @@ const exec = async function (...parameters: any[]) {
             case 'su':
             case 'cd':
             case 'echo':
-                returnval = "You know, this is not really a linux shell although I made it look like one :)";
+            case `exit`:
+                returnval = "You know, this is not a real linux shell although I made it look like one ☺";
                 break;
 
             case "reset":
                 binarysearchT.reset();
+                returnval = `The Binary Search Tree has been reset.`;
                 break;
 
             case "search":
-                if(animation){
-                    try{
-                        const rankAt = await binarysearchT.search(params[1]);
-                        returnval = `The key '${params[1]}' is found at rank ${rankAt}`;
+                if(Boolean(params[1]) && parseInt(params[1]) == params[1]){ //js weird stuff. Just making sure that the passed value is an integer and since it is a string if it is a float it will not pass the condition
+                    if(animation){
+                        try{
+                            const rankAt = await binarysearchT.search(params[1]);
+                            returnval = `The key '${params[1]}' is found at rank ${rankAt}`;
+                        }
+                        catch(e){
+                            returnval = `The key '${params[1]}' is not present in the Binary Search Tree`;
+                        }
                     }
-                    catch(e){
-                        returnval = `The key '${params[1]}' is not present in the Binary Search Tree`;
+                    else{
+                        const rank = binarysearchT.rankOf(params[1]);
+                        if (rank == -1) {
+                            returnval = `The value '${params[1]}' is not in the tree`;
+                        }
+                        else {
+                            returnval = `The value '${params[1]}' is at rank ${rank}`;
+                        }
                     }
                 }
-                else{
-                    const rank = binarysearchT.rankOf(params[1]);
-                    if (rank == -1) {
-                        returnval = `The value '${params[1]}' is not in the tree`;
-                    }
-                    else {
-                        returnval = `The value '${params[1]}' is at rank ${rank}`;
-                    }
-                }
+                else returnval = `The key is not a valid integer value`;
+                
                 break;
                 
             case "set":
@@ -472,7 +946,7 @@ const exec = async function (...parameters: any[]) {
                                 animation = false;
                                 const radiobtn = document.getElementById("Off") as HTMLInputElement;
                                 radiobtn.checked = true;
-                                
+                                binarysearchT.paused = false;
                                 /*const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
                                 const nextButton = document.getElementById("next-button") as HTMLInputElement;
                                 
@@ -530,7 +1004,7 @@ const exec = async function (...parameters: any[]) {
                     break;
 
                     case "help":
-                        returnval = `'set speed ([1-10])' sets the animation speed`;
+                        returnval = `'set speed ([1-5])' sets the animation speed`;
                         break;
 
                     case "avl":
@@ -541,14 +1015,18 @@ const exec = async function (...parameters: any[]) {
                         else{
                             
                             //const elements = Array.from(document.getElementsByClassName("TreeElement"));
-
+                            //const emptyNodes : boolean = (document.getElementById("empty") as HTMLInputElement).checked?true:false;
                             if(params[2] == "on") {
+                                
                                 binarysearchT.avlStatus = true;
                                 avlCheckbox.checked = true;
                                 returnval = "AVL mode activated";
                                 //if a tree is already inserted, and non balanced, I want to map all the keys to their
                                 //respective ranks as if the insertion had started as an AVL tree.
                                 if(binarysearchT.size>0){
+                                    const paused = binarysearchT.paused;
+                                    if(paused)  binarysearchT.paused = false;
+                                    if(emptyNodes) await binarysearchT.toggleEmptyNodes(false);
                                     const equivalent = binarysearchT.arr
                                     .map(v => v?.key)
                                     .filter((v): v is number => v !== undefined);
@@ -557,6 +1035,12 @@ const exec = async function (...parameters: any[]) {
                                     if(animation) await exec(["set", "animation", "off"]);
                                     await exec(["insert", ...equivalent.map(Number)]);
                                     if(animation) await exec(["set", "animation", "on"]);
+                                    if(emptyNodes) await binarysearchT.toggleEmptyNodes();
+                                    if(paused)  {
+                                        binarysearchT.paused = true;
+                                        await exec(["set", "animation", "manual"]);
+                                    }
+
                                 }
                                 
                                 
@@ -578,45 +1062,116 @@ const exec = async function (...parameters: any[]) {
 
             case "show":
                 switch (params[1]) {
-                    case "array":
-                        if (binarysearchT.arr!.length) {
-                            if (params[2] === "true") {
-                                let s = "[";
+                    case "array": {
+                        const arr = binarysearchT.arr ?? [];
 
-                                for (let i = 0; i < binarysearchT.arr.length; i++) {
-                                    const node = binarysearchT.arr[i];
+                        if (!arr.length) {
+                            returnval = `
+                                <div style="padding: 0.75rem; border-left: 4px solid grey;">
+                                    <b>Array Representation</b><br>
+                                    The array is currently empty.
+                                </div>
+                            `;
+                            break;
+                        }
 
-                                    const val =
-                                        node && Number.isInteger(node.key)
-                                            ? node.key
-                                            : '<span style="color: grey">[empty]</span>';
+                        const showEmptySlots = params[2] === "true";
 
-                                    s += `<span style='color: orange'>${i}</span>: ${val}${i < binarysearchT.arr.length - 1 ? ", " : "]"}`;
-                                }
+                        const rows: string[] = [];
+                        let realNodeCount = 0;
 
-                                s += "<br>Where the <span style='color: orange'>rank</span> is orange";
-                                returnval = s;
-                            } else {
-                                let s = "[";
+                        for (let i = 0; i < arr.length; i++) {
+                            const node = arr[i];
+                            const isRealNode = node && Number.isInteger(node.key);
 
-                                const entries: string[] = [];
-
-                                binarysearchT.arr.forEach((node, index) => {
-                                    if (node && Number.isInteger(node.key)) {
-                                        entries.push(`<span style='color: orange'>${index}</span>: ${node.key}`);
-                                    }
-                                });
-
-                                s += entries.join(", ") + "]";
-                                s += "<br>Where the <span style='color: orange'>rank</span> is orange";
-                                returnval = s;
+                            if (isRealNode) {
+                                realNodeCount++;
                             }
+
+                            if (!showEmptySlots && !isRealNode) {
+                                continue;
+                            }
+
+                            const valueCell = isRealNode
+                                ? `<span style="font-weight: bold;">${node.key}</span>`
+                                : `<span style="color: grey; font-style: italic;">[empty]</span>`;
+
+                            const typeCell = isRealNode
+                                ? `<span style="color: rgb(37, 201, 37);">node</span>`
+                                : `<span style="color: grey;">empty slot</span>`;
+
+                            rows.push(`
+                                <tr>
+                                    <td style="padding: 0.35rem 0.6rem; color: orange; font-weight: bold; text-align: center;">
+                                        ${i}
+                                    </td>
+                                    <td style="padding: 0.35rem 0.6rem; text-align: center;">
+                                        ${valueCell}
+                                    </td>
+                                    <td style="padding: 0.35rem 0.6rem; text-align: center;">
+                                        ${typeCell}
+                                    </td>
+                                    <td style="padding: 0.35rem 0.6rem; text-align: center; color: grey;">
+                                        ${2 * i + 1}
+                                    </td>
+                                    <td style="padding: 0.35rem 0.6rem; text-align: center; color: grey;">
+                                        ${2 * i + 2}
+                                    </td>
+                                </tr>
+                            `);
                         }
-                        else {
-                            returnval = "The array is empty.";
+
+                        if (!rows.length) {
+                            returnval = `
+                                <div style="padding: 0.75rem; border-left: 4px solid grey;">
+                                    <b>Array Representation</b><br>
+                                    No real nodes are currently stored in the array.
+                                </div>
+                            `;
+                            break;
                         }
+
+                        returnval = `
+                            <div style="line-height: 1.45;">
+                                <h3 style="margin-bottom: 0.4rem;">Array Representation</h3>
+
+                                <p style="margin: 0.25rem 0 0.75rem 0;">
+                                    <b>Mode:</b> ${showEmptySlots ? "Full array with empty slots" : "Real nodes only"}<br>
+                                    <b>Real nodes:</b> ${realNodeCount}<br>
+                                    <b>Array length:</b> ${arr.length}
+                                </p>
+
+                                <table style="
+                                    border-collapse: collapse;
+                                    margin-top: 0.5rem;
+                                    font-family: monospace;
+                                    min-width: 420px;
+                                ">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid grey;">
+                                            <th style="padding: 0.35rem 0.6rem; color: orange;">Rank</th>
+                                            <th style="padding: 0.35rem 0.6rem;">Key</th>
+                                            <th style="padding: 0.35rem 0.6rem;">Type</th>
+                                            <th style="padding: 0.35rem 0.6rem;">Left child</th>
+                                            <th style="padding: 0.35rem 0.6rem;">Right child</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        ${rows.join("")}
+                                    </tbody>
+                                </table>
+
+                                <p style="margin-top: 0.75rem; color: grey;">
+                                    Formula: for a node at rank <code>i</code>, left child = <code>2*i + 1</code>,
+                                    right child = <code>2*i + 2</code>.
+                                    Ranks are shown in <span style="color: orange;">orange</span>.
+                                </p>
+                            </div>
+                        `;
 
                         break;
+                    }
 
                     case "help":
                         returnval = "'show' has the following options:<br>\t-array (?boolean:show empty slots): shows the array representation of the binary search tree";
@@ -644,30 +1199,7 @@ const exec = async function (...parameters: any[]) {
                         break;
                 }
                 break;
-            case "fill-random":
-                (async function () {
-                    if(animation){
-                        await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
-                        for (let i = 0; i < 20; i++) {
-                            let random = Math.floor(Math.random() * 100);
-                            if (binarysearchT.rankOf(random) == -1)
-                                await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(random));
-                        }
-                    }
-                    else{
-                        await binarysearchT.addNew(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
-                        for (let i = 0; i < 20; i++) {
-                            let random = Math.floor(Math.random() * 100);
-                            if (binarysearchT.rankOf(random) == -1)
-                                await binarysearchT.addNew(new BinarySearchTree.TreeElement(random));
-                        }
-                    }
-                    
-                })();
-                (document.getElementById("empty") as HTMLInputElement).checked?binarysearchT.toggleEmptyNodes():binarysearchT.toggleEmptyNodes(false);
-
-
-                break;
+            
 
             case "traverse":
                 let traverseType: string = params[1].toLowerCase();
@@ -936,7 +1468,9 @@ document.addEventListener("DOMContentLoaded",async function() {
 
         console.log(`PASS: random mixed AVL test ${size}`);
     }
-    //await randomMixedAVLTest(100);
+    
+    await exec(["set", "animation", "off"]);
+    await exec(["set", "animation", "speed", 1]);
     //await randomMixedAVLTest(500);
     //await randomMixedAVLTest(1000);
 });
@@ -985,6 +1519,8 @@ const cursorAnimation = function () {
     }
 
 }
+
+
 //let consoleHeight = debconsole!.offsetHeight;
 
 
@@ -1013,6 +1549,11 @@ document.getElementById("search-button")!.addEventListener("click", function(){
 document.getElementById("traverse-button")!.addEventListener("click", function(){
     const selectedRadio = document.querySelector('input[name="trasversalselection"]:checked') as HTMLInputElement;
     command!.innerHTML = `traverse ${selectedRadio?.value}`;
+    parseCommand();
+});
+
+document.getElementById("reset")!.addEventListener("click", function(){
+    command!.innerHTML = `reset`;
     parseCommand();
 });
 
