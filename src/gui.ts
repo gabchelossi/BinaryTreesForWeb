@@ -452,7 +452,7 @@ const exec = async function (...parameters: any[]) {
                     </p>
 
                     <p>
-                        Created by <b>Gabriel. Chelossi</b>.
+                        Created by <b>Gabriele Chelossi</b>.
                     </p>
 
                     <p>
