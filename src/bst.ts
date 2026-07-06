@@ -20,80 +20,29 @@ export class BinarySearchTree {
     constructor() {
         this.arr = new Proxy<TreeElementInstance[]>([], {
             get(target, prop, receiver) {
-                /*
-                if (prop !== "length" && typeof prop !== "symbol") {
-                if (prop == "4" || prop == "5") {
-                    console.log("READ:", prop);
-                    console.trace();
-                }
-                }
-                */
-
-                // console.log("READ:", prop);
-                // console.trace();
-
                 return Reflect.get(target, prop, receiver);
             },
 
             set(target, prop, value, receiver) {
-                /*
-                if (prop !== "length") {
-                if (prop == "4" || prop == "5") {
-                    console.log("WRITE:", prop, value);
-                    console.trace();
-                }
-                }
-                */
-
-                /*console.log("WRITE:", prop, value);
-                console.trace();*/
-
                 return Reflect.set(target, prop, value, receiver);
             },
 
             deleteProperty(target, prop) {
-                /*console.log("DELETE:", prop);
-                console.trace();*/
                 return Reflect.deleteProperty(target, prop);
             }
         });
 
         this.connections = new Proxy<ConnectionInstance[]>([], {
             get(target, prop, receiver) {
-                /*
-                if (prop !== "length" && typeof prop !== "symbol") {
-                if (prop == "4" || prop == "5") {
-                    console.log("READ:", prop);
-                    console.trace();
-                }
-                }
-                */
-
-                // console.log("READ:", prop);
-                // console.trace();
-
                 return Reflect.get(target, prop, receiver);
             },
 
             set(target, prop, value, receiver) {
-                /*
-                if (prop !== "length") {
-                if (prop == "4" || prop == "5") {
-                    console.log("WRITE:", prop, value);
-                    console.trace();
-                }
-                }
-                */
-
-                /*console.log("WRITE:", prop, value);
-                console.trace();*/
 
                 return Reflect.set(target, prop, value, receiver);
             },
 
             deleteProperty(target, prop) {
-                /*console.log("DELETE:", prop);
-                console.trace();*/
                 return Reflect.deleteProperty(target, prop);
             }
         });

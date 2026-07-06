@@ -16,20 +16,6 @@ function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function pause() {
-    //console.log("Pause called");
-    return new Promise(resolve => {
-        document.body.onkeyup = (e) => {
-            if (e.key === "Enter") {
-                resolve(true);
-                document.body.onkeyup = null;
-                //console.log("Pause resolved");
-            }
-        };
-    });
-}
-
-
 export var binarysearchT = new BinarySearchTree();
 (window as any).binarysearchT = binarysearchT;
 
@@ -45,7 +31,6 @@ window.addEventListener('resize', () => {
 });
 
 const type = async function (e: { key: string; preventDefault: () => void; }) {
-    //console.log(focused);
     if (focused) {
         switch (e.key) {
             case "Backspace":
@@ -63,7 +48,6 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
                 break;
 
             case "ArrowUp":
-                //console.log(point);
                 e.preventDefault(); //to avoid scrolling with the arrows in the console
                 if (previousCommands.length > 0) {
                     if (point > 0)
@@ -75,7 +59,6 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
 
 
             case "ArrowDown":
-                //console.log(point);
                 e.preventDefault(); //to avoid scrolling with the arrows in the console
                 if (previousCommands.length > point) {
                     point++;
@@ -113,7 +96,6 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
         previousCommands.push(command!.innerHTML);
         point = previousCommands.length;
         command!.id = "";
-        //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
         let allInputs = Array.from(document.getElementsByTagName('input'));
         allInputs.forEach((i)=>{
             if(binarysearchT.paused && i.id == "toggle-animation-button"){
@@ -135,14 +117,12 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
         }
         allInputs.forEach((i) => {
             if(animation){
-                //console.log(`Animation on!`);
                 if(!binarysearchT.paused && i.id == "toggle-animation-button") i.disabled = true;
                 else{
                     i.disabled = false;
                 }
             }
             else{
-                //console.log(`Animation off!`);
                 if(i.id == "speed" || i.id == "toggle-animation-button") i.disabled = true;
                 else{
                     i.disabled = false;
@@ -158,7 +138,6 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
         awaiting = false;
     }
     else{
-        //console.log(previousCommands);
         if(awaiting){
             await exec(["next"]);
             command!.innerHTML = previousCommands[previousCommands.length-1];
@@ -176,7 +155,6 @@ const exec = async function (...parameters: any[]) {
     return new Promise(async function (resolve, reject) {
         let returnval: string | number[] = "Command succesfully executed";
         let params = parameters[0];
-        //console.log(parameters);
         const emptyNodes : boolean = (document.getElementById("empty") as HTMLInputElement).checked?true:false;
         switch (params[0]) {
             case 'insert':
@@ -550,11 +528,6 @@ const exec = async function (...parameters: any[]) {
                                 returnval = "The animation speed must be an integer between 1 and 5";
                             }
                             else {
-                                /*const style = document.createElement('style');
-                                let oldStyle = document.head.getElementsByTagName('style')[0];
-                                if (oldStyle) {
-                                    oldStyle.remove();
-                                }*/
                                speed = speed*5;
                                let style = document.getElementById("dynamic-animation-style") as HTMLStyleElement | null;
                                 if (!style) {
@@ -638,27 +611,18 @@ const exec = async function (...parameters: any[]) {
                         }
                         else {
                             if (params[2] == "off") {
-                                //console.log(`Animation are being turned off`);
                                 animation = false;
                                 const radiobtn = document.getElementById("Off") as HTMLInputElement;
                                 radiobtn.checked = true;
                                 binarysearchT.paused = false;
-                                /*const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
-                                const nextButton = document.getElementById("next-button") as HTMLInputElement;
-                                
-                                pauseButton.disabled = true;
-                                nextButton.disabled = true;*/
-
                                 
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
                                 noAnimationElements.forEach((e) => {
-                                    //console.log(typeof(e));
                                     e.classList.add("no-animation");
                                     (e as HTMLElement).offsetHeight;
                                 });
                                 let lines = [...document.getElementsByClassName("line")];
                                 lines.forEach((e) => {
-                                    //console.log(typeof(e));
                                     e.classList.remove("transform");
                                     (e as HTMLElement).offsetHeight;
                                 });
@@ -666,7 +630,6 @@ const exec = async function (...parameters: any[]) {
                             }
                             else {
                                 if (params[2] == "on" || params[2] == "manual") {
-                                    //console.log(`Animation are being turned on`);
                                     animation = true;
                                     const radiobtn = document.getElementById("Automatic") as HTMLInputElement;
                                     radiobtn.checked = true;
@@ -678,7 +641,6 @@ const exec = async function (...parameters: any[]) {
                                     const noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     binarysearchT.paused = false;
                                     noAnimationElements.forEach((e) => {
-                                        //console.log(typeof(e));
                                         e.classList.remove("no-animation");
                                         (e as HTMLElement).offsetHeight;
                                     });
@@ -710,8 +672,6 @@ const exec = async function (...parameters: any[]) {
                         }
                         else{
                             
-                            //const elements = Array.from(document.getElementsByClassName("TreeElement"));
-                            //const emptyNodes : boolean = (document.getElementById("empty") as HTMLInputElement).checked?true:false;
                             if(params[2] == "on") {
                                 
                                 binarysearchT.avlStatus = true;
@@ -726,7 +686,6 @@ const exec = async function (...parameters: any[]) {
                                     const equivalent = binarysearchT.arr
                                     .map(v => v?.key)
                                     .filter((v): v is number => v !== undefined);
-                                    //console.log(equivalent);
                                     binarysearchT.reset();
                                     if(animation) await exec(["set", "animation", "off"]);
                                     await exec(["insert", ...equivalent.map(Number)]);
@@ -987,178 +946,8 @@ const exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() {
-    function assertAVL(label: string = "") {
-        const arr = binarysearchT.arr;
-        const seenKeys = new Set<number>();
-        const seenRanks = new Set<number>();
-
-        function isRealNode(n: any): boolean {
-            return Boolean(n) && Number.isInteger(n.key);
-        }
-
-        function walk(
-            rank: number,
-            min: number = -Infinity,
-            max: number = Infinity,
-            depth: number = 0
-        ): { height: number; maxDepth: number; count: number } {
-            const node = arr[rank];
-
-            if (!isRealNode(node)) {
-                return {
-                    height: 0,
-                    maxDepth: depth - 1,
-                    count: 0
-                };
-            }
-
-            const key = node.key;
-
-            if (seenKeys.has(key)) {
-                throw new Error(`${label}: duplicate key ${key}`);
-            }
-
-            if (!(key > min && key < max)) {
-                throw new Error(
-                    `${label}: BST violation at rank ${rank}, key=${key}, bounds=(${min}, ${max})`
-                );
-            }
-
-            seenKeys.add(key);
-            seenRanks.add(rank);
-
-            const leftRank = rank * 2 + 1;
-            const rightRank = rank * 2 + 2;
-
-            const left = walk(leftRank, min, key, depth + 1);
-            const right = walk(rightRank, key, max, depth + 1);
-
-            const balanceDifference = Math.abs(left.height - right.height);
-
-            if (balanceDifference > 1) {
-                throw new Error(
-                    `${label}: AVL violation at key=${key}, rank=${rank}, leftHeight=${left.height}, rightHeight=${right.height}`
-                );
-            }
-
-            if (node.leftWeight !== left.height || node.rightWeight !== right.height) {
-                throw new Error(
-                    `${label}: wrong weights at key=${key}, rank=${rank}. ` +
-                    `Expected leftWeight=${left.height}, rightWeight=${right.height}, ` +
-                    `got leftWeight=${node.leftWeight}, rightWeight=${node.rightWeight}`
-                );
-            }
-
-            return {
-                height: 1 + Math.max(left.height, right.height),
-                maxDepth: Math.max(depth, left.maxDepth, right.maxDepth),
-                count: 1 + left.count + right.count
-            };
-        }
-
-        const result = walk(0);
-
-        for (let i = 0; i < arr.length; i++) {
-            const node = arr[i];
-
-            if (isRealNode(node) && !seenRanks.has(i)) {
-                throw new Error(
-                    `${label}: unreachable node at rank ${i}, key=${node.key}`
-                );
-            }
-        }
-
-        return {
-            nodes: result.count,
-            height: result.height,
-            maxDepth: result.maxDepth
-        };
-    }
-    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-    async function resetTree() {
-        while (binarysearchT.size > 0) {
-            await exec(["remove", binarysearchT.arr[0].key]);
-            await sleep(1);
-        }
-    }
-
-    async function insertMany(values: number[]) {
-        for (const value of values) {
-            await exec(["insert", value]);
-            await sleep(1);
-            assertAVL(`after insert ${value}`);
-        }
-    }
-
-    async function removeMany(values: number[]) {
-        for (const value of values) {
-            await exec(["remove", value]);
-            await sleep(1);
-            assertAVL(`after remove ${value}`);
-        }
-    }
-
-    async function runAVLCase(
-        name: string,
-        inserts: number[],
-        removes: number[] = [],
-        animation: "on" | "off" = "off"
-    ) {
-        console.log(`\n=== TEST: ${name} ===`);
-
-        await exec(["set", "animation", animation]);
-        await exec(["set", "avl", "on"]);
-
-        await resetTree();
-        await insertMany(inserts);
-        await removeMany(removes);
-
-        const stats = assertAVL(name);
-        console.log(`PASS: ${name}`, stats);
-    }
-
-    function shuffle<T>(arr: T[]): T[] {
-        const copy = [...arr];
-
-        for (let i = copy.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [copy[i], copy[j]] = [copy[j], copy[i]];
-        }
-
-        return copy;
-    }
-
-    async function randomMixedAVLTest(size: number = 500) {
-        console.log(`=== RANDOM MIXED AVL TEST: ${size} ===`);
-
-        await exec(["set", "animation", "off"]);
-        await exec(["set", "avl", "on"]);
-        await resetTree();
-
-        const values = shuffle(Array.from({ length: size }, (_, i) => i));
-
-        for (const value of values) {
-            await exec(["insert", value]);
-            await sleep(1);
-            assertAVL(`random insert ${value}`);
-        }
-
-        const deleteOrder = shuffle(values);
-
-        for (const value of deleteOrder) {
-            await exec(["remove", value]);
-            await sleep(1);
-            assertAVL(`random delete ${value}`);
-        }
-
-        console.log(`PASS: random mixed AVL test ${size}`);
-    }
-    
     await exec(["set", "animation", "off"]);
     await exec(["set", "animation", "speed", 1]);
-    //await randomMixedAVLTest(500);
-    //await randomMixedAVLTest(1000);
 });
 
 const focus = function () {
@@ -1207,10 +996,6 @@ const cursorAnimation = function () {
 }
 
 
-//let consoleHeight = debconsole!.offsetHeight;
-
-
-
 //All event listeners
 //The document catches the event and sets to false, unless the terminal overrides it with its listeners (capture vs target)
 document.getElementById("add-button")!.addEventListener("click", function(){ 
@@ -1247,7 +1032,6 @@ document.querySelectorAll('input[name="animationselection"]')
     .forEach((element) => {
         const el = element as HTMLInputElement ;
         el.addEventListener("click", () => {
-            //console.log(element.value);
             command!.innerHTML = `set animation ${el.value.toLowerCase()}`;
             parseCommand();
         });
@@ -1262,8 +1046,6 @@ document.getElementById("speed")!.addEventListener("mouseup", function () {
 
 document.getElementById("AVL")!.addEventListener("change", function () {
     const el = this as HTMLInputElement;
-    /*alert("This feature has not been completed yet.");
-    el.checked = false;*/
     
     if (el.checked) {
         command!.innerHTML = `set avl on`;
@@ -1299,6 +1081,3 @@ debconsole!.addEventListener("click", focus);
 debconsole!.addEventListener("focus", focus);
 debconsole!.addEventListener("contextmenu", paste);
 document.addEventListener("keydown", type);
-//document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", minimize);
-//document.getElementsByClassName("console-dot green")[0].addEventListener("click", maximize);
-//document.getElementById("resizer")!.addEventListener("mousedown", resizeConsole);
