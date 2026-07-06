@@ -369,7 +369,10 @@ const exec = async function (...parameters: any[]) {
                             return v.key;
                         }
 
-                    }).filter((v: any) => { if (v) return v }).toString();
+                    }).filter((v: any) => { 
+                        if (v && parseInt(v) == v) 
+                            return v 
+                    }).toString();
                 else
                     returnval = "The tree is empty";
                 break;
