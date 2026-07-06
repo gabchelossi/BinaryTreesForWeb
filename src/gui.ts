@@ -681,6 +681,7 @@ const exec = async function (...parameters: any[]) {
                                 //respective ranks as if the insertion had started as an AVL tree.
                                 if(binarysearchT.size>0){
                                     const paused = binarysearchT.paused;
+                                    let automaticIsOn: boolean = (document.getElementById("Automatic") as HTMLInputElement).checked;
                                     if(paused)  binarysearchT.paused = false;
                                     if(emptyNodes) await binarysearchT.toggleEmptyNodes(false);
                                     const equivalent = binarysearchT.arr
@@ -695,6 +696,7 @@ const exec = async function (...parameters: any[]) {
                                         binarysearchT.paused = true;
                                         await exec(["set", "animation", "manual"]);
                                     }
+                                    else if(automaticIsOn) await exec(["set", "animation", "on"]);
 
                                 }
                                 
