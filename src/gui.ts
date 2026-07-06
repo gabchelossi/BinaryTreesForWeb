@@ -11,33 +11,9 @@ let animationSpeed = 1;
 let animation = false;
 let awaiting: boolean = false;
 
+
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function pause() {
-    //console.log("Pause called");
-    return new Promise(resolve => {
-        document.body.onkeyup = (e) => {
-            if (e.key === "Enter") {
-                resolve(true);
-                document.body.onkeyup = null;
-                //console.log("Pause resolved");
-            }
-        };
-    });
-}
-
-function awaitInput() {
-    return new Promise(resolve => {
-        let onKeyHandler = function (e: { key: string; }) {
-            if (e.key == "ArrowRight") {
-                document.removeEventListener('keydown', onKeyHandler);
-                resolve(true);
-            }
-        }
-        document.addEventListener('keydown', onKeyHandler);
-    });
 }
 
 export var binarysearchT = new BinarySearchTree();
@@ -55,20 +31,15 @@ window.addEventListener('resize', () => {
 });
 
 const type = async function (e: { key: string; preventDefault: () => void; }) {
-    //console.log(focused);
     if (focused) {
         switch (e.key) {
             case "Backspace":
                 command!.innerHTML = command!.innerHTML.substring(0, command!.innerHTML.length - 1);
                 break;
 
-            default: //NEEDS OPTIMIZING
-                if (!( e.key == "PageDown" || e.key == "PageUp" || e.key == "NumLock" || e.key == "Delete" || e.key == "Home" || e.key == "Insert" || e.key == "ArrowLeft" || e.key == "ArrowRight" || e.key == "Alt" || e.key == "Shift" || e.key == "CapsLock" || e.key == "Control" || e.key == "Meta")){
-                    //console.log(e.key);
-                    //command!.innerHTML = command!.innerHTML + e.key;
+            default:
+                if(e.key.length == 1){ //it means it is just a simple key and not win/pageup/pagedown et cetera special keys
                     let char = e.key.toString();
-                    const re = new RegExp("^[A-Za-z0-9]$");
-                    re.exec(char);
                     command!.innerHTML = command!.innerHTML + char;
                 }
                 else {
@@ -77,7 +48,6 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
                 break;
 
             case "ArrowUp":
-                //console.log(point);
                 e.preventDefault(); //to avoid scrolling with the arrows in the console
                 if (previousCommands.length > 0) {
                     if (point > 0)
@@ -89,7 +59,6 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
 
 
             case "ArrowDown":
-                //console.log(point);
                 e.preventDefault(); //to avoid scrolling with the arrows in the console
                 if (previousCommands.length > point) {
                     point++;
@@ -100,7 +69,6 @@ const type = async function (e: { key: string; preventDefault: () => void; }) {
             
             
             case "Enter":
-                
                 parseCommand();
                 break;
         }
@@ -128,7 +96,6 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
         previousCommands.push(command!.innerHTML);
         point = previousCommands.length;
         command!.id = "";
-        //console.log(command!.innerHTML.replaceAll(" ", ",").split(","));
         let allInputs = Array.from(document.getElementsByTagName('input'));
         allInputs.forEach((i)=>{
             if(binarysearchT.paused && i.id == "toggle-animation-button"){
@@ -150,14 +117,12 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
         }
         allInputs.forEach((i) => {
             if(animation){
-                //console.log(`Animation on!`);
                 if(!binarysearchT.paused && i.id == "toggle-animation-button") i.disabled = true;
                 else{
                     i.disabled = false;
                 }
             }
             else{
-                //console.log(`Animation off!`);
                 if(i.id == "speed" || i.id == "toggle-animation-button") i.disabled = true;
                 else{
                     i.disabled = false;
@@ -173,7 +138,6 @@ const parseCommand = async function (caller:HTMLElement|null=null) {
         awaiting = false;
     }
     else{
-        //console.log(previousCommands);
         if(awaiting){
             await exec(["next"]);
             command!.innerHTML = previousCommands[previousCommands.length-1];
@@ -191,12 +155,12 @@ const exec = async function (...parameters: any[]) {
     return new Promise(async function (resolve, reject) {
         let returnval: string | number[] = "Command succesfully executed";
         let params = parameters[0];
-        //console.log(parameters);
         const emptyNodes : boolean = (document.getElementById("empty") as HTMLInputElement).checked?true:false;
         switch (params[0]) {
             case 'insert':
-                
+                if(emptyNodes) await binarysearchT.toggleEmptyNodes(false); 
                 if (params[1] == "full") {
+                    binarysearchT.reset();
                     let arr = [25, 10, 40, 5, 15, 30, 50, 3, 7, 13, 20, 27, 35, 45, 55, 1, 4, 6, 8, 11, 14, 17, 24, 26, 29, 33, 37, 43, 47, 53, 60];
                     const insertFull = function () {
                         return new Promise(async function (res) {
@@ -205,81 +169,196 @@ const exec = async function (...parameters: any[]) {
                                 if (animation)
                                     await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(arr[i]));
                                 else
-                                    binarysearchT.addNew(new BinarySearchTree.TreeElement(arr[i]));
+                                    await binarysearchT.addNew(new BinarySearchTree.TreeElement(arr[i]));
                             }
                             res(true);
                         });
                     };
                     await insertFull();
-                    if(emptyNodes) binarysearchT.toggleEmptyNodes(); //in case you are using this command in a non-empty binary tree
                 }
-                else {
-                    if (params.length > 2) {
-                        let vals = params.map(function (e: string) {
-                            return parseInt(e);
-                        }).filter((v: number) => {
-                            if (!isNaN(v)) {
-                                return v;
+                else{
+                    if (params[1] === "random") {
+                        const parseInteger = (value: string | undefined): number | null => {
+                            if (value === undefined) return null;
+
+                            const n = Number(value);
+                            return Number.isInteger(n) ? n : null;
+                        };
+
+                        let min = 0;
+                        let max = 99;
+                        let count = 20;
+
+                        const p2 = parseInteger(params[2]);
+                        const p3 = parseInteger(params[3]);
+                        const p4 = parseInteger(params[4]);
+
+                        if (params[2] !== undefined && p2 === null) {
+                            reject(`Invalid max value: '${params[2]}'`);
+                            break;
+                        }
+
+                        if (params[3] !== undefined && p3 === null) {
+                            reject(`Invalid max value: '${params[3]}'`);
+                            break;
+                        }
+
+                        if (params[4] !== undefined && p4 === null) {
+                            reject(`Invalid count value: '${params[4]}'`);
+                            break;
+                        }
+
+                        if (p2 !== null && p3 === null) {
+                            // insert random <max>
+                            max = p2;
+                        } else if (p2 !== null && p3 !== null) {
+                            // insert random <min> <max>
+                            min = p2;
+                            max = p3;
+                        }
+
+                        if (p4 !== null) {
+                            count = p4;
+                        }
+
+                        if (min > max) {
+                            reject(`Minimum value cannot be greater than maximum value.`);
+                            break;
+                        }
+
+                        if (count <= 0) {
+                            reject(`Count must be greater than 0.`);
+                            break;
+                        }
+
+                        const rangeSize = max - min + 1;
+
+                        if (count > rangeSize) {
+                            reject(`Cannot insert ${count} unique keys from range [${min}, ${max}]. Maximum possible is ${rangeSize}.`);
+                            break;
+                        }
+
+                        const insertOne = async (value: number) => {
+                            const element = new BinarySearchTree.TreeElement(value);
+
+                            if (animation) {
+                                await binarysearchT.addNewTransform(element);
+                            } else {
+                                await binarysearchT.addNew(element);
                             }
-                        });
+                        };
+
+                        const shuffle = (arr: number[]): number[] => {
+                            for (let i = arr.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [arr[i], arr[j]] = [arr[j], arr[i]];
+                            }
+
+                            return arr;
+                        };
+
                         await (async function () {
-                            returnval = `Succesfully inserted ${vals} into the binary search tree`;
-                            for (let i = 0; i < vals.length; i++) {
-                                try {
-                                    if (animation)
-                                        await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(vals[i]));
-                                    else {
-                                        await binarysearchT.addNew(new BinarySearchTree.TreeElement(vals[i]));
-                                    }
-                                    if(emptyNodes) binarysearchT.toggleEmptyNodes();
-                                }
-                                catch (e) {
-                                    let index = -1;
-                                    if (typeof e === "string") {
-                                        index = vals.indexOf(parseInt(e.substring(1)));
-                                    }
-                                    vals.splice(index, 1);
-                                    //console.log(vals);
-                                    alert(e);
-                                    i--;
-                                    if (vals.length > 0){
-                                        returnval = `Succesfully inserted ${vals} into the binary search tree`;
-                                    }
-                                    else returnval = `None of the values have been inserted`;
+                            const median = Math.floor((min + max) / 2);
+
+                            const values: number[] = [];
+
+                            // Put median first so the initial root is centered.
+                            values.push(median);
+
+                            const candidates: number[] = [];
+
+                            for (let n = min; n <= max; n++) {
+                                if (n !== median) {
+                                    candidates.push(n);
                                 }
                             }
+
+                            shuffle(candidates);
+
+                            values.push(...candidates.slice(0, count - 1));
+
+
+                            for (const value of values) {
+                                if (binarysearchT.rankOf(value) === -1) {
+                                    await insertOne(value);
+                                }
+                            }
+
+                            returnval = `Successfully inserted ${values} into the binary search tree`;
                         })();
-                        
                     }
                     else {
-                        if(!Number.isInteger(Number.parseFloat(params[1]))){
-                            reject(`The passed parameter is not an integer.`);
-                        }
-                        else{
-                            if(binarysearchT.rankOf(parseInt(params[1]))>-1){
-                                reject(`The key '${parseInt(params[1])}' is already present in the tree.`);
-                            }
-                            else{
-                                await (async function () {
-                                    try {
-                                        if (animation)
-                                            await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(parseInt(params[1])));
-                                        else
-                                            binarysearchT.addNew(new BinarySearchTree.TreeElement(parseInt(params[1])));
-                                        returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
+                        if (params.length > 2) {
+                            let vals = params
+                                .map((e: string) => parseInt(e, 10))
+                                .filter((v: number) => !isNaN(v));
+
+                            returnval = `Successfully inserted ${vals} into the binary search tree`;
+
+                            // If empty-node mode is active, remove placeholders before inserting
+
+                            for (let i = 0; i < vals.length; i++) {
+                                try {
+                                    const element = new BinarySearchTree.TreeElement(vals[i]);
+
+                                    if (animation) {
+                                        await binarysearchT.addNewTransform(element);
+                                    } else {
+                                        await binarysearchT.addNew(element);
                                     }
-                                    catch (e) {
-                                        returnval = String(e);
+                                } catch (e) {
+                                    let index = -1;
+
+                                    if (typeof e === "string") {
+                                        index = vals.indexOf(parseInt(e.substring(1), 10));
                                     }
-                                })();
-                                if(emptyNodes) binarysearchT.toggleEmptyNodes();
+
+                                    if (index > -1) {
+                                        vals.splice(index, 1);
+                                        i--;
+                                    }
+
+                                    alert(e);
+
+                                    if (vals.length > 0) {
+                                        returnval = `Successfully inserted ${vals} into the binary search tree`;
+                                    } else {
+                                        returnval = `None of the values have been inserted`;
+                                    }
+                                }
                             }
                             
                         }
-                        
+                        else {
+                            if(!Number.isInteger(Number.parseFloat(params[1]))){
+                                reject(`The passed parameter is not an integer.`);
+                            }
+                            else{
+                                if(binarysearchT.rankOf(parseInt(params[1]))>-1){
+                                    reject(`The key '${parseInt(params[1])}' is already present in the tree.`);
+                                }
+                                else{
+                                    await (async function () {
+                                        try {
+                                            if (animation)
+                                                await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(parseInt(params[1])));
+                                            else
+                                                await binarysearchT.addNew(new BinarySearchTree.TreeElement(parseInt(params[1])));
+                                            returnval = `Succesfully inserted ${params[1]} into the binary search tree`;
+                                        }
+                                        catch (e) {
+                                            returnval = String(e);
+                                        }
+                                    })();
+                                }
+                                
+                            }
+                            
+                        }
                     }
                 }
-
+                
+                if(emptyNodes) await binarysearchT.toggleEmptyNodes(true); 
 
                 break;
 
@@ -295,19 +374,81 @@ const exec = async function (...parameters: any[]) {
                     returnval = "The tree is empty";
                 break;
 
-            case 'help':
-                returnval = "'insert [value]' inserts a key into the binary tree <br> \
-                'delete [value]' deletes (if exists) a key from the binary tree<br> \
-                'search [value] returns the rank of a given value.'<br> \
-                'show' will show the array representing the data structure: \t-array (?boolean:show empty slots)<br> \
-                'clear' clears the console (it gets too messy sometimes)<br> \
-                'credits' to show the credits of the developer who made this site";
-                break;
+            case "help": {
+                const helpWindow = window.open("./help.html", "_blank");
 
-            case 'credits':
-                returnval = "Thank you for visiting my website! I hope this visual representation of these data structures are to your liking<br>\
-                if you have any questions do not hesitate to e-mail me at <a href='mailto:gc.consulting22@gmail.com'>gc.consulting22@gmail.com</a>";
+                returnval = helpWindow
+                    ? `
+                        <div style="line-height: 1.5;">
+                            <h2>Help</h2>
+
+                            <p>
+                                The full command documentation has been opened in a new tab.
+                            </p>
+
+                            <p>
+                                <a href="./help.html" target="_blank" style="font-weight: bold; color: cyan;">
+                                    Open Command Help Page
+                                </a>
+                            </p>
+                        </div>
+                    `
+                    : `
+                        <div style="line-height: 1.5;">
+                            <h2>Help</h2>
+
+                            <p>
+                                The browser blocked the help page popup.
+                            </p>
+
+                            <p>
+                                <a href="./help.html" target="_blank" style="font-weight: bold; color: cyan;">
+                                    Click here to open the full command documentation.
+                                </a>
+                            </p>
+                        </div>
+                    `;
+
                 break;
+            }
+
+            case "credits":
+            returnval = `
+                <div style="line-height: 1.5;">
+                    <h2>Credits</h2>
+
+                    <p>
+                        Thank you for checking out this project.
+                        This visualizer was designed to make Binary Search Trees and AVL Trees
+                        easier to understand through interactive animations and direct inspection
+                        of the underlying array representation.
+                    </p>
+
+                    <p>
+                        Features include insertion, removal, search, traversal, empty-node display,
+                        AVL balancing, rotations, animation controls, and step-by-step execution.
+                    </p>
+
+                    <p>
+                        Created by <b>Gabriele Chelossi</b>.
+                    </p>
+
+                    <p>
+                        Contact:
+                        <a href="mailto:contact@gchelossi-dev.com">
+                            contact@gchelossi-dev.com
+                        </a>
+                    </p>
+
+                    <p>
+                        Website:
+                        <a href="https://gchelossi-dev.com" target="_blank">
+                            https://gchelossi-dev.com
+                        </a>
+                    </p>
+                </div>
+            `;
+            break;
 
             case 'clear':
                 document.getElementById("console-content")!.innerHTML = "";
@@ -325,12 +466,15 @@ const exec = async function (...parameters: any[]) {
                         if(animation){
                             await sleep(1000/animationSpeed);
                         }
-                        if(emptyNodes) await binarysearchT.toggleEmptyNodes();
+                        
                         
                         resolve(`The key '${params[1]}' has been deleted.`);
                     }
                     catch(e){
                         reject(e);
+                    }
+                    finally{
+                        if(emptyNodes) await binarysearchT.toggleEmptyNodes();
                     }
                 }
             break;
@@ -340,32 +484,38 @@ const exec = async function (...parameters: any[]) {
             case 'su':
             case 'cd':
             case 'echo':
-                returnval = "You know, this is not really a linux shell although I made it look like one :)";
+            case `exit`:
+                returnval = "You know, this is not a real linux shell although I made it look like one ☺";
                 break;
 
             case "reset":
                 binarysearchT.reset();
+                returnval = `The Binary Search Tree has been reset.`;
                 break;
 
             case "search":
-                if(animation){
-                    try{
-                        const rankAt = await binarysearchT.search(params[1]);
-                        returnval = `The key '${params[1]}' is found at rank ${rankAt}`;
+                if(Boolean(params[1]) && parseInt(params[1]) == params[1]){ //js weird stuff. Just making sure that the passed value is an integer and since it is a string if it is a float it will not pass the condition
+                    if(animation){
+                        try{
+                            const rankAt = await binarysearchT.search(params[1]);
+                            returnval = `The key '${params[1]}' is found at rank ${rankAt}`;
+                        }
+                        catch(e){
+                            returnval = `The key '${params[1]}' is not present in the Binary Search Tree`;
+                        }
                     }
-                    catch(e){
-                        returnval = `The key '${params[1]}' is not present in the Binary Search Tree`;
+                    else{
+                        const rank = binarysearchT.rankOf(params[1]);
+                        if (rank == -1) {
+                            returnval = `The value '${params[1]}' is not in the tree`;
+                        }
+                        else {
+                            returnval = `The value '${params[1]}' is at rank ${rank}`;
+                        }
                     }
                 }
-                else{
-                    const rank = binarysearchT.rankOf(params[1]);
-                    if (rank == -1) {
-                        returnval = `The value '${params[1]}' is not in the tree`;
-                    }
-                    else {
-                        returnval = `The value '${params[1]}' is at rank ${rank}`;
-                    }
-                }
+                else returnval = `The key is not a valid integer value`;
+                
                 break;
                 
             case "set":
@@ -378,11 +528,6 @@ const exec = async function (...parameters: any[]) {
                                 returnval = "The animation speed must be an integer between 1 and 5";
                             }
                             else {
-                                /*const style = document.createElement('style');
-                                let oldStyle = document.head.getElementsByTagName('style')[0];
-                                if (oldStyle) {
-                                    oldStyle.remove();
-                                }*/
                                speed = speed*5;
                                let style = document.getElementById("dynamic-animation-style") as HTMLStyleElement | null;
                                 if (!style) {
@@ -466,27 +611,18 @@ const exec = async function (...parameters: any[]) {
                         }
                         else {
                             if (params[2] == "off") {
-                                //console.log(`Animation are being turned off`);
                                 animation = false;
                                 const radiobtn = document.getElementById("Off") as HTMLInputElement;
                                 radiobtn.checked = true;
-                                
-                                /*const pauseButton = document.getElementById("pause-button") as HTMLInputElement;
-                                const nextButton = document.getElementById("next-button") as HTMLInputElement;
-                                
-                                pauseButton.disabled = true;
-                                nextButton.disabled = true;*/
-
+                                binarysearchT.paused = false;
                                 
                                 let noAnimationElements = [...document.getElementsByClassName("TreeElement")];
                                 noAnimationElements.forEach((e) => {
-                                    //console.log(typeof(e));
                                     e.classList.add("no-animation");
                                     (e as HTMLElement).offsetHeight;
                                 });
                                 let lines = [...document.getElementsByClassName("line")];
                                 lines.forEach((e) => {
-                                    //console.log(typeof(e));
                                     e.classList.remove("transform");
                                     (e as HTMLElement).offsetHeight;
                                 });
@@ -494,7 +630,6 @@ const exec = async function (...parameters: any[]) {
                             }
                             else {
                                 if (params[2] == "on" || params[2] == "manual") {
-                                    //console.log(`Animation are being turned on`);
                                     animation = true;
                                     const radiobtn = document.getElementById("Automatic") as HTMLInputElement;
                                     radiobtn.checked = true;
@@ -506,7 +641,6 @@ const exec = async function (...parameters: any[]) {
                                     const noAnimationElements = [...document.getElementsByClassName("no-animation")];
                                     binarysearchT.paused = false;
                                     noAnimationElements.forEach((e) => {
-                                        //console.log(typeof(e));
                                         e.classList.remove("no-animation");
                                         (e as HTMLElement).offsetHeight;
                                     });
@@ -528,7 +662,7 @@ const exec = async function (...parameters: any[]) {
                     break;
 
                     case "help":
-                        returnval = `'set speed ([1-10])' sets the animation speed`;
+                        returnval = `'set speed ([1-5])' sets the animation speed`;
                         break;
 
                     case "avl":
@@ -538,23 +672,30 @@ const exec = async function (...parameters: any[]) {
                         }
                         else{
                             
-                            //const elements = Array.from(document.getElementsByClassName("TreeElement"));
-
                             if(params[2] == "on") {
+                                
                                 binarysearchT.avlStatus = true;
                                 avlCheckbox.checked = true;
                                 returnval = "AVL mode activated";
                                 //if a tree is already inserted, and non balanced, I want to map all the keys to their
                                 //respective ranks as if the insertion had started as an AVL tree.
                                 if(binarysearchT.size>0){
+                                    const paused = binarysearchT.paused;
+                                    if(paused)  binarysearchT.paused = false;
+                                    if(emptyNodes) await binarysearchT.toggleEmptyNodes(false);
                                     const equivalent = binarysearchT.arr
                                     .map(v => v?.key)
                                     .filter((v): v is number => v !== undefined);
-                                    //console.log(equivalent);
                                     binarysearchT.reset();
                                     if(animation) await exec(["set", "animation", "off"]);
                                     await exec(["insert", ...equivalent.map(Number)]);
                                     if(animation) await exec(["set", "animation", "on"]);
+                                    if(emptyNodes) await binarysearchT.toggleEmptyNodes();
+                                    if(paused)  {
+                                        binarysearchT.paused = true;
+                                        await exec(["set", "animation", "manual"]);
+                                    }
+
                                 }
                                 
                                 
@@ -576,45 +717,106 @@ const exec = async function (...parameters: any[]) {
 
             case "show":
                 switch (params[1]) {
-                    case "array":
-                        if (binarysearchT.arr!.length) {
-                            if (params[2] === "true") {
-                                let s = "[";
+                    case "array": {
+                        const arr = binarysearchT.arr ?? [];
 
-                                for (let i = 0; i < binarysearchT.arr.length; i++) {
-                                    const node = binarysearchT.arr[i];
+                        if (!arr.length) {
+                            returnval = "The array is empty.";
+                            break;
+                        }
 
-                                    const val =
-                                        node && Number.isInteger(node.key)
-                                            ? node.key
-                                            : '<span style="color: grey">[empty]</span>';
+                        const showEmptySlots = params[2]?.toLowerCase() === "true";
 
-                                    s += `<span style='color: orange'>${i}</span>: ${val}${i < binarysearchT.arr.length - 1 ? ", " : "]"}`;
-                                }
+                        let realNodeCount = 0;
 
-                                s += "<br>Where the <span style='color: orange'>rank</span> is orange";
-                                returnval = s;
-                            } else {
-                                let s = "[";
+                        for (let i = 0; i < arr.length; i++) {
+                            const node = arr[i];
 
-                                const entries: string[] = [];
-
-                                binarysearchT.arr.forEach((node, index) => {
-                                    if (node && Number.isInteger(node.key)) {
-                                        entries.push(`<span style='color: orange'>${index}</span>: ${node.key}`);
-                                    }
-                                });
-
-                                s += entries.join(", ") + "]";
-                                s += "<br>Where the <span style='color: orange'>rank</span> is orange";
-                                returnval = s;
+                            if (node && Number.isInteger(node.key)) {
+                                realNodeCount++;
                             }
                         }
-                        else {
-                            returnval = "The array is empty.";
+
+                        const rows: {
+                            rank: number;
+                            state: "used" | "placeholder" | "unused";
+                            key: number | null;
+                            rawKey: number | null;
+                            depth: number;
+                            parentRank: number | null;
+                            leftRank: number;
+                            rightRank: number;
+                        }[] = [];
+
+                        for (let index = 0; index < arr.length; index++) {
+                            const node = arr[index];
+
+                            const isRealNode = Boolean(node && Number.isInteger(node.key));
+                            const isVisualPlaceholder = Boolean(node && !Number.isInteger(node.key));
+
+                            let state: "used" | "placeholder" | "unused";
+
+                            if (isRealNode) {
+                                state = "used";
+                            } else if (isVisualPlaceholder) {
+                                state = "placeholder";
+                            } else {
+                                state = "unused";
+                            }
+
+                            if (!showEmptySlots && state !== "used") {
+                                continue;
+                            }
+
+                            rows.push({
+                                rank: index,
+                                state,
+                                key: isRealNode ? node!.key : null,
+                                rawKey: node ? node.key : null,
+                                depth: Math.floor(Math.log2(index + 1)),
+                                parentRank: index === 0 ? null : Math.floor((index - 1) / 2),
+                                leftRank: 2 * index + 1,
+                                rightRank: 2 * index + 2
+                            });
                         }
 
+                        console.log("Array view payload:", {
+                            showEmptySlots,
+                            arrayLength: arr.length,
+                            realNodeCount,
+                            rowsLength: rows.length
+                        });
+
+                        const id =
+                            typeof crypto !== "undefined" && "randomUUID" in crypto
+                                ? crypto.randomUUID()
+                                : String(Date.now());
+
+                        const payload = {
+                            temporary: true,
+                            showEmptySlots,
+                            generatedAt: new Date().toLocaleString(),
+                            arrayLength: arr.length,
+                            realNodeCount,
+                            rows
+                        };
+
+                        localStorage.setItem(`bst-array-view:${id}`, JSON.stringify(payload));
+
+                        const opened = window.open(`./array.html?id=${id}`, "_blank");
+
+                        returnval = opened
+                            ? "Opened the array representation in a new page."
+                            : `
+                                The browser blocked the popup.
+                                <br>
+                                <a href="./array.html?id=${id}" target="_blank" style="color: cyan; font-weight: bold;">
+                                    Click here to open the array representation.
+                                </a>
+                            `;
+
                         break;
+                    }
 
                     case "help":
                         returnval = "'show' has the following options:<br>\t-array (?boolean:show empty slots): shows the array representation of the binary search tree";
@@ -642,30 +844,7 @@ const exec = async function (...parameters: any[]) {
                         break;
                 }
                 break;
-            case "fill-random":
-                (async function () {
-                    if(animation){
-                        await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
-                        for (let i = 0; i < 20; i++) {
-                            let random = Math.floor(Math.random() * 100);
-                            if (binarysearchT.rankOf(random) == -1)
-                                await binarysearchT.addNewTransform(new BinarySearchTree.TreeElement(random));
-                        }
-                    }
-                    else{
-                        await binarysearchT.addNew(new BinarySearchTree.TreeElement(50)); //since it is going to be randomized between 0 and 99, I want the root to be exactly the median
-                        for (let i = 0; i < 20; i++) {
-                            let random = Math.floor(Math.random() * 100);
-                            if (binarysearchT.rankOf(random) == -1)
-                                await binarysearchT.addNew(new BinarySearchTree.TreeElement(random));
-                        }
-                    }
-                    
-                })();
-                (document.getElementById("empty") as HTMLInputElement).checked?binarysearchT.toggleEmptyNodes():binarysearchT.toggleEmptyNodes(false);
-
-
-                break;
+            
 
             case "traverse":
                 let traverseType: string = params[1].toLowerCase();
@@ -767,176 +946,8 @@ const exec = async function (...parameters: any[]) {
 
 
 document.addEventListener("DOMContentLoaded",async function() {
-    function assertAVL(label: string = "") {
-        const arr = binarysearchT.arr;
-        const seenKeys = new Set<number>();
-        const seenRanks = new Set<number>();
-
-        function isRealNode(n: any): boolean {
-            return Boolean(n) && Number.isInteger(n.key);
-        }
-
-        function walk(
-            rank: number,
-            min: number = -Infinity,
-            max: number = Infinity,
-            depth: number = 0
-        ): { height: number; maxDepth: number; count: number } {
-            const node = arr[rank];
-
-            if (!isRealNode(node)) {
-                return {
-                    height: 0,
-                    maxDepth: depth - 1,
-                    count: 0
-                };
-            }
-
-            const key = node.key;
-
-            if (seenKeys.has(key)) {
-                throw new Error(`${label}: duplicate key ${key}`);
-            }
-
-            if (!(key > min && key < max)) {
-                throw new Error(
-                    `${label}: BST violation at rank ${rank}, key=${key}, bounds=(${min}, ${max})`
-                );
-            }
-
-            seenKeys.add(key);
-            seenRanks.add(rank);
-
-            const leftRank = rank * 2 + 1;
-            const rightRank = rank * 2 + 2;
-
-            const left = walk(leftRank, min, key, depth + 1);
-            const right = walk(rightRank, key, max, depth + 1);
-
-            const balanceDifference = Math.abs(left.height - right.height);
-
-            if (balanceDifference > 1) {
-                throw new Error(
-                    `${label}: AVL violation at key=${key}, rank=${rank}, leftHeight=${left.height}, rightHeight=${right.height}`
-                );
-            }
-
-            if (node.leftWeight !== left.height || node.rightWeight !== right.height) {
-                throw new Error(
-                    `${label}: wrong weights at key=${key}, rank=${rank}. ` +
-                    `Expected leftWeight=${left.height}, rightWeight=${right.height}, ` +
-                    `got leftWeight=${node.leftWeight}, rightWeight=${node.rightWeight}`
-                );
-            }
-
-            return {
-                height: 1 + Math.max(left.height, right.height),
-                maxDepth: Math.max(depth, left.maxDepth, right.maxDepth),
-                count: 1 + left.count + right.count
-            };
-        }
-
-        const result = walk(0);
-
-        for (let i = 0; i < arr.length; i++) {
-            const node = arr[i];
-
-            if (isRealNode(node) && !seenRanks.has(i)) {
-                throw new Error(
-                    `${label}: unreachable node at rank ${i}, key=${node.key}`
-                );
-            }
-        }
-
-        return {
-            nodes: result.count,
-            height: result.height,
-            maxDepth: result.maxDepth
-        };
-    }
-    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-    async function resetTree() {
-        while (binarysearchT.size > 0) {
-            await exec(["remove", binarysearchT.arr[0].key]);
-            await sleep(1);
-        }
-    }
-
-    async function insertMany(values: number[]) {
-        for (const value of values) {
-            await exec(["insert", value]);
-            await sleep(1);
-            assertAVL(`after insert ${value}`);
-        }
-    }
-
-    async function removeMany(values: number[]) {
-        for (const value of values) {
-            await exec(["remove", value]);
-            await sleep(1);
-            assertAVL(`after remove ${value}`);
-        }
-    }
-
-    async function runAVLCase(
-        name: string,
-        inserts: number[],
-        removes: number[] = [],
-        animation: "on" | "off" = "off"
-    ) {
-        console.log(`\n=== TEST: ${name} ===`);
-
-        await exec(["set", "animation", animation]);
-        await exec(["set", "avl", "on"]);
-
-        await resetTree();
-        await insertMany(inserts);
-        await removeMany(removes);
-
-        const stats = assertAVL(name);
-        console.log(`PASS: ${name}`, stats);
-    }
-
-    function shuffle<T>(arr: T[]): T[] {
-        const copy = [...arr];
-
-        for (let i = copy.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [copy[i], copy[j]] = [copy[j], copy[i]];
-        }
-
-        return copy;
-    }
-
-    async function randomMixedAVLTest(size: number = 500) {
-        console.log(`=== RANDOM MIXED AVL TEST: ${size} ===`);
-
-        await exec(["set", "animation", "off"]);
-        await exec(["set", "avl", "on"]);
-        await resetTree();
-
-        const values = shuffle(Array.from({ length: size }, (_, i) => i));
-
-        for (const value of values) {
-            await exec(["insert", value]);
-            await sleep(1);
-            assertAVL(`random insert ${value}`);
-        }
-
-        const deleteOrder = shuffle(values);
-
-        for (const value of deleteOrder) {
-            await exec(["remove", value]);
-            await sleep(1);
-            assertAVL(`random delete ${value}`);
-        }
-
-        console.log(`PASS: random mixed AVL test ${size}`);
-    }
-    //await randomMixedAVLTest(100);
-    //await randomMixedAVLTest(500);
-    //await randomMixedAVLTest(1000);
+    await exec(["set", "animation", "off"]);
+    await exec(["set", "animation", "speed", 1]);
 });
 
 const focus = function () {
@@ -983,8 +994,6 @@ const cursorAnimation = function () {
     }
 
 }
-//let consoleHeight = debconsole!.offsetHeight;
-
 
 
 //All event listeners
@@ -1014,11 +1023,15 @@ document.getElementById("traverse-button")!.addEventListener("click", function()
     parseCommand();
 });
 
+document.getElementById("reset")!.addEventListener("click", function(){
+    command!.innerHTML = `reset`;
+    parseCommand();
+});
+
 document.querySelectorAll('input[name="animationselection"]')
     .forEach((element) => {
         const el = element as HTMLInputElement ;
         el.addEventListener("click", () => {
-            //console.log(element.value);
             command!.innerHTML = `set animation ${el.value.toLowerCase()}`;
             parseCommand();
         });
@@ -1033,8 +1046,6 @@ document.getElementById("speed")!.addEventListener("mouseup", function () {
 
 document.getElementById("AVL")!.addEventListener("change", function () {
     const el = this as HTMLInputElement;
-    /*alert("This feature has not been completed yet.");
-    el.checked = false;*/
     
     if (el.checked) {
         command!.innerHTML = `set avl on`;
@@ -1070,6 +1081,3 @@ debconsole!.addEventListener("click", focus);
 debconsole!.addEventListener("focus", focus);
 debconsole!.addEventListener("contextmenu", paste);
 document.addEventListener("keydown", type);
-//document.getElementsByClassName("console-dot yellow")[0].addEventListener("click", minimize);
-//document.getElementsByClassName("console-dot green")[0].addEventListener("click", maximize);
-//document.getElementById("resizer")!.addEventListener("mousedown", resizeConsole);

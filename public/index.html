@@ -13,18 +13,19 @@
 <body>
     <div id = "main">
         <fieldset id = "control-panel">
+            
             <legend>Control Panel</legend>
             <table style = "height: 100%; width: 90%;">
                 <tr>
                     <th colspan="1">Key</th>
                     <th colspan="3">Operations</th>
                     <th colspan="3">Animation</th>
-                    <th colspan = "3">Controls</th>
-                    <th colspan = "3">Terminal</th>
+                    <th colspan="3">Controls</th>
+                    <th colspan="4">Terminal</th>
                 </tr>
                 <tr>
                     <td rowspan="3" id = "inputtd">
-                        <input type = "number" style = "height: 100%; font-size: 25px;text-align: center;" size = "4">
+                        <input id="key-input" type = "number" size = "4">
                     </td>
                     <td>
                         <input id = "add-button" type = "button" value = "Add">
@@ -47,8 +48,8 @@
                         <input type="radio" id="Off" name="animationselection" value="Off" />
                             <label for="Off">Off</label>
                     </td>
-                    <td>
-                        <input id = "toggle-animation-button" type = "button" value = "&#x23EF;">
+                    <td colspan="3">
+                        <input id="toggle-animation-button" type="button" value="&#x23EF;" disabled>
                     </td>
                     <td id="console-container" colspan="4" rowspan = "3">
                         <div id="console">
@@ -68,7 +69,7 @@
                     </td>
                     <th colspan="3">Options</th>
                     
-                     <td colspan="2">
+                     <td colspan="3">
                         <input
                             type="range"
                             id="speed"
@@ -76,7 +77,7 @@
                             min="1"
                             max="5"
                             value="1"
-                            step="1" />
+                            step="1" disabled/>
                         <label id = "labelspeed" for="speed">x1 Speed</label>
                     </td>
                     
@@ -104,8 +105,8 @@
                         <input type="checkbox" id="empty" name="empty" />  
                     </td>
                     
-                    <td colspan="2">
-                        
+                    <td colspan="3">
+                        <input id = "reset" type = "button" value = "Reset" style = "width: 100%; height:100%;">
                     </td>
                 </tr>
                         
